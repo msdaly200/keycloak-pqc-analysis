@@ -29,11 +29,19 @@ These algorithms are **quantum-vulnerable**. Post-quantum algorithms would need:
 
 ## Gap
 
-**Blocked on external standards — no Keycloak action possible today.**
+**Blocked on ecosystem readiness — standards are in place, but no production authenticators or browsers support PQC yet.**
 
-### The COSE registry has no PQC algorithm assignments
+### ✅ UPDATE (2025-2026): COSE registry HAS ML-DSA assignments
 
-The [IANA COSE Algorithms Registry](https://www.iana.org/assignments/cose/cose.xhtml#algorithms) does not yet define COSE algorithm identifiers for ML-DSA, FN-DSA, or SLH-DSA.
+The [IANA COSE Algorithms Registry](https://www.iana.org/assignments/cose/cose.xhtml#algorithms) **now has ML-DSA permanently registered** with "Recommended" status (registered Apr/Jul 2025):
+
+- **ML-DSA-44**: COSE algorithm identifier `-48`
+- **ML-DSA-65**: COSE algorithm identifier `-49`
+- **ML-DSA-87**: COSE algorithm identifier `-50`
+
+Based on [draft-ietf-cose-dilithium](https://datatracker.ietf.org/doc/draft-ietf-cose-dilithium/) ("ML-DSA for JOSE and COSE").
+
+**FN-DSA (FIPS 206, FALCON)** is expected late 2026. **SLH-DSA (FIPS 205)** status TBD.
 
 **File:** `WebAuthnRegister.java` (lines 372-408)
 
@@ -57,48 +65,70 @@ private static List<Long> convertSignatureAlgorithms(List<String> signatureAlgor
 }
 ```
 
-This method converts Keycloak's algorithm names (like "ES256") to COSE algorithm identifiers (like -7) using the **WebAuthn4J library's `COSEAlgorithmIdentifier` enum**. WebAuthn4J tracks the COSE registry, which does not yet include ML-DSA.
+This method converts Keycloak's algorithm names (like "ES256") to COSE algorithm identifiers (like -7) using the **WebAuthn4J library's `COSEAlgorithmIdentifier` enum**.
 
-**What would need to change (when standards exist):**
-1. IANA assigns COSE algorithm identifiers for ML-DSA, FN-DSA, SLH-DSA (e.g., hypothetical `-50` for ML-DSA-44)
-2. WebAuthn4J library adds the new `COSEAlgorithmIdentifier` enum values
-3. Keycloak adds new `case` statements to the switch block above
-4. Keycloak updates the admin UI to expose the new algorithms in the WebAuthn Policy configuration
+**What needs to change:**
+1. ✅ ~~IANA assigns COSE algorithm identifiers~~ — **DONE**: ML-DSA-44 (`-48`), ML-DSA-65 (`-49`), ML-DSA-87 (`-50`)
+2. ⏳ **WebAuthn4J library adds support** — ML-DSA implementation exists in [PR #1337](https://github.com/webauthn4j/webauthn4j/pull/1337), blocked on FIDO conformance test vectors
+3. ⏳ Keycloak adds new `case` statements to the switch block above
+4. ⏳ Keycloak updates the admin UI to expose the new algorithms in the WebAuthn Policy configuration
 
-### The FIDO2/WebAuthn spec does not define PQC support
+### ✅ UPDATE: WebAuthn Level 3 is algorithm-agnostic
 
-The [W3C WebAuthn Level 2 specification](https://www.w3.org/TR/webauthn-2/) and [FIDO2 specifications](https://fidoalliance.org/specifications/) do not yet define how authenticators should generate, store, or use post-quantum keys.
+**[W3C WebAuthn Level 3](https://www.w3.org/TR/webauthn-3/)** (Candidate Recommendation, Jan 2026) is **algorithm-agnostic** — PQC algorithms can be added without spec changes. The WebAuthn spec simply references the COSE algorithm registry.
 
-Open questions that the FIDO Alliance and W3C must answer:
-- How do authenticators signal PQC capability to the relying party?
-- What attestation formats support PQC certificates?
-- How are PQC public keys encoded in the `attestedCredentialData`?
-- Are hybrid classical+PQC modes supported for transition?
+**FIDO Alliance** published a [PQC white paper](https://fidoalliance.org/white-paper-addressing-fido-alliances-technologies-in-post-quantum-world/) (Feb 2024) committing to seamless transition. They note the impact goes beyond signatures — CTAP PIN protocol uses ECDH which also needs PQC-safe key exchange.
+
+**IETF [draft-vitap-ml-dsa-webauthn-04](https://datatracker.ietf.org/doc/draft-vitap-ml-dsa-webauthn/)** describes ML-DSA usage in WebAuthn (individual submission, not yet a working group document).
+
+**Standards layer is largely complete** — the blocker is now ecosystem implementation (browsers, authenticators, conformance tests).
 
 ## Current PQC State
 
-**EXTERNAL DEPENDENCY**
+**EXTERNAL DEPENDENCY** — Standards ready, ecosystem not ready.
 
-Keycloak's WebAuthn implementation is **entirely dependent** on:
-1. **FIDO Alliance** defining PQC support in the FIDO2 specification
-2. **W3C** updating the WebAuthn specification to include PQC algorithms
-3. **IANA** assigning COSE algorithm identifiers for ML-DSA, FN-DSA, SLH-DSA
-4. **WebAuthn4J library** (Keycloak's dependency) adding support for the new COSE identifiers
-5. **Browser vendors** (Chrome, Firefox, Safari, Edge) implementing PQC support in their WebAuthn APIs
-6. **Authenticator manufacturers** (Yubikey, Google Titan, Apple Secure Enclave, Windows Hello) shipping firmware/hardware that supports PQC key generation and signing
+### Progress Update (as of investigation in #48826)
 
-**Timeline:** The FIDO Alliance has acknowledged post-quantum cryptography as a future concern but has not published a roadmap. This is likely a **multi-year effort** (2027-2030+) given the hardware refresh cycles required.
+**Standards layer (✅ COMPLETE):**
+1. ✅ **NIST** finalized ML-DSA (FIPS 204) and SLH-DSA (FIPS 205) in Aug 2024
+2. ✅ **IANA** assigned COSE algorithm identifiers: ML-DSA-44 (`-48`), ML-DSA-65 (`-49`), ML-DSA-87 (`-50`)
+3. ✅ **WebAuthn Level 3** (W3C CR, Jan 2026) is algorithm-agnostic
+4. ✅ **FIDO Alliance** published PQC commitment white paper (Feb 2024)
+
+**Library layer (⏳ READY, waiting on conformance tests):**
+5. ⏳ **WebAuthn4J** — ML-DSA support implemented in [PR #1337](https://github.com/webauthn4j/webauthn4j/pull/1337) based on [draft-ietf-cose-dilithium](https://datatracker.ietf.org/doc/draft-ietf-cose-dilithium/). **Blocked on FIDO Alliance conformance test vectors** — without those, interoperability testing is not possible. Progress tracked at [webauthn4j#1200](https://github.com/webauthn4j/webauthn4j/issues/1200).
+   - **Requires JDK 24+** ([JEP 497](https://openjdk.org/jeps/497)) OR BouncyCastle (already a Keycloak dependency)
+
+**Platform crypto layer (⏳ READY, not wired to WebAuthn yet):**
+6. ⏳ **Microsoft Windows CNG** — ML-DSA support GA (Nov 2025)
+7. ⏳ **Apple CryptoKit** — ML-DSA support in iOS 26 / macOS Tahoe
+   - **Note:** Crypto primitives are ready with hardware-backed key storage, but the WebAuthn/platform authenticator layer hasn't wired them in yet
+
+**Browser layer (❌ NOT READY):**
+8. ❌ **Browser vendors** (Chrome, Firefox, Safari, Edge) — No browser has been tested or confirmed to pass through ML-DSA to authenticators
+
+**Hardware authenticator layer (❌ NOT READY):**
+9. ❌ **Authenticator manufacturers** — **No production PQC-capable FIDO2 authenticator exists**. Only research prototypes:
+   - **Google OpenSK** — Hybrid ECDSA + Dilithium (2023 research prototype)
+   - **SandboxAQ + Nitrokey** — Dilithium3 for WebAuthn, Kyber768 for CTAP2 (2023 research prototype)
+   - **Yubico** — Demonstrated ML-DSA on YubiKey-class hardware, but **new hardware required** (existing YubiKeys can't be firmware-updated)
+   - **Cryptsoft + FEITIAN** — Hybrid ML-DSA-65 PoC (Apr 2026, not FIDO2 certified)
+   - **"The Qey"** — Academic ML-DSA FIDO2 implementation
+   - **RS-Key (RP2350)** — Experimental ML-DSA-44 firmware for RP2350 board ([GitHub](https://github.com/TheMaxMur/RS-Key))
+
+**Realistic Timeline:** **2027-2028** for first production browser + authenticator support, given hardware refresh cycles.
 
 ## Required Changes
 
-**No Keycloak changes actionable today.**
+**Keycloak changes can be prepared now, but won't be usable until WebAuthn4J merges ML-DSA support.**
 
-### When standards become available
+### When WebAuthn4J merges ML-DSA support
 
-Once the FIDO Alliance, W3C, and IANA have defined PQC support:
+Once WebAuthn4J merges [PR #1337](https://github.com/webauthn4j/webauthn4j/pull/1337):
 
 **Step 1: Update dependency**
-- Upgrade to a version of **WebAuthn4J** that includes the new COSE algorithm identifiers
+- Upgrade to the WebAuthn4J version that includes ML-DSA `COSEAlgorithmIdentifier` enum values
+- **Requires JDK 24+** OR ensure BouncyCastle ML-DSA support is used (discuss with webauthn4j maintainer)
 
 **Step 2: Update algorithm conversion logic**
 
@@ -106,16 +136,16 @@ Once the FIDO Alliance, W3C, and IANA have defined PQC support:
 
 Add new cases to the `convertSignatureAlgorithms()` switch statement:
 ```java
-case "ML-DSA-44":  // hypothetical Keycloak algorithm name
-    algs.add(COSEAlgorithmIdentifier.ML_DSA_44.getValue());  // hypothetical COSE -50
+case "ML-DSA-44":  // Keycloak algorithm name
+    algs.add(COSEAlgorithmIdentifier.ML_DSA_44.getValue());  // COSE -48
     break;
 case "ML-DSA-65":
-    algs.add(COSEAlgorithmIdentifier.ML_DSA_65.getValue());  // hypothetical COSE -51
+    algs.add(COSEAlgorithmIdentifier.ML_DSA_65.getValue());  // COSE -49
     break;
 case "ML-DSA-87":
-    algs.add(COSEAlgorithmIdentifier.ML_DSA_87.getValue());  // hypothetical COSE -52
+    algs.add(COSEAlgorithmIdentifier.ML_DSA_87.getValue());  // COSE -50
     break;
-// Similar for FN-DSA, SLH-DSA
+// FN-DSA when COSE identifiers are assigned
 ```
 
 **Step 3: Update admin UI**
@@ -146,17 +176,20 @@ Update operator documentation to explain:
 
 ## Dependencies
 
-### External (blocking)
-1. **FIDO Alliance** — must publish PQC extensions to FIDO2 CTAP specification
-2. **W3C WebAuthn Working Group** — must update WebAuthn spec to define PQC algorithm support
-3. **IANA COSE Registry** — must assign algorithm identifiers for ML-DSA, FN-DSA, SLH-DSA
-4. **Authenticator vendors** — must ship PQC-capable hardware/firmware (Yubikey 6+, platform authenticators)
-5. **Browser vendors** — must implement PQC support in WebAuthn API (Chrome, Firefox, Safari, Edge)
+### External (blocking production use)
+1. ✅ ~~**FIDO Alliance**~~ — White paper published, CTAP PIN protocol PQC path identified
+2. ✅ ~~**W3C WebAuthn Working Group**~~ — WebAuthn Level 3 is algorithm-agnostic
+3. ✅ ~~**IANA COSE Registry**~~ — ML-DSA-44/65/87 assigned (`-48`/`-49`/`-50`)
+4. ⏳ **FIDO Alliance conformance tests** — needed before WebAuthn4J can merge ML-DSA support
+5. ❌ **Authenticator vendors** — must ship production PQC-capable hardware/firmware (Yubikey 6+, platform authenticators with PQC WebAuthn integration)
+6. ❌ **Browser vendors** — must pass through ML-DSA COSE identifiers to authenticators (Chrome, Firefox, Safari, Edge)
 
-### Internal (when standards exist)
-6. **WebAuthn4J library** — must add `COSEAlgorithmIdentifier` enum values for PQC algorithms
-7. **Keycloak algorithm constants** — add ML-DSA/FN-DSA/SLH-DSA to `Algorithm.java`
-8. **Admin UI updates** — expose new algorithms in WebAuthn Policy configuration
+### Internal (can be prepared now)
+7. ⏳ **WebAuthn4J library** — ML-DSA PR #1337 ready, waiting on conformance tests
+8. ⏳ **Keycloak JDK version** — Upgrade to JDK 24+ OR verify BouncyCastle ML-DSA integration in WebAuthn4J
+9. ⏳ **Keycloak algorithm constants** — add ML-DSA-44/65/87 to `Algorithm.java`
+10. ⏳ **Algorithm conversion logic** — add ML-DSA cases to `WebAuthnRegister.convertSignatureAlgorithms()`
+11. ⏳ **Admin UI updates** — expose ML-DSA-44/65/87 in WebAuthn Policy configuration
 
 ## What this means for operators
 
@@ -164,11 +197,15 @@ Update operator documentation to explain:
 - WebAuthn/Passkeys are quantum-vulnerable — attackers with future quantum computers could forge signatures from recorded authenticator assertions
 - No mitigation available until FIDO Alliance and W3C define PQC support
 
-**When PQC WebAuthn becomes available (2027+):**
-1. Operators will need to **update authenticator hardware** — existing Yubikeys, TouchID sensors, and platform authenticators may not support PQC via firmware update (likely requires new hardware)
+**When PQC WebAuthn becomes available (estimated 2027-2028):**
+1. Operators will need to **update authenticator hardware** — existing Yubikeys, TouchID sensors, and platform authenticators **cannot** support PQC via firmware update (requires new hardware, confirmed by Yubico)
 2. Users will need to **re-register** their authenticators with new PQC credentials — cannot upgrade classical credentials in-place
-3. **Hybrid mode** may be supported (classical + PQC dual signatures) during the transition period — depends on FIDO Alliance design
-4. Keycloak will require a **minor version update** to add the new COSE identifier mappings (one-line code changes per algorithm)
+3. **Hybrid mode** (classical + PQC dual signatures) has research prototypes (Google OpenSK, SandboxAQ/Nitrokey, Cryptsoft/FEITIAN) but is not yet standardized
+4. Keycloak will require:
+   - **JDK 24+ upgrade** (or BouncyCastle-based ML-DSA in WebAuthn4J)
+   - **WebAuthn4J dependency upgrade** to version with ML-DSA support
+   - **Minor code changes** to add ML-DSA COSE identifier mappings (3 new case statements)
+   - **Admin UI update** to expose ML-DSA-44/65/87 in policy configuration
 
 **Migration path:**
 - Operators should monitor FIDO Alliance announcements for PQC roadmap
@@ -177,27 +214,37 @@ Update operator documentation to explain:
 
 ## GitHub Issue Status
 
-No Keycloak issue needed.
+**Tracked under:**
+- **[#48826](https://github.com/keycloak/keycloak/issues/48826)** - Investigate what is required for WebAuthn/passkeys to be PQC ready (CLOSED - investigation complete)
+- **[#50084](https://github.com/keycloak/keycloak/issues/50084)** - PQC support for WebAuthn/Passkeys (OPEN - implementation milestone)
+  - **[#50085](https://github.com/keycloak/keycloak/issues/50085)** - Upgrade webauthn4j to a version with ML-DSA support (OPEN)
+  - **[#50086](https://github.com/keycloak/keycloak/issues/50086)** - Add ML-DSA COSE algorithm IDs to WebAuthn policies (OPEN)
 
-This domain is **entirely spec-blocked** — there is no Keycloak work to track until external standards are published.
+**Status:** Standards and library layer ready, **blocked on ecosystem** (conformance tests, browsers, authenticators).
 
 Operators should be informed in **#48823 (Operator migration guidance)** that:
 - WebAuthn/Passkeys are quantum-vulnerable
-- No mitigation available today
-- FIDO Alliance and W3C are responsible for defining PQC support (multi-year timeline)
-- When available, Keycloak will require a minor update and operators will need new authenticator hardware
+- Standards are ready, but **no production authenticators or browsers support PQC yet** (realistic timeline: 2027-2028)
+- COSE algorithm identifiers exist: ML-DSA-44 (`-48`), ML-DSA-65 (`-49`), ML-DSA-87 (`-50`)
+- WebAuthn4J has ML-DSA implementation ready, waiting on FIDO conformance tests
+- When ecosystem support arrives, Keycloak will require JDK 24+ (or BouncyCastle integration) and minor code updates
+- **New authenticator hardware will be required** — existing devices cannot be firmware-updated for PQC
 
 ## Related Domains
 
 - **All other authentication domains** use SPI-driven signature verification and will support PQC once providers exist
 - **WebAuthn is unique** in being externally blocked by hardware standards
 
-## Standards to monitor
+## Standards & Implementation to Monitor
 
-- [FIDO Alliance specifications](https://fidoalliance.org/specifications/)
-- [W3C WebAuthn Working Group](https://www.w3.org/groups/wg/webauthn/)
-- [IANA COSE Algorithms Registry](https://www.iana.org/assignments/cose/cose.xhtml#algorithms)
-- [WebAuthn4J library releases](https://github.com/webauthn4j/webauthn4j)
+- [FIDO Alliance PQC White Paper](https://fidoalliance.org/white-paper-addressing-fido-alliances-technologies-in-post-quantum-world/)
+- [W3C WebAuthn Level 3](https://www.w3.org/TR/webauthn-3/) (algorithm-agnostic)
+- [IANA COSE Algorithms Registry](https://www.iana.org/assignments/cose/cose.xhtml#algorithms) (ML-DSA-44/65/87 registered)
+- [WebAuthn4J PR #1337](https://github.com/webauthn4j/webauthn4j/pull/1337) (ML-DSA implementation)
+- [WebAuthn4J issue #1200](https://github.com/webauthn4j/webauthn4j/issues/1200) (PQC progress tracking)
+- [draft-ietf-cose-dilithium](https://datatracker.ietf.org/doc/draft-ietf-cose-dilithium/) (ML-DSA for JOSE and COSE)
+- [draft-vitap-ml-dsa-webauthn](https://datatracker.ietf.org/doc/draft-vitap-ml-dsa-webauthn/) (ML-DSA in WebAuthn)
+- [JDK 24 JEP 497](https://openjdk.org/jeps/497) (Module-Lattice-Based Digital Signature Algorithm)
 
 ---
 
