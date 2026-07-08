@@ -1,6 +1,6 @@
 # Domain 2 — ID Token / JARM Encryption
 
-[← Back to PQC Overview](pqc_overview.md)
+[← Back to PQC Overview](pqc_overview.html)
 
 **ML-KEM implementation plan**  
 **New issue needed under:** [#48821](https://github.com/keycloak/keycloak/issues/48821)  
