@@ -1,0 +1,2084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Keycloak — PQC Readiness Overview</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #1f2328;
+    background: #ffffff;
+    margin: 0;
+    padding: 20px 16px 48px;
+  }
+  .wrap { max-width: 1600px; margin: 0 auto; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  .subtitle { color: #57606a; font-size: 12px; margin-bottom: 8px; }
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 18px; align-items: center; }
+  .legend-label { font-size: 11px; color: #57606a; margin-right: 4px; }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+  }
+  th {
+    background: #1f2328;
+    color: #ffffff;
+    text-align: left;
+    padding: 8px 9px;
+    border: 1px solid #1f2328;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  td {
+    padding: 6px 9px;
+    border: 1px solid #e5e7eb;
+    vertical-align: top;
+  }
+  tr:nth-child(even) td { background: #f7f8fa; }
+  tr:hover td { background: #eff6ff; }
+  code {
+    font-family: "Consolas", "SFMono-Regular", monospace;
+    font-size: 10.5px;
+    background: #f0f2f5;
+    border: 1px solid #dde0e4;
+    border-radius: 3px;
+    padding: 1px 4px;
+    white-space: nowrap;
+  }
+  .files { line-height: 1.9; }
+  .cat {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 3px;
+    white-space: nowrap;
+    letter-spacing: 0.03em;
+  }
+  .sign  { background: #dbeafe; color: #1e40af; }
+  .enc   { background: #dcfce7; color: #166534; }
+  .both  { background: #fef9c3; color: #92400e; }
+  .cert  { background: #f3e8ff; color: #6b21a8; }
+  .mixed { background: #fee2e2; color: #991b1b; }
+
+  /* PQC state badges */
+  .pqc {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 2px 7px;
+    border-radius: 10px;
+    white-space: nowrap;
+    line-height: 1.6;
+    margin-bottom: 4px;
+  }
+  .pqc-safe     { background: #166534; color: #fff; }
+  .pqc-partial  { background: #d97706; color: #fff; }
+  .pqc-blocked  { background: #991b1b; color: #fff; }
+  .pqc-pending  { background: #1e40af; color: #fff; }
+  .pqc-external { background: #57606a; color: #fff; }
+
+  .gap-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    color: #991b1b;
+    background: #fee2e2;
+    border-radius: 3px;
+    padding: 1px 5px;
+    margin: 1px 2px 1px 0;
+    white-space: nowrap;
+  }
+  a.gap-tag {
+    text-decoration: none;
+    cursor: pointer;
+  }
+  a.gap-tag:hover {
+    background: #fca5a5;
+    color: #7f1d1d;
+  }
+  .fix-tag {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 600;
+    color: #166534;
+    background: #dcfce7;
+    border-radius: 3px;
+    padding: 1px 5px;
+    margin: 1px 2px 1px 0;
+    white-space: nowrap;
+  }
+  .num { color: #57606a; font-size: 11px; font-weight: 600; }
+  .section-row td {
+    background: #f0f4f8;
+    font-weight: 700;
+    font-size: 11px;
+    color: #57606a;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding: 5px 9px;
+    border-top: 2px solid #d0d7de;
+  }
+  .pqc-col { min-width: 180px; }
+  .fix-col { min-width: 180px; }
+  .vuln-col { min-width: 160px; }
+  .muted { color: #57606a; font-size: 11px; font-style: italic; }
+  footer {
+    margin-top: 32px;
+    padding-top: 10px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center;
+    font-size: 11px;
+    color: #57606a;
+  }
+  .nav-links { font-size: 11px; color: #57606a; margin-bottom: 6px; }
+  .nav-links a { color: #3b82d4; text-decoration: none; margin-right: 10px; }
+  .nav-links a:hover { text-decoration: underline; }
+  .detail-link { font-size: 10px; font-weight: 600; color: #3b82d4; white-space: nowrap; text-decoration: none; }
+  .detail-link:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Keycloak — PQC Readiness Overview</h1>
+<p class="subtitle">Source: codebase inspection (main branch) + PQC Readiness Gap Analysis</p>
+
+<div class="legend">
+  <span class="legend-label">Type:</span>
+  <span class="cat sign">SIGN</span>
+  <span class="cat enc">ENC</span>
+  <span class="cat both">SIGN+ENC</span>
+  <span class="cat cert">CERT</span>
+  <span class="cat mixed">SIGN+CERT</span>
+  &nbsp;&nbsp;
+  <span class="legend-label">PQC State:</span>
+  <span class="pqc pqc-safe">SAFE</span>
+  <span class="pqc pqc-partial">PARTIAL</span>
+  <span class="pqc pqc-blocked">BLOCKED</span>
+  <span class="pqc pqc-pending">PENDING PROVIDERS</span>
+  <span class="pqc pqc-external">EXTERNAL DEPENDENCY</span>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th style="width:28px">#</th>
+  <th style="width:185px">Domain</th>
+  <th>Key Files</th>
+  <th style="width:220px">Asymmetric Algorithm(s) in Use</th>
+  <th style="width:55px">Type</th>
+  <th class="vuln-col">Quantum-vulnerable operations</th>
+  <th class="pqc-col">Current PQC state</th>
+  <th class="fix-col">Required Fix</th>
+</tr>
+</thead>
+<tbody>
+
+
+<tr class="section-row"><td colspan="8">Token Lifecycle — OAuth2 / OIDC</td></tr>
+
+<tr>
+  <td class="num">1</td>
+  <td><strong>Access Token / ID Token Signing</strong></td>
+  <td class="files">
+    <code>jose/jws/DefaultTokenManager.java</code><br />
+    <code>crypto/AsymmetricSignatureProvider.java</code><br />
+    <code>crypto/RS*SignatureProviderFactory.java</code><br />
+    <code>crypto/PS*SignatureProviderFactory.java</code><br />
+    <code>crypto/ES*SignatureProviderFactory.java</code><br />
+    <code>crypto/EdDSASignatureProviderFactory.java</code>
+  </td>
+  <td>RSA (RS256/384/512)<br />RSA-PSS (PS256/384/512)<br />ECDSA (ES256/384/512)<br />EdDSA (Ed25519)</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA (RS*/PS*), ECDSA (ES*), EdDSA token signing</td>
+  <td>
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    Early groundwork only. <code>Algorithm.java</code> has ML-DSA constants and <code>KeyType.AKP</code> exists. No ML-DSA <code>SignatureProviderFactory</code> or <code>KeyProvider</code> wired yet. Token signing cannot use ML-DSA end-to-end. <a class="gap-tag" href="#gap-4">GAP-4</a> <a class="gap-tag" href="#gap-15">GAP-15</a>
+  </td>
+  <td>
+    Implement ML-DSA <code>SignatureProviderFactory</code> + <code>KeyProvider</code>; wire <code>JavaAlgorithm</code> mappings for ML-DSA-44/65/87. Tracked under <a class="gap-tag" href="#gap-15">GAP-15</a> / <a href="https://github.com/keycloak/keycloak/issues/48821">48821</a>.<br/><a href="Domain_1_Access_Token_ID_Token_signing.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">2</td>
+  <td><strong>ID Token / JARM Encryption (Outbound CEK)</strong></td>
+  <td class="files">
+    <code>jose/jws/DefaultTokenManager.java</code><br />
+    <code>crypto/RsaCekManagementProvider.java</code><br />
+    <code>crypto/RsaesOaepCekManagementProviderFactory.java</code><br />
+    <code>crypto/RsaesPkcs1CekManagementProviderFactory.java</code><br />
+    <code>crypto/EcdhEsCekManagementProvider.java</code><br />
+    <code>crypto/EcdhEsA*KwCekManagementProviderFactory.java</code>
+  </td>
+  <td>RSA-OAEP, RSA-OAEP-256, RSA1_5<br />ECDH-ES, ECDH-ES+A128KW,<br />ECDH-ES+A192KW, ECDH-ES+A256KW</td>
+  <td><span class="cat enc">ENC</span></td>
+  <td>RSA-OAEP, RSA-OAEP-256, RSA1_5, ECDH-ES key encapsulation for token encryption</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    No ML-KEM <code>CekManagementProviderFactory</code> exists. All existing CEK management uses RSA-OAEP or ECDH-ES. Clients requesting encrypted ID tokens have no quantum-safe option. <a class="gap-tag" href="#gap-4">GAP-4</a>
+  </td>
+  <td>
+    Implement ML-KEM (FIPS 203) <code>CekManagementProviderFactory</code>. Required before any outbound token encryption can be quantum-safe.<br/><a href="Domain_2_ID_Token_JARM_Encryption.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">3</td>
+  <td><strong>Backchannel Logout Token Signing</strong></td>
+  <td class="files">
+    <code>jose/jws/DefaultTokenManager.java</code><br />
+    <code>protocol/oidc/TokenManager.java</code><br />
+    <code>services/managers/ResourceAdminManager.java</code>
+  </td>
+  <td>RS*, PS*, ES*, EdDSA<br /><em>(TokenCategory.LOGOUT → same alg as ID token)</em></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA signing of outbound logout tokens; RSA/ECDSA verification of inbound logout tokens from upstream IdPs</td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    <code>TokenCategory.LOGOUT</code> maps to the same algorithm attribute as ID tokens. Once ML-DSA providers exist, logout tokens will automatically use ML-DSA. No independent code gap, but logout token and ID token algorithms are coupled — no independent control.
+  </td>
+  <td>
+    No code change required beyond core ML-DSA provider work. Document in operator migration guidance that upstream IdPs receiving logout tokens must support ML-DSA simultaneously (<a href="https://github.com/keycloak/keycloak/issues/48823">48823</a>).<br />
+    <a href="Domain_3_Backchannel_Logout_Token_Signing.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">4</td>
+  <td><strong>UserInfo Endpoint — Signed &amp; Encrypted Response</strong></td>
+  <td class="files">
+    <code>protocol/oidc/endpoints/UserInfoEndpoint.java</code>
+  </td>
+  <td>Signing: RS*, PS*, ES*, EdDSA<br />Encryption: RSA-OAEP / ECDH-ES variants<br /><em>(per-client attributes, independent of realm default)</em></td>
+  <td><span class="cat both">SIGN+ENC</span></td>
+  <td>RSA-OAEP / ECDH-ES asymmetric key encryption of UserInfo responses; RSA/ECDSA signing of signed UserInfo JWTs</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    Signing: uses a dedicated per-client attribute (<code>userinfo.response.signature.alg</code>) that does not automatically follow the realm default — explicit per-client update required on migration. Encryption: <code>jweFromContent()</code> uses <code>CekManagementProvider</code> SPI — no ML-KEM provider exists. <a class="gap-tag" href="#gap-21">GAP-21</a>
+  </td>
+  <td>
+    Encryption fix: contingent on ML-KEM <code>CekManagementProvider</code> (same as row 2). Signing fix: operator migration must explicitly update per-client <code>USER_INFO_RESPONSE_SIGNATURE_ALG</code> attributes. Document in <a href="https://github.com/keycloak/keycloak/issues/48823">48823</a>.<br />
+    <a href="Domain_4_UserInfo_Endpoint.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">5</td>
+  <td><strong>Introspection — Embedded JWT Response</strong></td>
+  <td class="files">
+    <code>protocol/oidc/AccessTokenIntrospectionProvider.java</code>
+  </td>
+  <td>RS*, PS*, ES*, EdDSA via <code>session.tokens().encode()</code> → DefaultTokenManager</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    Once Domain 1's ML-DSA <code>SignatureProviderFactory</code> and key provider exist, the introspection JWT response will use ML-DSA automatically.
+  </td>
+  <td>None needed. Automatically resolved when Domain 1 is complete.<br /><a href="Domain_5_Introspection_Embedded_JWT.md" class="detail-link">→ View implementation plan</a></td>
+</tr>
+
+<tr>
+  <td class="num">6</td>
+  <td><strong>Token Verification (Identity &amp; Session Tokens)</strong></td>
+  <td class="files">
+    <code>services/managers/AuthenticationManager.java</code><br />
+    <code>services/resources/LoginActionsService.java</code>
+  </td>
+  <td>Signature verification via SignatureProvider SPI:<br />RS*, PS*, ES*, EdDSA</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    Verification path is SPI-driven. Will support ML-DSA automatically once providers exist.
+  </td>
+  <td>None needed. Automatically resolved when Domain 1 is complete.<br /><a href="Domain_6_Token_Verification.md" class="detail-link">→ View implementation plan</a></td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Authorization Request Objects — JAR / PAR / JARM</td></tr>
+
+<tr>
+  <td class="num">7</td>
+  <td><strong>JAR — Signed Request Object Verification (Inbound)</strong></td>
+  <td class="files">
+    <code>endpoints/request/AuthzEndpointRequestObjectParser.java</code><br />
+    <code>par/endpoints/request/ParEndpointRequestObjectParser.java</code>
+  </td>
+  <td>Signature verification via <code>decodeClientJWT()</code> → ClientSignatureVerifier SPI: RS*, PS*, ES*, EdDSA</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    SPI-driven verification. Will support ML-DSA once providers exist. Per-client <code>request_object_signature_alg</code> attributes must be updated on migration.
+  </td>
+  <td><a href="Domain_7_JAR_Signed_Request_Object.md" class="detail-link">→ View implementation plan</a></td>
+</tr>
+
+<tr>
+  <td class="num">8</td>
+  <td><strong>JAR — Encrypted Request Object Decryption (Inbound)</strong></td>
+  <td class="files">
+    <code>jose/jws/DefaultTokenManager.java</code><br />
+    <code>endpoints/request/AuthzEndpointRequestObjectParser.java</code><br />
+    <code>par/endpoints/request/ParEndpointRequestObjectParser.java</code>
+  </td>
+  <td>JWE key decapsulation using realm private ENC key:<br />RSA-OAEP, RSA-OAEP-256, RSA1_5, ECDH-ES variants</td>
+  <td><span class="cat enc">ENC</span></td>
+  <td>RSA-OAEP / ECDH-ES key decapsulation for inbound encrypted JAR objects</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    <code>DefaultTokenManager.decodeClientJWT()</code> selects a realm private key by <code>KeyUse.ENC</code> and passes it directly to the JWE engine. No ML-KEM <code>CekManagementProviderFactory</code> exists and the realm cannot hold an ML-KEM ENC key. Distinct from row 2 (outbound) — this is inbound decryption. No tracking issue covers this direction. <a class="gap-tag" href="#gap-20">GAP-20</a>
+  </td>
+  <td>
+    3 gaps: (1) no <code>JWEAlgorithmProvider</code> for ML-KEM in <code>CryptoIntegration</code>; (2) no <code>CekManagementProviderFactory</code> for ML-KEM; (3) no realm ML-KEM ENC key provider (shared with Domain 29). Key-selection and decryption flow in <code>DefaultTokenManager</code> is already algorithm-agnostic.<br />
+    <a href="Domain_8_JAR_Encrypted_Request_Object.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">9</td>
+  <td><strong>JARM — Signed Authorization Response</strong></td>
+  <td class="files">
+    <code>jose/jws/DefaultTokenManager.java</code><br />
+    <code>protocol/oidc/utils/OIDCRedirectUriBuilder.java</code>
+  </td>
+  <td>RS*, PS*, ES*, EdDSA<br /><em>(TokenCategory.AUTHORIZATION_RESPONSE)</em></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    Goes through standard <code>TokenCategory.AUTHORIZATION_RESPONSE</code> path in <code>DefaultTokenManager.signatureAlgorithm()</code>. Will inherit ML-DSA once providers exist.
+  </td>
+  <td><a href="Domain_9_JARM_Signed_Authorization_Response.md" class="detail-link">→ View implementation plan</a></td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Federated Client Authentication</td></tr>
+
+<tr>
+  <td class="num">54</td>
+  <td><strong>Federated JWT Client Authentication</strong></td>
+  <td class="files">
+    <code>authenticators/client/FederatedJWTClientAuthenticator.java</code><br />
+    <code>authenticators/client/DefaultClientAssertionStrategy.java</code><br />
+    <code>broker/spiffe/SpiffeClientAssertionStrategy.java</code>
+  </td>
+  <td>Signature verification of JWT assertions issued by a federated external IdP (SPIFFE, or any <code>ClientAssertionIdentityProviderFactory</code>-backed IdP); algorithm driven by the configured identity provider's <code>ClientAssertionIdentityProvider</code></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA/EdDSA JWT signature verification — algorithm determined by federated IdP configuration</td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    Verification is fully SPI-driven via the federated IdP's <code>ClientAssertionIdentityProvider</code> (which calls <code>JWKSUtils.getKeyWrappersForUse()</code> and routes through <code>SignatureProvider</code>). Will support ML-DSA once providers exist. <code>SpiffeClientAssertionStrategy</code> uses the same path via <code>FederatedJWTClientAuthenticator</code>. No independent hardcoding found.
+  </td>
+  <td>
+    No code change required beyond core ML-DSA provider work. Ensure SPIFFE bundle endpoint returns AKP-type JWKs correctly once ML-DSA is deployed.
+  </td>
+</tr>
+
+<tr class="section-row"><td colspan="8">Client Authentication</td></tr>
+
+<tr>
+  <td class="num">10</td>
+  <td><strong>private_key_jwt Client Authentication</strong></td>
+  <td class="files">
+    <code>authenticators/client/JWTClientAuthenticator.java</code><br />
+    <code>authenticators/client/AbstractJWTClientValidator.java</code><br />
+    <code>authenticators/client/AbstractBaseJWTValidator.java</code>
+  </td>
+  <td>Signature verification of client-produced JWT:<br />RS*, PS*, ES*, EdDSA<br /><em>(ClientSignatureVerifier SPI; must be asymmetric)</em></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA JWT signature verification of client assertions</td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    Uses <code>SignatureProvider</code> SPI — will automatically support ML-DSA once ML-DSA providers exist. SHA-256 cert thumbprinting in <code>MtlsHoKTokenUtil</code> is quantum-safe.
+  </td>
+  <td><a href="Domain_10_Private_Key_JWT_Client_Authentication.md" class="detail-link">→ View implementation plan</a></td>
+</tr>
+
+<tr>
+  <td class="num">11</td>
+  <td><strong>X.509 mTLS Client Authentication</strong></td>
+  <td class="files">
+    <code>authenticators/client/X509ClientAuthenticator.java</code><br />
+    <code>authenticators/x509/CertificateValidator.java</code><br />
+    <code>services/util/MtlsHoKTokenUtil.java</code><br />
+    <code>services/x509/X509ClientCertificateLookup.java</code>
+  </td>
+  <td>X.509 cert chain validation (CertPathBuilder — algorithm-agnostic at app layer); SHA-256 thumbprint for HoK binding</td>
+  <td><span class="cat cert">CERT</span></td>
+  <td>X.509 certificate's own signing algorithm (determined by issuing CA — outside Keycloak's control)</td>
+  <td>
+    <span class="pqc pqc-safe">SAFE</span><br />
+    Cert chain validation delegates to JVM's <code>CertPathBuilder</code> via <code>CryptoProvider</code> — algorithm-agnostic. SHA-256 thumbprinting is quantum-safe. Vulnerability is in the issuing CA's key algorithm, not Keycloak code. FIPS mode: blocked until BC-FIPS 2.x supports ML-DSA certs. <a class="gap-tag" href="#gap-6">GAP-6</a>
+  </td>
+  <td>
+    No Keycloak code changes required. FIPS deployments: dependency on BC-FIPS version with ML-DSA cert support.<br />
+    <a href="Domain_11_X509_mTLS_Client_Authentication.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">12</td>
+  <td><strong>Attestation-Based Client Authentication</strong><br /><em>(draft-ietf-oauth-attestation-based-client-auth)</em></td>
+  <td class="files">
+    <code>authenticators/client/AttestationBasedClientAuthenticator.java</code>
+  </td>
+  <td>Two asymmetric verifications per request:<br />① Client Attestation JWT — attester's public key (RS*, PS*, ES*, EdDSA)<br />② Client Attestation PoP JWT — client instance key from <code>cnf.jwk</code></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA signature verification of both the Client Attestation JWT and the Client Attestation PoP JWT</td>
+  <td>
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    Both verification paths are SPI-driven and will support ML-DSA once providers exist. However: (1) algorithm enforcement <code>[TODO]</code> at line 418 is not yet implemented; (2) if the <code>cnf.jwk</code> key is an ML-DSA (AKP) key, <code>JWKSUtils.computeThumbprint()</code> will throw <code>UnsupportedOperationException</code> (GAP-1). <a class="gap-tag" href="#gap-22">GAP-22</a> <a class="gap-tag" href="#gap-1">GAP-1</a>
+  </td>
+  <td>
+    Implement algorithm-type enforcement at line 418. Verify/fix <code>cnf.jwk</code>-to-<code>KeyWrapper</code> conversion path for AKP keys. Contingent on JWK thumbprint fix (GAP-1). Track under <a href="https://github.com/keycloak/keycloak/issues/48824">48824</a> or dedicated sub-issue.<br />
+    <a href="Domain_12_Attestation_Based_Client_Authentication.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">End-User Authentication</td></tr>
+
+<tr>
+  <td class="num">13</td>
+  <td><strong>X.509 Browser Authentication Flow</strong></td>
+  <td class="files">
+    <code>authenticators/x509/X509ClientCertificateAuthenticator.java</code><br />
+    <code>authenticators/x509/AbstractX509ClientCertificateAuthenticator.java</code><br />
+    <code>authenticators/x509/CertificateValidator.java</code>
+  </td>
+  <td>X.509 cert chain validation (CertPathBuilder); OCSP response verification (BouncyCastle); CRL verification; key usage &amp; EKU enforcement</td>
+  <td><span class="cat cert">CERT</span></td>
+  <td>X.509 certificate's own signing algorithm (issuing CA); OCSP response signing</td>
+  <td>
+    <span class="pqc pqc-safe">SAFE</span><br />
+    Cert chain validation uses JVM's <code>CertPathBuilder</code>/<code>CertStore</code> via <code>CryptoProvider</code> — algorithm-agnostic. BouncyCastle supports parsing PQC certificates. FIPS mode: BC-FIPS 2.1.2 does not yet support ML-DSA certificates — confirmed hard blocker for regulated deployments. <a class="gap-tag" href="#gap-6">GAP-6</a>
+  </td>
+  <td>
+    No code changes needed for non-FIPS mode (dependency-based). FIPS deployments: blocked on BC-FIPS release with ML-DSA cert support.<br />
+    <a href="Domain_13_X509_Browser_Authentication.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">14</td>
+  <td><strong>WebAuthn / Passkeys (FIDO2)</strong></td>
+  <td class="files">
+    <code>authentication/requiredactions/WebAuthnRegister.java</code><br />
+    <code>credential/WebAuthnCredentialProvider.java</code><br />
+    <code>server-spi/…/models/WebAuthnPolicy.java</code>
+  </td>
+  <td>ECDSA (COSE -7/-35/-36); RSA-PKCS1v15 (COSE -257/-258/-259)<br /><em>(delegated to WebAuthn4J library)</em></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>ECDSA (COSE alg -7, -35, -36) and RSA (COSE alg -257, -258, -259) in authenticator key attestation and assertion verification</td>
+  <td>
+    <span class="pqc pqc-external">EXTERNAL DEPENDENCY</span><br />
+    FIDO2/WebAuthn spec does not yet standardise PQC algorithms. COSE has no ML-DSA assignment. Blocked on FIDO Alliance and W3C. <code>WebAuthnPolicy</code> algorithm list and <code>WebAuthnRegister</code> conversion logic will need updating once standards are available.
+  </td>
+  <td>
+    No actionable Keycloak work until FIDO2/WebAuthn spec defines PQC COSE algorithm identifiers. Monitor upstream specs.<br />
+    <a href="Domain_14_WebAuthn_Passkeys.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Token Binding</td></tr>
+
+<tr>
+  <td class="num">15</td>
+  <td><strong>DPoP (Demonstrating Proof of Possession)</strong></td>
+  <td class="files">
+    <code>services/util/DPoPUtil.java</code><br />
+    <code>core/…/util/JWKSUtils.java</code>
+  </td>
+  <td>Signature verification of DPoP proof JWT: RS*, PS*, ES*, EdDSA via SignatureProvider SPI<br />JWK thumbprint (SHA-256) via <code>JWKSUtils.computeThumbprint()</code></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>SHA-256 JWK thumbprinting for <code>dpop_jkt</code> binding</td>
+  <td>
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    DPoP proof verification goes through <code>SignatureProvider</code> SPI — will support ML-DSA once providers exist. Critical gap: <code>JWKSUtils.computeThumbprint()</code> does not have AKP in <code>JWK_THUMBPRINT_REQUIRED_MEMBERS</code>. DPoP <code>dpop_jkt</code> binding will fail for ML-DSA keys. <a class="gap-tag" href="#gap-1">GAP-1</a>
+  </td>
+  <td>
+    Add AKP key type to <code>JWK_THUMBPRINT_REQUIRED_MEMBERS</code> in <code>JWKSUtils</code> and implement <code>computeThumbprint()</code> for AKP JWKs. Required before DPoP works with ML-DSA.<br />
+    <a href="Domain_15_DPoP.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">CIBA — Client-Initiated Backchannel Authentication</td></tr>
+
+<tr>
+  <td class="num">16</td>
+  <td><strong>CIBA Signed Backchannel Auth Request</strong></td>
+  <td class="files">
+    <code>ciba/endpoints/request/BackchannelAuthenticationEndpointSignedRequestParser.java</code><br />
+    <code>ciba/CibaClientValidation.java</code><br />
+    <code>ciba/clientpolicy/executor/SecureCibaAuthenticationRequestSigningAlgorithmExecutor.java</code>
+  </td>
+  <td>Signature verification via SignatureProvider SPI; must be asymmetric<br /><em>(FAPI policy enforces PS256/ES256/PS384/ES384/PS512/ES512; default PS256)</em></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA JWT signature verification of signed CIBA backchannel authentication requests</td>
+  <td>
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    Verification path is fully SPI-driven — will support ML-DSA once providers exist. Gap is at the policy enforcement layer: <code>FapiConstant.ALLOWED_ALGORITHMS</code> will actively reject ML-DSA when a FAPI policy is active. Internal <code>CIBAAuthenticationRequest</code> serialisation uses HS512/A256CBC-HS512 — quantum-safe. <a class="gap-tag" href="#gap-8">GAP-8</a> <a class="gap-tag" href="#gap-17">GAP-17</a>
+  </td>
+  <td>
+    Extend <code>FapiConstant.ALLOWED_ALGORITHMS</code> with ML-DSA once FAPI 2.0 profile includes PQC. Update admin UI option lists in executor factories. <a class="gap-tag" href="#gap-8">GAP-8</a><br />
+    <a href="Domain_16_CIBA_Signed_Backchannel_Auth.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Token Exchange Grant (RFC 8693)</td></tr>
+
+<tr>
+  <td class="num">57</td>
+  <td><strong>Token Exchange — Subject/Actor Token Verification &amp; Exchanged Token Signing</strong></td>
+  <td class="files">
+    <code>protocol/oidc/grants/TokenExchangeGrantType.java</code><br />
+    <code>protocol/oidc/tokenexchange/StandardTokenExchangeProvider.java</code><br />
+    <code>protocol/oidc/tokenexchange/AbstractTokenExchangeProvider.java</code>
+  </td>
+  <td>Verifies the inbound subject token and optional actor token (both asymmetric via <code>SignatureProvider</code> SPI); signs the exchanged output token via <code>TokenManager</code> (same path as row 1)</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA/EdDSA signature verification of subject/actor tokens; RSA/ECDSA/EdDSA signing of exchanged output tokens</td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    Both verification and signing paths are fully SPI-driven through <code>SignatureProvider</code> and <code>TokenManager</code>. Will support ML-DSA once providers exist. DPoP binding in <code>StandardTokenExchangeProvider</code> routes through <code>DPoPUtil</code> (row 15 gap applies).
+  </td>
+  <td>
+    No code change required beyond core ML-DSA provider work. DPoP fix (row 15) is a prerequisite for DPoP-bound token exchange with ML-DSA.
+  </td>
+</tr>
+
+<tr class="section-row"><td colspan="8">Device Authorization Grant (RFC 8628)</td></tr>
+
+<tr>
+  <td class="num">58</td>
+  <td><strong>Device Authorization Grant — Token Signing</strong></td>
+  <td class="files">
+    <code>protocol/oidc/grants/device/DeviceGrantType.java</code>
+  </td>
+  <td>Issues access tokens and refresh tokens via <code>TokenManager</code> after device code polling completes — same signing path as row 1</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA/EdDSA token signing via <code>TokenManager</code></td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    Token signing delegates entirely to <code>TokenManager</code> (row 1 path) — SPI-driven. Will inherit ML-DSA automatically once providers exist. No independent hardcoding.
+  </td>
+  <td>
+    No code change required beyond core ML-DSA provider work.
+  </td>
+</tr>
+
+<tr class="section-row"><td colspan="8">JWT Bearer Authorization Grant (RFC 7523)</td></tr>
+
+<tr>
+  <td class="num">17</td>
+  <td><strong>JWT Authorization Grant — Assertion Verification</strong></td>
+  <td class="files">
+    <code>grants/JWTAuthorizationGrantType.java</code><br />
+    <code>grants/DefaultJWTAuthorizationGrantValidator.java</code><br />
+    <code>grants/IDJWTAuthorizationGrantValidator.java</code><br />
+    <code>broker/jwtauthorizationgrant/JWTAuthorizationGrantIdentityProvider.java</code>
+  </td>
+  <td>Signature verification of grant assertion JWT via SignatureProvider SPI: RS*, PS*, ES*, EdDSA<br /><em>(algorithm validated via <code>validateSignatureAlgorithm()</code>)</em></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    SPI-driven verification. Will support ML-DSA once providers exist.
+  </td>
+  <td><a href="Domain_17_JWT_Authorization_Grant.md" class="detail-link">→ View implementation plan</a></td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">SAML Protocol</td></tr>
+
+<tr>
+  <td class="num">18</td>
+  <td><strong>SAML Assertion &amp; Document Signing</strong></td>
+  <td class="files">
+    <code>saml-core/…/saml/SignatureAlgorithm.java</code><br />
+    <code>saml-core/…/util/XMLSignatureUtil.java</code><br />
+    <code>saml-core/…/BaseSAML2BindingBuilder.java</code><br />
+    <code>protocol/saml/SamlProtocol.java</code><br />
+    <code>protocol/saml/SamlService.java</code><br />
+    <code>protocol/saml/SamlProtocolUtils.java</code>
+  </td>
+  <td>RSA-SHA256, RSA-SHA512, RSA-SHA256-MGF1 (PSS), RSA-SHA512-MGF1 (PSS) — XML Digital Signatures (javax.xml.crypto.dsig)</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/RSA-PSS XML Digital Signature signing and verification</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    SAML is entirely classical at two levels: (1) algorithm layer — <code>SignatureAlgorithm.java</code> has no PQC URIs registered; (2) key selection layer — RS256 hardcoded in 4 call sites. Fixing only the algorithm layer without the key selection sites means ML-DSA support would never be reached. <a class="gap-tag" href="#gap-2">GAP-2</a> <a class="gap-tag" href="#gap-9">GAP-9</a>
+  </td>
+  <td>
+    Add ML-DSA XML signature URIs to <code>SignatureAlgorithm.java</code>. Fix 4 hardcoded RS256 key-selection call sites in <code>SamlProtocol.java</code>, <code>SamlService.java</code>, <code>SAMLIdentityProvider.java</code>. Tracked under <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a>, <a href="https://github.com/keycloak/keycloak/issues/50294">50294</a>.<br />
+    <a href="Domain_18_SAML_Signing.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">19</td>
+  <td><strong>SAML Assertion Encryption</strong></td>
+  <td class="files">
+    <code>saml-core/…/util/XMLEncryptionUtil.java</code><br />
+    <code>protocol/saml/SAMLEncryptionAlgorithms.java</code><br />
+    <code>protocol/saml/SAMLDecryptionKeysLocator.java</code>
+  </td>
+  <td>RSA-OAEP (RSA_OAEP / RSA_OAEP_11), RSA-v1.5 for key transport;<br />AES-CBC/GCM for content</td>
+  <td><span class="cat enc">ENC</span></td>
+  <td>RSA-OAEP / RSA1_5 key transport for SAML assertion encryption</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    <code>XMLEncryptionUtil</code> only supports RSA-OAEP/RSA1_5 key wrap. No ML-KEM path exists. <a class="gap-tag" href="#gap-3">GAP-3</a>
+  </td>
+  <td>
+    Add ML-KEM key encapsulation support to <code>XMLEncryptionUtil</code>. Tracked under <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a>, <a href="https://github.com/keycloak/keycloak/issues/50295">50295</a>.<br />
+    <a href="Domain_19_SAML_Encryption.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">20</td>
+  <td><strong>SAML IdP Broker — SP Metadata &amp; Federation Signing</strong></td>
+  <td class="files">
+    <code>broker/saml/SAMLIdentityProvider.java</code><br />
+    <code>broker/saml/SAMLEndpoint.java</code><br />
+    <code>broker/saml/SAMLIdentityProviderFactory.java</code>
+  </td>
+  <td>Same RSA/RSA-PSS XML signing algorithms; also handles inbound SAML response signature verification from external SAML IdPs</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>Hardcoded RS256 key selection for SP metadata document signing and artifact resolve response signing</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    <code>SAMLIdentityProvider.java</code> line 506 hardcodes RS256 for SP metadata signing. ML-DSA keys excluded from exported IDP metadata descriptor entirely. Same two-level gap as row 18. <a class="gap-tag" href="#gap-9">GAP-9</a>
+  </td>
+  <td>
+    Fix hardcoded RS256 key-selection call site at line 506 and IDP metadata descriptor export to include ML-DSA keys. Part of <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a> / <a href="https://github.com/keycloak/keycloak/issues/50295">50295</a> sub-issue.<br />
+    <a href="Domain_20_SAML_IdP_Broker.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Trust Broker</td></tr>
+
+<tr>
+  <td class="num">55</td>
+  <td><strong>Default Trust Identity Provider (Trust Broker)</strong></td>
+  <td class="files">
+    <code>broker/trust/DefaultTrustIdentityProvider.java</code><br />
+    <code>broker/trust/DefaultTrustIdentityProviderConfig.java</code><br />
+    <code>broker/trust/DefaultTrustIdentityProviderFactory.java</code>
+  </td>
+  <td>Generic trust material broker — resolves public keys from a configured JWKS URL or inline JWKS for verifying federated JWT assertions; uses <code>JWKSUtils.getKeyWrappersForUse()</code></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA/EdDSA public keys loaded from trust material JWKS; algorithm-agnostic at the broker layer</td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    Key loading via <code>JWKSUtils.getKeyWrappersForUse()</code> already handles AKP (ML-DSA) key types. Signature verification is SPI-driven. Will support ML-DSA once providers exist. No independent hardcoding found.
+  </td>
+  <td>
+    No code change required beyond core ML-DSA provider work.
+  </td>
+</tr>
+
+<tr class="section-row"><td colspan="8">SAML Metadata &amp; Artifact Resolution</td></tr>
+
+<tr>
+  <td class="num">59</td>
+  <td><strong>SAML Metadata Public Key Loader</strong></td>
+  <td class="files">
+    <code>protocol/saml/SamlAbstractMetadataPublicKeyLoader.java</code>
+  </td>
+  <td>Loads signing and encryption keys from SAML metadata XML (<code>EntityDescriptor</code> / <code>IDPSSODescriptor</code> / <code>SPSSODescriptor</code>) — used to verify inbound SAML assertions from external IdPs</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>X.509 certificate extraction from SAML metadata — algorithm determined by the external IdP's certificate</td>
+  <td>
+    <span class="pqc pqc-safe">SAFE</span> (at key-loading layer)<br />
+    Key loading from SAML metadata is algorithm-agnostic at the app layer — certificates are extracted as <code>X509Certificate</code> objects and wrapped into <code>KeyWrapper</code>. The PQC gap is at the SAML signing layer (GAP-2, GAP-9, rows 18–20): once an ML-DSA key is loaded here, there is still no algorithm URI or XML signing path to use it with. <a class="gap-tag" href="#gap-2">GAP-2</a> <a class="gap-tag" href="#gap-9">GAP-9</a>
+  </td>
+  <td>
+    No change needed to this class. Fix depends on GAP-2 (SAML algorithm URIs) and GAP-9 (hardcoded RS256 key selection) being resolved first.
+  </td>
+</tr>
+
+<tr>
+  <td class="num">60</td>
+  <td><strong>SAML Artifact Resolution</strong></td>
+  <td class="files">
+    <code>protocol/saml/DefaultSamlArtifactResolver.java</code><br />
+    <code>protocol/saml/DefaultSamlArtifactResolverFactory.java</code>
+  </td>
+  <td>Resolves SAML artifacts by fetching the full SAML assertion over a SOAP backchannel (<code>ArtifactResolve</code> / <code>ArtifactResponse</code>); resolved assertions are then processed by the same SAML signing/verification chain as rows 18–20</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>Backchannel SAML assertion fetch — assertion signature verification uses same RSA/RSA-PSS XML signing chain</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    Artifact-resolved assertions are verified by the same <code>XMLSignatureUtil</code> / <code>SignatureAlgorithm</code> path as rows 18–20. The same two-level gap applies (GAP-2 and GAP-9). Additionally, no SOAP backchannel flow-level consideration for PQC mTLS exists. <a class="gap-tag" href="#gap-2">GAP-2</a> <a class="gap-tag" href="#gap-9">GAP-9</a>
+  </td>
+  <td>
+    Blocked on same GAP-2 / GAP-9 fixes as rows 18–20. No additional code changes needed beyond those.
+  </td>
+</tr>
+
+<tr>
+  <td class="num">61</td>
+  <td><strong>SAML2Signature — Hardcoded RSA-SHA1 Default</strong></td>
+  <td class="files">
+    <code>saml-core/…/processing/api/saml/v2/sig/SAML2Signature.java</code>
+  </td>
+  <td>Low-level SAML XML signature creation and validation utility — wraps <code>XMLSignatureUtil</code>; default <code>signatureMethod = SignatureMethod.RSA_SHA1</code></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA-SHA1 hardcoded as default signature method; digest method defaults to SHA-1</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    <code>SAML2Signature</code> defaults to <code>SignatureMethod.RSA_SHA1</code> (a deprecated algorithm) with <code>DigestMethod.SHA1</code>. While callers can override via <code>setSignatureMethod()</code>, any code path that constructs a <code>SAML2Signature</code> and does not explicitly set the algorithm will default to RSA-SHA1. This is an additional hardcoding layer below GAP-2 and GAP-9 in the SAML signing stack — even if GAP-2 adds ML-DSA algorithm URIs, callers that use <code>SAML2Signature</code> without explicitly setting the method will never reach them. <a class="gap-tag" href="#gap-2">GAP-2</a>
+  </td>
+  <td>
+    Update default <code>signatureMethod</code> to be driven by realm configuration rather than a hardcoded constant. SHA-1 digest should also be updated to SHA-256 as a minimum. Part of the broader SAML PQC work under <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a>.
+  </td>
+</tr>
+
+<tr class="section-row"><td colspan="8">OIDC / OAuth2 Identity Provider Broker</td></tr>
+
+<tr>
+  <td class="num">21</td>
+  <td><strong>OIDC IdP — Token Signature Verification &amp; JWE Decryption</strong></td>
+  <td class="files">
+    <code>broker/oidc/OIDCIdentityProvider.java</code><br />
+    <code>broker/oidc/AbstractOAuth2IdentityProvider.java</code><br />
+    <code>broker/oidc/KeycloakOIDCIdentityProvider.java</code>
+  </td>
+  <td>Inbound: signature verification of ID/access tokens (SignatureProvider SPI); JWE decryption using realm private ENC key (RSA-OAEP, ECDH-ES)<br />Outbound: client assertion signing — RS256 default or configured alg</td>
+  <td><span class="cat both">SIGN+ENC</span></td>
+  <td>Client assertion signing when federating to external OAuth2/OIDC providers (outbound); RSA/ECDSA token verification (inbound)</td>
+  <td>
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    Inbound verification: SPI-driven, will inherit ML-DSA. Outbound: <code>AbstractOAuth2IdentityProvider.java</code> line 697 hardcodes <code>Algorithm.RS256</code> as fallback for <code>private_key_jwt</code> broker assertions. No path to select ML-DSA as outbound default. <a class="gap-tag" href="#gap-10">GAP-10</a>
+  </td>
+  <td>
+    Make outbound broker assertion algorithm configurable so ML-DSA can be selected once providers exist. Fallback should remain configurable rather than hardcoded to RS256.<br />
+    <a href="Domain_21_OIDC_IdP_Broker.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">22</td>
+  <td><strong>Kubernetes Identity Provider</strong></td>
+  <td class="files">
+    <code>broker/kubernetes/KubernetesIdentityProvider.java</code>
+  </td>
+  <td>Signature verification of Kubernetes service account JWTs: RS*, PS*, ES*, EdDSA via SignatureProvider SPI</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    Sub-type of OIDC broker; inherits SPI-driven verification path. Will support ML-DSA once providers exist.
+  </td>
+  <td><a href="Domain_22_Kubernetes_IdP.md" class="detail-link">→ View implementation plan</a></td>
+</tr>
+
+<tr>
+  <td class="num">23</td>
+  <td><strong>SPIFFE / SVID Identity Provider</strong></td>
+  <td class="files">
+    <code>broker/spiffe/SpiffeIdentityProvider.java</code>
+  </td>
+  <td>Signature verification of SPIFFE JWT-SVIDs: RS*, PS*, ES*, EdDSA via SignatureProvider SPI</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    Inherits SPI-driven verification path. Will support ML-DSA once providers exist.
+  </td>
+  <td><a href="Domain_23_SPIFFE_IdP.md" class="detail-link">→ View implementation plan</a></td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">SD-JWT — Selective Disclosure JWT</td></tr>
+
+<tr>
+  <td class="num">56</td>
+  <td><strong>SD-JWT Issuer Signing &amp; Key Binding Verification</strong></td>
+  <td class="files">
+    <code>core/sdjwt/SdJwt.java</code><br />
+    <code>core/sdjwt/IssuerSignedJWT.java</code><br />
+    <code>core/sdjwt/JwsToken.java</code><br />
+    <code>core/sdjwt/SdJwtVerificationContext.java</code><br />
+    <code>core/sdjwt/vp/KeyBindingJWT.java</code><br />
+    <code>core/sdjwt/vp/SdJwtVP.java</code>
+  </td>
+  <td>Issuer signing of SD-JWTs via <code>SignatureSignerContext</code>; holder key-binding JWT signing and verification; SD-JWT VC presentation verification</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA/EdDSA signing of issuer SD-JWTs and holder key-binding JWTs</td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    <code>IssuerSignedJWT</code> and <code>KeyBindingJWT</code> both take a <code>SignatureSignerContext</code> — fully SPI-driven. Verification in <code>SdJwtVerificationContext</code> is also SPI-driven via <code>SignatureVerifierContext</code>. Will support ML-DSA automatically once providers exist. The SD-JWT infrastructure is entirely absent from the original overview despite being a distinct signing domain within OID4VC.
+  </td>
+  <td>
+    No code change required beyond core ML-DSA provider work.
+  </td>
+</tr>
+
+<tr class="section-row"><td colspan="8">OID4VC — Verifiable Credentials Issuance</td></tr>
+
+<tr>
+  <td class="num">24</td>
+  <td><strong>JWT-VC / SD-JWT Credential Signing</strong></td>
+  <td class="files">
+    <code>oid4vc/issuance/signing/AbstractCredentialSigner.java</code><br />
+    <code>oid4vc/issuance/signing/JwtCredentialSigner.java</code><br />
+    <code>oid4vc/issuance/signing/SdJwtCredentialSigner.java</code>
+  </td>
+  <td>RS*, PS*, ES*, EdDSA (via SignatureProvider SPI; algorithm from CredentialBuildConfig)</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA signing of verifiable credential JWTs and SD-JWTs</td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    Algorithm is passed via <code>CredentialBuildConfig.signingAlgorithm</code> through the <code>SignatureProvider</code> SPI. Will automatically pick up ML-DSA once signature providers exist.
+  </td>
+  <td><a href="Domain_24_JWT_VC_Signing.md" class="detail-link">→ View implementation plan</a></td>
+</tr>
+
+<tr>
+  <td class="num">25</td>
+  <td><strong>LD-Proof Credential Signing (Linked Data)</strong></td>
+  <td class="files">
+    <code>oid4vc/issuance/signing/LDCredentialSigner.java</code><br />
+    <code>oid4vc/issuance/signing/vcdm/Ed255192018Suite.java</code>
+  </td>
+  <td>EdDSA / Ed25519 only — hardcoded to <code>Ed255192018Suite</code></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>EdDSA signing via hardcoded <code>Ed25519Signature2018</code> suite</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    LD-Proof signing is hardcoded to <code>Ed255192018Suite</code>. A new LD cryptographic suite for ML-DSA would need to be implemented separately — it does not inherit from the <code>SignatureProvider</code> SPI path. <a class="gap-tag" href="#gap-7">GAP-7</a>
+  </td>
+  <td>
+    Implement a new ML-DSA LD cryptographic suite if LD-Proofs with PQC are required. No existing tracking issue covers this.<br />
+    <a href="Domain_25_LD_Proof_Signing.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">26</td>
+  <td><strong>OID4VC Key Binding — JWT Proof Validation</strong></td>
+  <td class="files">
+    <code>oid4vc/issuance/keybinding/JwtProofValidator.java</code><br />
+    <code>oid4vc/issuance/keybinding/AbstractProofValidator.java</code><br />
+    <code>oid4vc/issuance/keybinding/AttestationValidatorUtil.java</code>
+  </td>
+  <td>Signature verification of wallet key-binding proof JWT: RS*, PS*, ES*, EdDSA via SignatureProvider SPI; also supports x5c-embedded certificate</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    <code>JwtProofValidator</code> uses <code>getSupportedAsymmetricSignatureAlgorithms()</code> — SPI-driven. Will support ML-DSA once providers exist. x5c/attestation proof path not fully analysed.
+  </td>
+  <td><a href="Domain_26_OID4VC_Key_Binding.md" class="detail-link">→ View implementation plan</a></td>
+</tr>
+
+<tr>
+  <td class="num">27</td>
+  <td><strong>OID4VC c_nonce JWT Signing</strong></td>
+  <td class="files">
+    <code>oid4vc/issuance/keybinding/JwtCNonceHandler.java</code>
+  </td>
+  <td>ES256 (primary), RS256 (fallback) — hardcoded in <code>selectSigningKey()</code>; never reaches realm default algorithm</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA signing hardcoded — ES256 primary, RS256 fallback</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    <code>JwtCNonceHandler.selectSigningKey()</code> hardcodes ES256 then RS256. Independent of <code>Constants.DEFAULT_SIGNATURE_ALGORITHM</code>. c_nonce JWTs will not use an active ML-DSA key even after providers exist. <a class="gap-tag" href="#gap-18">GAP-18</a>
+  </td>
+  <td>
+    Replace hardcoded algorithm selection with a configurable or SPI-driven lookup so ML-DSA keys can be used for c_nonce signing.<br />
+    <a href="Domain_27_OID4VC_CNonce.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Realm Key Management</td></tr>
+
+<tr>
+  <td class="num">28</td>
+  <td><strong>Generated RSA Signing Key Provider</strong></td>
+  <td class="files">
+    <code>keys/GeneratedRsaKeyProviderFactory.java</code><br />
+    <code>keys/AbstractGeneratedRsaKeyProviderFactory.java</code><br />
+    <code>keys/AbstractRsaKeyProvider.java</code>
+  </td>
+  <td>RSA 2048/4096 key pair generation for SIG use</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA key generation (quantum-vulnerable key pair)</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    No <code>GeneratedAKPKeyProviderFactory</code> equivalent exists. <code>DefaultKeyManager.createFallbackKeys()</code> mechanism does not know about ML-DSA. <code>CryptoProvider.getKeyPairGen(String algorithm)</code> will need to support ML-DSA names. <a class="gap-tag" href="#gap-15">GAP-15</a>
+  </td>
+  <td>
+    Implement <code>GeneratedAKPKeyProviderFactory</code> (ML-DSA key generation). Update <code>DefaultKeyManager</code> fallback mechanism. Tracked under <a href="https://github.com/keycloak/keycloak/issues/48824">48824</a>.<br />
+    <a href="Domain_28_Generated_RSA_Signing_Keys.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">29</td>
+  <td><strong>Generated RSA Encryption Key Provider</strong></td>
+  <td class="files">
+    <code>keys/GeneratedRsaEncKeyProviderFactory.java</code><br />
+    <code>keys/ImportedRsaEncKeyProviderFactory.java</code>
+  </td>
+  <td>RSA 2048/4096 key pair generation for ENC use (RSA-OAEP, RSA-OAEP-256, RSA1_5)</td>
+  <td><span class="cat enc">ENC</span></td>
+  <td>RSA key generation for encryption use</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    No ML-KEM equivalent key generation provider exists. GAP-15 focuses on ML-DSA SIG side only; RSA ENC key provider equivalent for ML-KEM is not explicitly tracked. <a class="gap-tag" href="#gap-15">GAP-15</a>
+  </td>
+  <td>
+    Implement ML-KEM key generation provider (equivalent of <code>GeneratedRsaEncKeyProviderFactory</code> for ML-KEM). Needs to be explicitly tracked alongside GAP-15.<br />
+    <a href="Domain_29_Generated_RSA_Encryption_Keys.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">30</td>
+  <td><strong>Generated ECDSA Signing Key Provider</strong></td>
+  <td class="files">
+    <code>keys/GeneratedEcdsaKeyProviderFactory.java</code><br />
+    <code>keys/AbstractGeneratedEcKeyProviderFactory.java</code><br />
+    <code>keys/GeneratedEcdsaKeyProvider.java</code>
+  </td>
+  <td>ECDSA key pair generation (P-256/384/521) for SIG use</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>ECDSA key generation (quantum-vulnerable key pair)</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    Same gap as row 28 — no ML-DSA key generation provider. <a class="gap-tag" href="#gap-15">GAP-15</a>
+  </td>
+  <td>
+    Covered by same <code>GeneratedAKPKeyProviderFactory</code> work as row 28.<br />
+    <a href="Domain_30_Generated_ECDSA_Signing_Keys.md" class="detail-link">→ View implementation plan</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">31</td>
+  <td><strong>Generated EdDSA Signing Key Provider</strong><br /><a href="Domain_31_Generated_EdDSA_Signing_Keys.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>keys/GeneratedEddsaKeyProviderFactory.java</code><br />
+    <code>keys/AbstractEddsaKeyProvider.java</code><br />
+    <code>keys/GeneratedEddsaKeyProvider.java</code>
+  </td>
+  <td>EdDSA key pair generation (Ed25519) for SIG use</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>EdDSA key generation</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    Same gap as row 28 — no ML-DSA key generation provider. <a class="gap-tag" href="#gap-15">GAP-15</a>
+  </td>
+  <td>
+    Covered by same <code>GeneratedAKPKeyProviderFactory</code> work as row 28.
+  </td>
+</tr>
+
+<tr>
+  <td class="num">32</td>
+  <td><strong>Generated ECDH Encryption Key Provider</strong><br /><a href="Domain_32_Generated_ECDH_Encryption_Keys.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>keys/GeneratedEcdhKeyProviderFactory.java</code><br />
+    <code>keys/GeneratedEcdhKeyProvider.java</code>
+  </td>
+  <td>ECDH key pair generation (P-256/384/521) for ENC use: ECDH-ES, ECDH-ES+A128KW, ECDH-ES+A192KW, ECDH-ES+A256KW</td>
+  <td><span class="cat enc">ENC</span></td>
+  <td>ECDH/ECDSA key generation for encryption</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    No ML-KEM equivalent key generation provider. GAP-15 only addresses ML-DSA SIG side. ML-KEM ENC key generation is untracked.
+  </td>
+  <td>
+    Implement ML-KEM ENC key generation provider. Needs explicit tracking.
+  </td>
+</tr>
+
+<tr>
+  <td class="num">33</td>
+  <td><strong>Imported RSA Signing Key Provider</strong><br /><a href="Domain_33_Imported_RSA_Signing_Keys.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>keys/ImportedRsaKeyProviderFactory.java</code><br />
+    <code>keys/AbstractImportedRsaKeyProviderFactory.java</code>
+  </td>
+  <td>RSA key import for SIG use (RS*, PS*)</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    No ML-DSA key import path. Implicit in keystore import gap. <a class="gap-tag" href="#gap-5">GAP-5</a> <a class="gap-tag" href="#gap-16">GAP-16</a>
+  </td>
+  <td></td>
+</tr>
+
+<tr>
+  <td class="num">34</td>
+  <td><strong>Java Keystore Key Provider (PKCS12 / BCFKS)</strong><br /><a href="Domain_34_Java_Keystore_Provider.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>keys/JavaKeystoreKeyProviderFactory.java</code><br />
+    <code>keys/JavaKeystoreKeyProvider.java</code>
+  </td>
+  <td>RSA (RS*, PS*), ECDSA (ES*), EdDSA, ECDH-ES variants — key import from PKCS12 / BCFKS files</td>
+  <td><span class="cat both">SIGN+ENC</span></td>
+  <td>RSA/ECDSA/EdDSA key pairs stored in JKS/PKCS12/BCFKS files</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    BCFKS and PKCS12 can store PQC keys, but <code>JavaKeystoreKeyProviderFactory</code> only supports RSA, EC, and OKP/EdDSA import paths. ML-DSA not exposed in admin UI option list built by <code>mergedAlgorithmProperties()</code>. Both provider logic and configuration surface need extension. <a class="gap-tag" href="#gap-5">GAP-5</a> <a class="gap-tag" href="#gap-16">GAP-16</a>
+  </td>
+  <td>
+    Extend <code>JavaKeystoreKeyProviderFactory</code> import logic and <code>mergedAlgorithmProperties()</code> to expose ML-DSA. Tracked under GAP-5 / GAP-16.
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Client Registration &amp; Discovery</td></tr>
+
+<tr>
+  <td class="num">35</td>
+  <td><strong>Dynamic Client Registration Tokens</strong><br /><a href="Domain_35_Client_Registration_Tokens.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>clientregistration/ClientRegistrationTokenUtils.java</code>
+  </td>
+  <td>Registration / initial access tokens signed via SignatureProvider SPI → INTERNAL_SIGNATURE_ALGORITHM path (HS512 — symmetric); verification also uses SPI</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-safe">SAFE</span><br />
+    Registration tokens use HS512 (symmetric) via the INTERNAL path — quantum-safe. RS256 special-case logic in <code>DescriptionConverter.java</code> (line 416) omits <code>id_token_signed_response_alg</code> only for RS256; no equivalent treatment for ML-DSA. <a class="gap-tag" href="#gap-11">GAP-11</a> <a class="gap-tag" href="#gap-12">GAP-12</a>
+  </td>
+  <td>
+    Update RS256 special-case logic in <code>DescriptionConverter.java</code> to handle ML-DSA as a valid realm default. Document migration risk for <code>DEFAULT_SIGNATURE_ALGORITHM</code> fallback. <a class="gap-tag" href="#gap-12">GAP-12</a>
+  </td>
+</tr>
+
+<tr>
+  <td class="num">36</td>
+  <td><strong>OIDC Well-Known Discovery — Algorithm Advertisement</strong><br /><a href="Domain_36_OIDC_Well_Known_Discovery.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>protocol/oidc/OIDCWellKnownProvider.java</code>
+  </td>
+  <td>Dynamically advertises registered SignatureProvider &amp; CekManagement algorithms; <code>DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED</code> hardcoded RS256 — affects 4 discovery fields</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    Main token signing algorithm lists (e.g. <code>id_token_signing_alg_values_supported</code>) are dynamically populated — will auto-include ML-DSA once providers exist. However, <code>DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED</code> is a static constant hardcoded to RS256. CIBA signing algorithm support will work in practice but not be advertised to conformant clients. <a class="gap-tag" href="#gap-23">GAP-23</a>
+  </td>
+  <td>
+    Replace static <code>DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED</code> constant with a dynamic lookup merging registered asymmetric <code>SignatureProvider</code> algorithm names. Same pattern as <code>id_token_signing_alg_values_supported</code>. <a class="gap-tag" href="#gap-23">GAP-23</a>
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">SSF / CAEP — Shared Signals Framework</td></tr>
+
+<tr>
+  <td class="num">37</td>
+  <td><strong>Security Event Token (SET) Signing</strong><br /><a href="Domain_37_SET_Signing.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>ssf/transmitter/…/event/SecurityEventTokenEncoder.java</code><br />
+    <code>ssf/transmitter/…/event/SsfSignatureAlgorithms.java</code><br />
+    <code>ssf/transmitter/…/delivery/SecurityEventTokenDispatcher.java</code>
+  </td>
+  <td>RS256 only — CAEP Interoperability Profile §2.6 pin;<br /><code>ALLOWED = Set.of(Algorithm.RS256)</code></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>JWT signing of Security Event Tokens (SETs) — RS256 only</td>
+  <td>
+    <span class="pqc pqc-external">EXTERNAL DEPENDENCY</span><br />
+    CAEP Interoperability Profile 1.0 §2.6 pins transmitters to RS256. Code comment explicitly notes this is intended to be relaxed as the working group broadens the profile. No Keycloak action until CAEP spec includes PQC algorithms.
+  </td>
+  <td>
+    Update <code>ALLOWED</code> set in <code>SsfSignatureAlgorithms.java</code> once CAEP spec includes PQC algorithms. One-line fix when spec moves.
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Admin CLI</td></tr>
+
+<tr>
+  <td class="num">38</td>
+  <td><strong>kcadm.sh / kcreg.sh — private_key_jwt Auth</strong><br /><a href="Domain_38_Admin_CLI.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>client-cli/admin-cli/…/util/AuthUtil.java</code><br />
+    <code>core/…/jose/jws/JWSBuilder.java</code>
+  </td>
+  <td>RS256 only — hardcoded via <code>new JWSBuilder().rsa256(keypair.getPrivate())</code></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA-SHA256 JWT signing hardcoded in CLI <code>private_key_jwt</code> authentication flow</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    <code>AuthUtil.getSignedRequestToken()</code> always produces an RS256-signed JWT regardless of realm configuration. No <code>--sigalg</code> parameter exists. If a realm requires ML-DSA for client assertions, both <code>kcadm.sh</code> and <code>kcreg.sh</code> will be unable to authenticate via the keystore-based flow. <a class="gap-tag" href="#gap-13">GAP-13</a>
+  </td>
+  <td>
+    Add algorithm parameter to <code>getSignedRequestToken()</code>. Plumb a <code>--sigalg</code> option through the credential configuration command chain. Track under <a href="https://github.com/keycloak/keycloak/issues/48824">48824</a> or dedicated CLI sub-issue.
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Cluster / Infinispan</td></tr>
+
+<tr>
+  <td class="num">39</td>
+  <td><strong>JGroups ASYM_ENCRYPT (non-default / test config)</strong><br /><a href="Domain_39_JGroups_ASYM_ENCRYPT.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>quarkus/tests/integration/…/cache-ispn-asym-enc.xml</code>
+  </td>
+  <td>RSA-2048 key exchange distributing shared AES group key to new cluster nodes<br /><em>(test/operator config only; production uses mTLS)</em></td>
+  <td><span class="cat enc">ENC</span></td>
+  <td>RSA-2048 asymmetric key exchange used to distribute the shared AES group key during cluster node joins</td>
+  <td>
+    <span class="pqc pqc-safe">SAFE</span> (production)<br />
+    Production Keycloak Quarkus does not enable <code>ASYM_ENCRYPT</code> by default. Production stack uses mTLS via <code>JGroupsCertificateProvider</code> (TLSv1.3), which will inherit quantum-safety when PQC-capable TLS is deployed. Risk is confined to operators who manually copy the example ASYM_ENCRYPT config. <a class="gap-tag" href="#gap-14">GAP-14</a>
+  </td>
+  <td>
+    No code change needed. Document in operator migration guidance: operators using <code>ASYM_ENCRYPT</code> should switch to <code>SSL_KEY_EXCHANGE</code>. Track under <a href="https://github.com/keycloak/keycloak/issues/48823">48823</a>.
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Organisations</td></tr>
+
+<tr>
+  <td class="num">40</td>
+  <td><strong>Organisation Invitation Token Verification</strong><br /><a href="Domain_40_Organisation_Invitation_Tokens.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>organization/utils/Organizations.java</code>
+  </td>
+  <td>Signature verification via SignatureProvider SPI using realm key: RS*, PS*, ES*, EdDSA</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
+    Inherits SPI-driven verification path. Will support ML-DSA once providers exist. No independent gap.
+  </td>
+  <td></td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">FAPI / Client Policy Enforcement</td></tr>
+
+<tr>
+  <td class="num">41</td>
+  <td><strong>FAPI Algorithm Allowlist Enforcement</strong><br /><a href="Domain_41_FAPI_Algorithm_Allowlist.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>clientpolicy/executor/FapiConstant.java</code><br />
+    <code>clientpolicy/executor/SecureSigningAlgorithmExecutor.java</code><br />
+    <code>clientpolicy/executor/SecureSigningAlgorithmForSignedJwtExecutor.java</code><br />
+    <code>clientpolicy/executor/SecureSigningAlgorithmExecutorFactory.java</code><br />
+    <code>ciba/clientpolicy/executor/SecureCibaAuthenticationRequestSigningAlgorithmExecutorFactory.java</code>
+  </td>
+  <td>Enforces PS256/PS384/PS512/ES256/ES384/ES512 only — active gatekeeping for all token signing, request objects, CIBA requests, and <code>private_key_jwt</code> assertions in FAPI-constrained realms</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA (PS*) and ECDSA (ES*) — hardcoded FAPI allowlist actively blocks any other algorithm</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    <code>FapiConstant.ALLOWED_ALGORITHMS</code> contains only classical algorithms. <code>SecureSigningAlgorithmExecutor.isSecureAlgorithm()</code> calls <code>ALLOWED_ALGORITHMS.contains(sigAlg)</code> — ML-DSA will be actively rejected even after providers exist. Both runtime enforcement and admin UI option lists are blocked. <a class="gap-tag" href="#gap-8">GAP-8</a> <a class="gap-tag" href="#gap-17">GAP-17</a>
+  </td>
+  <td>
+    Extend <code>FapiConstant.ALLOWED_ALGORITHMS</code> with ML-DSA once FAPI 2.0 / FAPI profiles include PQC. Update <code>SecureSigningAlgorithmExecutorFactory</code> and <code>SecureCibaAuthenticationRequestSigningAlgorithmExecutorFactory</code> admin UI option lists to surface ML-DSA. <a class="gap-tag" href="#gap-8">GAP-8</a>
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Crypto Provider Backend</td></tr>
+
+<tr>
+  <td class="num">42</td>
+  <td><strong>CryptoProvider SPI — BouncyCastle Default Backend</strong><br /><a href="Domain_42_CryptoProvider_BouncyCastle.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>crypto/default/…/def/DefaultCryptoProvider.java</code><br />
+    <code>common/…/crypto/CryptoProvider.java</code>
+  </td>
+  <td>JCE KeyPairGen, CertPathBuilder, OCSP, PKCS12 for RSA, EC, EdDSA, ML-DSA (bcprov-jdk18on ≥ 1.78)</td>
+  <td><span class="cat mixed">SIGN+CERT</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    <code>bcprov-jdk18on</code> 1.84 (in use) confirmed to contain <code>org.bouncycastle.pqc.crypto.mldsa.*</code> (ML-DSA/FIPS 204) and <code>org.bouncycastle.jcajce.provider.asymmetric.mlkem.*</code> (ML-KEM/FIPS 203). However, no Maven enforcer minimum-version constraint exists — a downstream build with an older BOM could silently lose ML-DSA support. <a class="gap-tag" href="#gap-19">GAP-19</a>
+  </td>
+  <td>
+    Add Maven enforcer minimum-version constraint for <code>bcprov-jdk18on</code> (≥ 1.78). Tracked under GAP-19.
+  </td>
+</tr>
+
+<tr>
+  <td class="num">43</td>
+  <td><strong>CryptoProvider SPI — FIPS 140-2/3 Backend (BC-FIPS)</strong><br /><a href="Domain_43_CryptoProvider_FIPS.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>crypto/fips1402/…/fips/FIPS1402Provider.java</code><br />
+    <code>crypto/fips1402/…/fips/BCFIPSCertificateUtilsProvider.java</code>
+  </td>
+  <td>RSA, EC, EdDSA via bc-fips 2.1.2; ML-DSA not present in this version — confirmed hard blocker for FIPS deployments</td>
+  <td><span class="cat mixed">SIGN+CERT</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    BC-FIPS 2.1.2 (pinned in root <code>pom.xml</code>) confirmed by JAR inspection to contain only LMS under <code>org.bouncycastle.crypto.internal.pqc</code> — no ML-DSA and no ML-KEM classes. BC-FIPS PQC support (FIPS 204/203) requires a forthcoming BC-FIPS 2.x release achieving NIST FIPS 140-3 validation for the new algorithms. Confirmed hard blocker for regulated deployments. <a class="gap-tag" href="#gap-6">GAP-6</a>
+  </td>
+  <td>
+    Upgrade <code>bc-fips</code> to a version that includes FIPS 140-3 validated ML-DSA/ML-KEM support once available. Dependency on BC-FIPS release schedule.
+  </td>
+</tr>
+
+<tr>
+  <td class="num">44</td>
+  <td><strong>CryptoProvider SPI — WildFly Elytron Backend</strong><br /><a href="Domain_44_CryptoProvider_Elytron.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>crypto/elytron/…/elytron/WildFlyElytronProvider.java</code>
+  </td>
+  <td>RSA, EC via WildFly Elytron security subsystem; no PQC support</td>
+  <td><span class="cat mixed">SIGN+CERT</span></td>
+  <td></td>
+  <td>
+    <span class="pqc pqc-external">EXTERNAL DEPENDENCY</span><br />
+    WildFly Elytron backend currently has no PQC support. Dependent on Elytron roadmap.
+  </td>
+  <td></td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">JWK / JWKS</td></tr>
+
+<tr>
+  <td class="num">45</td>
+  <td><strong>JWK Serialisation &amp; Thumbprint</strong><br /><a href="Domain_45_JWK_Serialisation_Thumbprint.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>core/…/jose/jwk/JWKBuilder.java</code><br />
+    <code>core/…/jose/jwk/JWKParser.java</code><br />
+    <code>core/…/jose/jwk/AKPPublicJWK.java</code><br />
+    <code>core/…/jose/jwk/AKPUtils.java</code><br />
+    <code>core/…/util/JWKSUtils.java</code>
+  </td>
+  <td>RSA, EC, EdDSA, AKP (ML-DSA) JWK encode/decode; JWK thumbprint (SHA-256) for RSA/EC/EdDSA — AKP thumbprint throws <code>UnsupportedOperationException</code></td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>JWK thumbprint computation — not a cryptographic signing operation, but blocks DPoP and other flows that depend on <code>JWKSUtils.computeThumbprint()</code> for AKP keys</td>
+  <td>
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    ML-DSA JWK encode/decode is wired (<code>AKPUtils</code> handles DER prefixes, <code>JWKBuilder.akp()</code> exists, <code>JWKParser</code> AKP parsing exists). JWK thumbprint computation for AKP keys is missing — <code>JWKSUtils.computeThumbprint()</code> throws <code>UnsupportedOperationException</code> for AKP keys. Directly breaks DPoP and attestation flows for ML-DSA keys. <a class="gap-tag" href="#gap-1">GAP-1</a>
+  </td>
+  <td>
+    Add AKP to <code>JWK_THUMBPRINT_REQUIRED_MEMBERS</code> in <code>JWKSUtils</code> and implement <code>computeThumbprint()</code> for AKP JWKs. High-priority blocker affecting DPoP (row 15) and attestation-based auth (row 12).
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Realm Bootstrap</td></tr>
+
+<tr>
+  <td class="num">46</td>
+  <td><strong>Default Realm Key Providers (Bootstrap)</strong><br /><a href="Domain_46_Realm_Bootstrap.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>server-spi-private/…/utils/DefaultKeyProviders.java</code>
+  </td>
+  <td>RSA SIG (rsa-generated), RSA ENC (rsa-enc-generated, RSA-OAEP) — bootstrapped for every new realm</td>
+  <td><span class="cat both">SIGN+ENC</span></td>
+  <td>RSA key pair generation bootstrapped automatically for every new realm at creation time</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    <code>createProviders()</code> hardcodes <code>rsa-generated</code> (SIG) and <code>rsa-enc-generated</code> (ENC, <code>Algorithm.RSA_OAEP</code>) as the only default providers. New realms will never get an ML-DSA or ML-KEM key by default until this bootstrap logic is extended. Even after ML-DSA <code>GeneratedAKPKeyProviderFactory</code> exists (GAP-15), new realms will not use it unless <code>DefaultKeyProviders</code> is updated.
+  </td>
+  <td>
+    Add conditional bootstrap of an ML-DSA SIG provider and an ML-KEM ENC provider in <code>createProviders()</code>, guarded by the same <code>hasProvider()</code> check pattern. Depends on GAP-15 / ML-DSA key provider work being completed first.
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Client Public Key Loading</td></tr>
+
+<tr>
+  <td class="num">47</td>
+  <td><strong>Client Public Key Loader (JWKS URL &amp; Stored Cert)</strong><br /><a href="Domain_47_Client_Public_Key_Loader.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>keys/loader/ClientPublicKeyLoader.java</code><br />
+    <code>keys/loader/HardcodedPublicKeyLoader.java</code>
+  </td>
+  <td>RSA, EC, EdDSA — loaded from client JWKS URL, inline JWKS string, or stored X.509 certificate</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA/EdDSA public keys fetched from client JWKS endpoints or stored certs; used for <code>private_key_jwt</code> and JAR signature verification</td>
+  <td>
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    JWKS URL / JWKS string path calls <code>JWKSUtils.getKeyWrappersForUse()</code>, which already handles AKP (ML-DSA) key types — so loading ML-DSA keys from a client JWKS URL will work once <code>JWKParser</code> supports AKP. The stored-certificate path (<code>getSignatureValidationKey()</code>) uses X.509 cert parsing and is algorithm-agnostic via <code>CertPathBuilder</code>. No explicit ML-DSA block here, but end-to-end verification still depends on ML-DSA <code>SignatureProviderFactory</code> existing.
+  </td>
+  <td></td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">JWKS Endpoint</td></tr>
+
+<tr>
+  <td class="num">48</td>
+  <td><strong>Realm JWKS Endpoint — Key Serialisation</strong><br /><a href="Domain_48_Realm_JWKS_Endpoint.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>protocol/oidc/utils/JWKSServerUtils.java</code>
+  </td>
+  <td>RSA, EC, OKP (EdDSA) — serialised to JWK format for the public <code>/protocol/openid-connect/certs</code> endpoint</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>Exposes realm public keys as JWKs — algorithm-agnostic at the serialisation layer</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    <code>JWKSServerUtils.toJwk()</code> has explicit <code>if/else if</code> branches for <code>KeyType.RSA</code>, <code>KeyType.EC</code>, and <code>KeyType.OKP</code> only. An AKP (ML-DSA) key falls through all branches and returns <code>null</code>, meaning ML-DSA realm keys will be silently omitted from the public JWKS endpoint. Clients will never discover the realm's ML-DSA keys.
+  </td>
+  <td>
+    Add an <code>AKP</code> branch in <code>toJwk()</code> calling <code>JWKBuilder.akp()</code>. Straightforward one-branch addition; <code>JWKBuilder.akp()</code> already exists.
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Admin API — Client Key Management</td></tr>
+
+<tr>
+  <td class="num">49</td>
+  <td><strong>Admin API — Client Certificate &amp; Keypair Generation</strong><br /><a href="Domain_49_Admin_API_Client_Keypair.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>services/resources/admin/ClientAttributeCertificateResource.java</code>
+  </td>
+  <td>RSA 2048/4096 key pair + self-signed X.509 certificate generation for client authentication</td>
+  <td><span class="cat cert">CERT</span></td>
+  <td>RSA key pair and self-signed certificate generation via <code>KeycloakModelUtils.generateKeyPairCertificate()</code></td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    Both <code>generate()</code> and <code>generateAndGetKeystore()</code> call <code>KeycloakModelUtils.generateKeyPairCertificate()</code>, which hardcodes RSA key generation (<code>KeyUtils.generateRsaKeyPair(keysize)</code>). No algorithm selection is exposed in the API or UI. Admin-generated client keypairs will always be RSA regardless of realm PQC configuration.
+  </td>
+  <td>
+    Expose an algorithm parameter in the <code>generateAndGetKeystore</code> endpoint and update <code>KeycloakModelUtils.generateKeyPairCertificate()</code> to support ML-DSA key generation once providers exist.
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Client SDK</td></tr>
+
+<tr>
+  <td class="num">50</td>
+  <td><strong>Client SDK — JWT Client Credentials Provider</strong><br /><a href="Domain_50_Client_SDK_JWT_Credentials.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>core/…/client/authentication/JWTClientCredentialsProvider.java</code>
+  </td>
+  <td>RSA (RS256 default), ECDSA (ES*), EdDSA — client-side <code>private_key_jwt</code> assertion signing</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA/EdDSA JWT signing of client assertions from the adapter/SDK side</td>
+  <td>
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    <code>setupKeyPair()</code> defaults to <code>Algorithm.RS256</code>. The algorithm-aware overload routes RSA, EC, and OKP (EdDSA) key types to the correct signer context. However the <code>switch</code> on <code>JavaAlgorithm.getKeyType()</code> has no <code>AKP</code> case — passing an ML-DSA key pair will throw <code>RuntimeException("Invalid KeyPair algorithm")</code>. Distinct from the server-side verifier (row 10) and the admin CLI path (row 38).
+  </td>
+  <td>
+    Add an <code>AKP</code> case to <code>setupKeyPair()</code> wiring an <code>AsymmetricSignatureSignerContext</code> for ML-DSA, once ML-DSA providers exist.
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Client SDK — DPoP Proof Generation</td></tr>
+
+<tr>
+  <td class="num">51</td>
+  <td><strong>Client SDK — DPoP Proof Generation</strong><br /><a href="Domain_51_Client_SDK_DPoP.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>core/…/util/DPoPGenerator.java</code>
+  </td>
+  <td>RSA (hardcoded via <code>generateRsaSignedDPoPProof()</code>); generic path via <code>KeyWrapper</code> supports RS*, ES*, EdDSA</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA/ECDSA/EdDSA signing of client-side DPoP proof JWTs</td>
+  <td>
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    The generic <code>generateSignedDPoPProof(…, KeyWrapper, …)</code> method is algorithm-agnostic and will support ML-DSA once providers exist. However, the convenience method <code>generateRsaSignedDPoPProof()</code> is hardcoded to RSA and includes an explicit <code>TODO</code> noting EC and EdDSA equivalents are missing. No ML-DSA convenience path exists. Distinct from server-side DPoP verification (row 15).
+  </td>
+  <td>
+    Add ML-DSA convenience method or update callers to use the generic <code>KeyWrapper</code> path. Low priority if callers already use the generic path.
+  </td>
+</tr>
+
+
+<tr class="section-row"><td colspan="8">Docker Protocol</td></tr>
+
+<tr>
+  <td class="num">52</td>
+  <td><strong>Docker Registry — Self-Signed Certificate Generation</strong><br /><a href="Domain_52_Docker_Registry_Cert.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>protocol/docker/installation/compose/DockerComposeCertsDirectory.java</code>
+  </td>
+  <td>RSA-2048 key pair generation for Docker registry TLS certificate</td>
+  <td><span class="cat cert">CERT</span></td>
+  <td>RSA-2048 key pair and self-signed certificate for Docker registry TLS, hardcoded</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    Directly calls <code>CryptoIntegration.getProvider().getKeyPairGen(KeyType.RSA)</code> with <code>keyGen.initialize(2048)</code> hardcoded. No algorithm parameter. Docker registry certificates will always be RSA-2048.
+  </td>
+  <td>
+    Make key algorithm and size configurable once ML-DSA cert generation is supported. Low urgency — Docker compose is a developer/test installation path.
+  </td>
+</tr>
+
+<tr>
+  <td class="num">53</td>
+  <td><strong>Client Asymmetric Signature Verifier Context &amp; Providers</strong><br /><a href="Domain_53_Client_Asymmetric_Verifier.md">→ View implementation plan</a></td>
+  <td class="files">
+    <code>services/crypto/ClientAsymmetricSignatureVerifierContext.java</code><br />
+    <code>services/crypto/AsymmetricClientSignatureVerifierProvider.java</code><br />
+    <code>services/crypto/ClientECDSASignatureVerifierContext.java</code><br />
+    <code>services/crypto/ClientEdDSASignatureVerifierContext.java</code><br />
+    <code>services/crypto/ECDSAClientSignatureVerifierProvider.java</code><br />
+    <code>services/crypto/EdDSAClientSignatureVerifierProvider.java</code><br />
+    <code>services/crypto/ES256ClientSignatureVerifierProviderFactory.java</code><br />
+    <code>services/crypto/ES384ClientSignatureVerifierProviderFactory.java</code><br />
+    <code>services/crypto/ES512ClientSignatureVerifierProviderFactory.java</code><br />
+    <code>services/crypto/EdDSAClientSignatureVerifierProviderFactory.java</code>
+  </td>
+  <td>Full client-side signature verifier stack for <code>private_key_jwt</code> client authentication. RSA path: <code>ClientAsymmetricSignatureVerifierContext</code> + <code>AsymmetricClientSignatureVerifierProvider</code>. ECDSA path: <code>ClientECDSASignatureVerifierContext</code> (handles ASN.1↔concat conversion) + <code>ECDSAClientSignatureVerifierProvider</code> + ES* factories. EdDSA path: <code>ClientEdDSASignatureVerifierContext</code> + <code>EdDSAClientSignatureVerifierProvider</code> + factory. Loaded via <code>PublicKeyStorageManager.getClientPublicKeyWrapper()</code>.</td>
+  <td><span class="cat sign">SIGN</span></td>
+  <td>RSA path: hardcoded <code>KeyType.RSA</code> guard rejects non-RSA keys. ECDSA/EdDSA paths: SPI-driven, will support ML-DSA once providers exist.</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span> (RSA path) / <span class="pqc pqc-pending">PENDING PROVIDERS</span> (ECDSA/EdDSA paths)<br />
+    <code>ClientAsymmetricSignatureVerifierContext.getKey()</code> at line 36 explicitly throws <code>VerificationException("Key Type is not RSA")</code> for any non-RSA key — ECDSA, EdDSA, and ML-DSA (AKP) client keys are all unconditionally rejected through the RSA path. The ECDSA and EdDSA paths route through their own contexts and are SPI-driven — they will support ML-DSA automatically once providers exist. ML-DSA (AKP) client assertions currently have no routed path at all: the RSA context rejects them, and there is no AKP-specific client verifier context or provider factory yet.
+  </td>
+  <td>
+    Remove or generalise the <code>KeyType.RSA</code> guard in <code>ClientAsymmetricSignatureVerifierContext</code> to accept any asymmetric key type, or add a dedicated AKP client verifier context + provider factory following the same pattern as the ECDSA/EdDSA paths. The ECDSA and EdDSA provider factories will automatically surface ML-DSA once core providers exist.
+  </td>
+</tr>
+
+</tbody>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- PQC GAP REFERENCE                                          -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<h2 style="font-size:15px; margin: 40px 0 6px;">PQC Gap Reference</h2>
+<p class="subtitle">Concrete gaps identified against GitHub issue <a href="https://github.com/keycloak/keycloak/issues/45168" style="color:#3b82d4;">45168</a> and its sub-issues. Each gap represents a specific missing implementation or hardcoded assumption that blocks full PQC readiness. Gaps are referenced by the <span class="gap-tag" style="display:inline-block;">GAP-N</span> tags in the table above.</p>
+
+<table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:8px;">
+<thead>
+<tr>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:90px;">Gap ID</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:210px;">Title</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:80px;">Severity</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:220px;">Affected File(s)</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328;">Description &amp; Impact</th>
+</tr>
+</thead>
+<tbody>
+
+<tr id="gap-1">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-1</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JWK Thumbprint — AKP (ML-DSA) Keys</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/…/util/JWKSUtils.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>AKP</code> is absent from <code>JWK_THUMBPRINT_REQUIRED_MEMBERS</code>. Calling <code>computeThumbprint()</code> on an ML-DSA JWK throws <code>UnsupportedOperationException</code>. Directly breaks DPoP <code>dpop_jkt</code> binding (row 15) and attestation-based client auth (row 12) for ML-DSA keys. Fix: add AKP member set and implement thumbprint computation for AKP JWKs.</td>
+</tr>
+
+<tr id="gap-2" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-2</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>SAML Signing — No PQC Algorithm Entries</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>saml-core/…/saml/SignatureAlgorithm.java</code><br /><code>saml-core/…/util/XMLSignatureUtil.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>SignatureAlgorithm</code> enum contains only RSA and DSA variants; no PQC XML Digital Signature URIs are registered. <code>XMLSignatureUtil</code> uses <code>javax.xml.crypto.dsig</code> with standard algorithms only. SAML assertion signing cannot use ML-DSA at the algorithm layer. Tracked under <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a> / <a href="https://github.com/keycloak/keycloak/issues/50294">50294</a> (partial).</td>
+</tr>
+
+<tr id="gap-3">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-3</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>SAML Encryption — No ML-KEM Key Wrapping</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>saml-core/…/util/XMLEncryptionUtil.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>XMLEncryptionUtil</code> supports only RSA-OAEP and RSA1_5 for key transport. No ML-KEM key-encapsulation path exists. SAML assertion encryption cannot use quantum-safe key wrapping. Tracked under <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a> / <a href="https://github.com/keycloak/keycloak/issues/50295">50295</a> (partial).</td>
+</tr>
+
+<tr id="gap-4" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-4</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JWE Key Management — No ML-KEM CEK Provider</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>crypto/RsaCekManagementProvider.java</code><br /><code>crypto/EcdhEsCekManagementProvider.java</code><br /><code>jose/jws/DefaultTokenManager.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">All <code>CekManagementProviderFactory</code> implementations use RSA-OAEP or ECDH-ES. No ML-KEM provider exists. Clients requesting encrypted ID tokens, encrypted UserInfo responses, or encrypted authorisation responses have no quantum-safe key encapsulation option. Blocks rows 2, 4, 8, 19. Must be implemented before any outbound token encryption can be quantum-safe.</td>
+</tr>
+
+<tr id="gap-5">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-5</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JavaKeystoreKeyProvider — ML-DSA Key Import</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>keys/JavaKeystoreKeyProviderFactory.java</code><br /><code>keys/JavaKeystoreKeyProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>JavaKeystoreKeyProviderFactory</code> supports RSA, EC, and OKP/EdDSA import paths only. BCFKS and PKCS12 keystores can physically store ML-DSA keys, but the provider's import logic has no AKP branch. Operators cannot import ML-DSA keys from a keystore file. See also GAP-16.</td>
+</tr>
+
+<tr id="gap-6" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-6</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>FIPS 140-2 Backend — ML-DSA Availability Blocked</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>crypto/fips1402/…/FIPS1402Provider.java</code><br /><code>crypto/fips1402/…/BCFIPSCertificateUtilsProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">BC-FIPS 2.1.2 (pinned in root <code>pom.xml</code>) confirmed by JAR inspection to contain only LMS under <code>org.bouncycastle.crypto.internal.pqc</code>. No ML-DSA and no ML-KEM classes are present. FIPS-mode Keycloak deployments cannot use ML-DSA or ML-KEM. Confirmed hard blocker for regulated environments targeting FIPS 140-2/3 compliance. Unblocked only when BC-FIPS 2.x achieves NIST FIPS 140-3 validation for ML-DSA/ML-KEM. Affects X.509 cert validation with PQC certificates in FIPS mode (rows 11, 13, 43).</td>
+</tr>
+
+<tr id="gap-7">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-7</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>OID4VC Linked Data Proof Suite — Hardcoded Ed25519</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/signing/LDCredentialSigner.java</code><br /><code>oid4vc/issuance/signing/vcdm/Ed255192018Suite.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">LD-Proof credential signing is hardcoded to <code>Ed25519Signature2018</code>. It does not use the <code>SignatureProvider</code> SPI path and will not inherit ML-DSA support automatically. A new ML-DSA LD cryptographic suite would need to be implemented separately if LD-Proofs are required with PQC. No existing tracking issue covers this.</td>
+</tr>
+
+<tr id="gap-8" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-8</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>FAPI / Client Policy Allowlist — ML-DSA Actively Blocked</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>clientpolicy/executor/FapiConstant.java</code><br /><code>clientpolicy/executor/SecureSigningAlgorithmExecutor.java</code><br /><code>clientpolicy/executor/SecureSigningAlgorithmForSignedJwtExecutor.java</code><br /><code>ciba/clientpolicy/executor/SecureCibaAuthenticationRequestSigningAlgorithmExecutor.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>FapiConstant.ALLOWED_ALGORITHMS</code> is hardcoded to <code>{PS256, PS384, PS512, ES256, ES384, ES512}</code>. <code>SecureSigningAlgorithmExecutor.isSecureAlgorithm()</code> and the equivalent CIBA executor call <code>ALLOWED_ALGORITHMS.contains(sigAlg)</code> — ML-DSA will be <em>actively rejected</em> even after providers exist. When a FAPI client policy is applied, PQC algorithms are blocked at runtime and in the admin UI. Blocked on FAPI 2.0 / FAPI profiles including PQC algorithms.</td>
+</tr>
+
+<tr id="gap-9">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-9</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>SAML Protocol — Hardcoded RS256 Key Lookup</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/saml/SAMLIdentityProvider.java</code> (lines 415, 506)<br /><code>protocol/saml/SamlProtocol.java</code> (line 544)<br /><code>protocol/saml/SamlService.java</code> (line 965)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Four hardcoded RS256 key-selection call sites in SAML code: SP metadata signing key export (line 415), SP metadata document signing (line 506), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 965). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. No GitHub sub-issue exists for this gap; requires a third sub-issue under <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a>.</td>
+</tr>
+
+<tr id="gap-10" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-10</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>IdP Broker — Hardcoded RS256 / HS256 Fallback</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/oidc/AbstractOAuth2IdentityProvider.java</code> (lines 689, 697)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Line 689 hardcodes <code>Algorithm.HS256</code> as the fallback when <code>client_secret_jwt</code> has no configured algorithm. Line 697 hardcodes <code>Algorithm.RS256</code> as the fallback for all other client assertion signing (e.g., <code>private_key_jwt</code>). An IdP broker configured for <code>private_key_jwt</code> will always fall back to RS256 unless the admin explicitly sets <code>clientAssertionSigningAlg</code>. No path to select ML-DSA as the outbound default even after providers exist.</td>
+</tr>
+
+<tr id="gap-11">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-11</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Dynamic Client Registration — RS256 Special-Case Logic</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#57606a; font-weight:600;">LOW</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>clientregistration/oidc/DescriptionConverter.java</code> (line 416)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>if (Algorithm.RS256.equals(defaultSignatureAlgorithm) || StringUtil.isBlank(defaultSignatureAlgorithm))</code> — RS256 is explicitly special-cased so that <code>id_token_signed_response_alg</code> is omitted from the DCR response when the realm default is RS256. No equivalent treatment is defined for ML-DSA. Minor inconsistency; will need updating when ML-DSA becomes a valid realm default.</td>
+</tr>
+
+<tr id="gap-12" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-12</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Constants.DEFAULT_SIGNATURE_ALGORITHM — RS256 Fallback Propagation</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>server-spi-private/…/models/Constants.java</code><br /><code>jose/jws/DefaultTokenManager.java</code> (line 232)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>DEFAULT_SIGNATURE_ALGORITHM = Algorithm.RS256</code> is the ultimate fallback for all token signing when neither client nor realm has configured an algorithm. Any incomplete PQC migration (realm default updated but client attributes not set) will silently revert to classical RS256. Operators and documentation must explicitly flag this transition risk.</td>
+</tr>
+
+<tr id="gap-13">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-13</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Admin CLI — Hardcoded RS256 Client Assertion Signing</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>client-cli/admin-cli/…/util/AuthUtil.java</code> (line 213)<br /><code>core/…/jose/jws/JWSBuilder.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>getSignedRequestToken()</code> calls <code>new JWSBuilder().jsonContent(reqToken).rsa256(keypair.getPrivate())</code>, hardcoding RS256. No <code>--sigalg</code> parameter exists in the CLI. Both <code>kcadm.sh</code> and <code>kcreg.sh</code> share this code path. If a realm requires ML-DSA for client assertions (e.g., via a FAPI policy), both CLI tools will be unable to authenticate via the keystore-based <code>private_key_jwt</code> flow. Fix: add an algorithm parameter to <code>getSignedRequestToken()</code> and plumb a <code>--sigalg</code> option through the credential configuration command chain.</td>
+</tr>
+
+<tr id="gap-14" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-14</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JGroups ASYM_ENCRYPT — RSA Cluster Key Exchange (Operator Guidance)</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#57606a; font-weight:600;">LOW</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>quarkus/tests/integration/…/cache-ispn-asym-enc.xml</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JGroups' <code>ASYM_ENCRYPT</code> protocol uses RSA-2048 for AES group-key distribution to joining cluster nodes — quantum-vulnerable under a Harvest Now, Decrypt Later attack. Risk is confined to operators who manually copy the example <code>ASYM_ENCRYPT</code> config; production Keycloak uses mTLS (<code>JGroupsCertificateProvider</code>) which will inherit quantum-safety from PQC-capable TLS (<a href="https://github.com/keycloak/keycloak/issues/48820">48820</a>). No code change needed — deployment/operator guidance only; document under <a href="https://github.com/keycloak/keycloak/issues/48823">48823</a>.</td>
+</tr>
+
+<tr id="gap-15">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-15</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Realm Key Management — No ML-DSA Key Generation or Rotation</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>keys/GeneratedRsaKeyProviderFactory.java</code><br /><code>keys/GeneratedEcdsaKeyProviderFactory.java</code><br /><code>keys/GeneratedEddsaKeyProviderFactory.java</code><br /><code>keys/DefaultKeyManager.java</code><br /><code>common/…/crypto/CryptoProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">No <code>GeneratedAKPKeyProviderFactory</code> (or equivalent) exists for ML-DSA key generation. <code>DefaultKeyManager.createFallbackKeys()</code> does not know about ML-DSA. <code>CryptoProvider.getKeyPairGen(String algorithm)</code> would need to support ML-DSA algorithm names. This is the foundational gap — until ML-DSA key providers exist, no other ML-DSA signing work can be completed end-to-end. Tracked under <a href="https://github.com/keycloak/keycloak/issues/48824">48824</a>.</td>
+</tr>
+
+<tr id="gap-16" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-16</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JavaKeystoreKeyProviderFactory — ML-DSA Excluded from Admin UI</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>keys/JavaKeystoreKeyProviderFactory.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>mergedAlgorithmProperties()</code> builds the selectable algorithm list shown in the admin UI. ML-DSA algorithm names are absent from this list. Even if GAP-5 (import logic) is fixed, the admin cannot select an ML-DSA algorithm for a keystore-based key provider in the UI. Both the provider logic (GAP-5) and the configuration surface (GAP-16) must be fixed together.</td>
+</tr>
+
+<tr id="gap-17">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-17</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>FAPI / CIBA Executor Factories — Admin UI Algorithm Lists</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>clientpolicy/executor/SecureSigningAlgorithmExecutorFactory.java</code><br /><code>ciba/clientpolicy/executor/SecureCibaAuthenticationRequestSigningAlgorithmExecutorFactory.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Both executor factories build their selectable option lists directly from <code>FapiConstant.ALLOWED_ALGORITHMS</code>. ML-DSA is blocked both at runtime (GAP-8) and in the admin configuration UI. The UI-level block means an administrator cannot even configure a FAPI realm to accept ML-DSA before the algorithm constant is updated. Depends on GAP-8 being resolved first.</td>
+</tr>
+
+<tr id="gap-18" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-18</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JwtCNonceHandler — OID4VC c_nonce JWT Signing Hardcoded to ES256 / RS256</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/keybinding/JwtCNonceHandler.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>selectSigningKey()</code> first attempts ES256, then falls back to RS256. This is independent of <code>Constants.DEFAULT_SIGNATURE_ALGORITHM</code> and completely bypasses the realm default algorithm. c_nonce JWTs will not use an active ML-DSA key even after ML-DSA providers and realm keys exist. Fix: replace the hardcoded lookup with a configurable or SPI-driven selection.</td>
+</tr>
+
+<tr id="gap-19">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-19</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>No Minimum-Version Constraint on bcprov-jdk18on — Silent ML-DSA Regression Risk</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>pom.xml</code> (root)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>bcprov-jdk18on</code> 1.84 (inherited via Quarkus BOM) is confirmed to contain ML-DSA and ML-KEM support (<code>org.bouncycastle.pqc.crypto.mldsa.*</code>, <code>org.bouncycastle.jcajce.provider.asymmetric.mlkem.*</code>). ML-DSA classes first appeared in version 1.78. However, no Maven Enforcer minimum-version rule exists. A downstream build with an older BOM version could silently drop ML-DSA support without a build-time failure. Fix: add an Enforcer rule pinning <code>bcprov-jdk18on ≥ 1.78</code>.</td>
+</tr>
+
+<tr id="gap-20" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-20</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JAR Encrypted Request Object Decryption — No ML-KEM Inbound Path</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>jose/jws/DefaultTokenManager.java</code> (line 123)<br /><code>endpoints/request/AuthzEndpointRequestObjectParser.java</code><br /><code>par/endpoints/request/ParEndpointRequestObjectParser.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>decodeClientJWT()</code> selects a realm private key by <code>KeyUse.ENC</code> and passes it directly to the JWE engine. No ML-KEM <code>CekManagementProviderFactory</code> exists and the realm cannot hold an ML-KEM ENC key. A client wishing to send an encrypted JAR using ML-KEM key encapsulation cannot do so. Distinct from GAP-4 (outbound) — this is <em>inbound</em> decryption. No existing sub-issue covers this direction. Fix: extend <code>decodeClientJWT()</code> to support ML-KEM key decapsulation, contingent on GAP-4.</td>
+</tr>
+
+<tr id="gap-21">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-21</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>UserInfo Endpoint — Per-Client Signing Attribute &amp; Encryption Gap</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>protocol/oidc/endpoints/UserInfoEndpoint.java</code> (lines 341, 379–398)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Signing: <code>signatureAlgorithm(TokenCategory.USERINFO)</code> resolves only the per-client <code>userinfo.response.signature.alg</code> attribute, then falls back to the realm default (<code>RS256</code>). Unlike ID tokens, there is no automatic inheritance — each client's explicit attribute must be updated independently during migration. Encryption: <code>jweFromContent()</code> uses <code>CekManagementProvider</code> SPI (no ML-KEM provider, same as GAP-4) but in a separate class and code path. UserInfo encryption is a confirmed hard gap requiring explicit testing once GAP-4 is resolved.</td>
+</tr>
+
+<tr id="gap-22" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-22</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Attestation-Based Client Authentication — Algorithm Enforcement &amp; JWK Thumbprint</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>authenticators/client/AttestationBasedClientAuthenticator.java</code> (lines 418, 483–489)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Two concerns: (1) An in-code <code>[TODO]</code> at line 418 notes that algorithm-type enforcement (must be a registered asymmetric algorithm) is not yet implemented — a security hardening gap independent of PQC, compounded by it. (2) If the <code>cnf.jwk</code> claim contains an ML-DSA (AKP) key, <code>JWKSUtils.computeThumbprint()</code> will throw <code>UnsupportedOperationException</code> (dependent on GAP-1). Not covered by the original domain analysis. Should be tracked under <a href="https://github.com/keycloak/keycloak/issues/48824">48824</a> or a dedicated sub-issue.</td>
+</tr>
+
+<tr id="gap-23">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-23</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>OIDC Discovery — Hardcoded RS256 for backchannel_authentication_request_signing_alg_values_supported</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#57606a; font-weight:600;">LOW</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>protocol/oidc/OIDCWellKnownProvider.java</code> (line 85)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED = list(Algorithm.RS256.toString())</code> is a static constant used to advertise supported CIBA backchannel authentication request signing algorithms. Unlike other discovery fields (which are dynamically populated from registered <code>SignatureProvider</code> instances), this one remains hardcoded to RS256 even after ML-DSA providers are registered. A conformant CIBA client relying on this field will never attempt ML-DSA-signed requests. Fix: replace with a dynamic lookup merging registered asymmetric <code>SignatureProvider</code> algorithm names — same pattern as <code>id_token_signing_alg_values_supported</code>.</td>
+</tr>
+
+</tbody>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- FILES EVALUATED BUT NOT ADDED AS NEW ROWS                  -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<h2 style="font-size:15px; margin: 36px 0 6px;">Files Evaluated — Not Added as New Rows</h2>
+<p class="subtitle">All files below were inspected during the codebase sweep. They touch asymmetric crypto but are either SPI interfaces, utility/constant classes, already covered by an existing row, or have no independent PQC gap.</p>
+
+<table style="width:100%; border-collapse:collapse; font-size:12px;">
+<thead>
+<tr>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:300px;">File</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328;">Reason not added as a new row</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/resources/admin/KeyResource.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Admin REST endpoint exposing realm key metadata only — no cryptographic operations; delegates entirely to the <code>KeyManager</code> SPI. No PQC gap of its own.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>protocol/oauth2/cimd/clientpolicy/executor/AbstractClientIdMetadataDocumentExecutor.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Matched grep pattern due to a path-traversal error string constant, not asymmetric crypto. No asymmetric algorithm usage found on inspection.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>server-spi-private/…/crypto/SignatureProvider.java</code><br /><code>server-spi-private/…/crypto/SignatureProviderFactory.java</code><br /><code>server-spi-private/…/crypto/SignatureSpi.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">SPI interface definitions only. The gap is in the missing ML-DSA implementations, covered by rows 1, 28, 30, 31.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>server-spi-private/…/keys/KeyProviderFactory.java</code><br /><code>server-spi/…/models/KeyManager.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">SPI interfaces only. Algorithm-agnostic — gaps are in the provider implementations covered by rows 28–34.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>server-spi-private/…/utils/KeycloakModelUtils.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Utility class. <code>generateKeyPairCertificate()</code> hardcodes RSA, but this is called from row 49 (<code>ClientAttributeCertificateResource</code>), which is the correct surface to address the gap.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>common/…/crypto/CryptoProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">SPI interface — already covered as the abstraction layer in rows 42–44. The interface itself is algorithm-agnostic.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>common/…/crypto/ECDSACryptoProvider.java</code><br /><code>crypto/default/…/BCECDSACryptoProvider.java</code><br /><code>crypto/elytron/…/ElytronECDSACryptoProvider.java</code><br /><code>crypto/fips1402/…/BCFIPSECDSACryptoProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">ECDSA-specific JWS crypto helpers used internally by signature providers. Classical implementations — no ML-DSA equivalent needed here; ML-DSA uses a different code path entirely.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>crypto/default/…/BCEcdhEsAlgorithmProvider.java</code><br /><code>crypto/elytron/…/ElytronEcdhEsAlgorithmProvider.java</code><br /><code>crypto/fips1402/…/BCFIPSEcdhEsAlgorithmProvider.java</code><br /><code>crypto/fips1402/…/FIPSRsaKeyEncryptionJWEAlgorithmProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Concrete ECDH-ES and RSA JWE key-encryption algorithm providers — the implementations behind the CEK management factories covered in rows 2, 8, 19. The missing ML-KEM provider gap is surfaced there.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>common/…/util/PemUtils.java</code><br /><code>common/…/crypto/PemUtilsProvider.java</code><br /><code>crypto/default/…/BCPemUtilsProvider.java</code><br /><code>crypto/elytron/…/ElytronPEMUtilsProvider.java</code><br /><code>crypto/fips1402/…/BCFIPSPemUtilsProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">PEM encoding/decoding utilities across all three crypto backends (BC default, Elytron, BC-FIPS). Algorithm-agnostic at the serialisation level — PEM can encode any key type the underlying BouncyCastle/Elytron provider supports.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>common/…/util/KeyUtils.java</code><br /><code>core/…/crypto/KeyWrapper.java</code><br /><code>util/KeyWrapperUtil.java</code><br /><code>common/…/util/DerUtils.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Internal key utility / wrapper / DER encoding classes. Algorithm-agnostic containers — no PQC gap of their own.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/…/jose/jws/crypto/RSAProvider.java</code><br /><code>core/…/jose/jws/crypto/ECDSAProvider.java</code><br /><code>core/…/jose/jws/crypto/HMACProvider.java</code><br /><code>core/…/jose/jws/crypto/SignatureProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Low-level JWS signing helpers in the <code>core</code> module (adapter/legacy layer). Used by <code>JWSBuilder</code> and the admin CLI (row 38). The server-side SPI provider layer (rows 1, 28–31) replaces these for server-side operations.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/…/TokenVerifier.java</code><br /><code>core/…/RSATokenVerifier.java</code><br /><code>core/…/KeyPairVerifier.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Core/adapter-layer token verification utilities. <code>RSATokenVerifier</code> is RSA-specific but is an adapter/legacy utility; server-side verification uses the <code>SignatureProvider</code> SPI (rows 1, 6). No new PQC gap beyond those rows.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/resources/admin/IdentityProvidersResource.java</code><br /><code>services/resources/admin/ClientsResource.java</code><br /><code>services/resources/admin/ClientResource.java</code><br /><code>services/resources/admin/RealmAdminResource.java</code><br /><code>services/resources/admin/info/ServerInfoAdminResource.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Admin REST resources that read and expose key/algorithm configuration. No direct cryptographic operations — delegate to provider SPIs. PQC gaps are in the underlying providers.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/crypto/CryptoUtils.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Wrapper calling <code>getSupportedAsymmetricSignatureAlgorithms()</code> from registered providers. Auto-expands once ML-DSA providers are registered — no separate gap.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>common/…/crypto/CryptoConstants.java</code><br /><code>core/…/OAuth2Constants.java</code><br /><code>services/keys/Attributes.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">String/constant classes only. No logic.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/…/jose/jwe/JWEConstants.java</code><br /><code>core/…/jose/jwe/JWE.java</code><br /><code>core/…/jose/jwe/enc/AesGcmEncryptionProvider.java</code><br /><code>core/…/jose/jwe/enc/AesCbcHmacShaEncryptionProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JWE symmetric content encryption (AES-GCM, AES-CBC-HMAC). Quantum-safe at 256-bit. The PQC gap is in the key encapsulation (CEK management) layer — covered by rows 2, 8, 19.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/…/jose/jws/Algorithm.java</code><br /><code>core/…/jose/jws/AlgorithmType.java</code><br /><code>core/…/crypto/Algorithm.java</code><br /><code>core/…/crypto/JavaAlgorithm.java</code><br /><code>core/…/crypto/KeyType.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Algorithm and key-type constant/enum classes. <code>Algorithm.java</code> already has ML-DSA constants; missing <code>JavaAlgorithm</code> mappings are noted in row 1. No independent domain gap.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/crypto/*SignatureProviderFactory.java</code> (RS*, PS*, ES*, EdDSA variants)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Existing classical algorithm provider factories — represented as a group in rows 1 and 28–31. The missing ML-DSA equivalent is the gap, not these files.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/crypto/MacSecretSignatureProvider.java</code><br /><code>services/crypto/HS*SignatureProviderFactory.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">HMAC-based symmetric signature providers — not asymmetric; quantum-safe at HS256/384/512 key sizes.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>protocol/oid4vc/issuance/signing/vcdm/LDSignatureType.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Enum of LD signature type strings — extension of the gap already noted in row 25 (LD-Proof hardcoded to Ed25519Signature2018).</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>keys/loader/HardcodedPublicKeyLoader.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Single hardcoded public key loader — covered under row 47 (<code>ClientPublicKeyLoader</code>).</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>protocol/oidc/grants/ciba/channel/CIBAAuthenticationRequest.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Internal CIBA request serialisation uses HS512 (symmetric) and A256CBC-HS512 — both quantum-safe. Confirmed in row 16 analysis.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/managers/AuthenticationSessionManager.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Matched grep pattern incidentally. Manages authentication session lifecycle — no direct asymmetric crypto operations.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/saml/SAMLEndpoint.java</code><br /><code>protocol/saml/SamlClient.java</code><br /><code>protocol/saml/SamlProtocolFactory.java</code><br /><code>protocol/saml/EntityDescriptorDescriptionConverter.java</code><br /><code>protocol/saml/SamlProtocolUtils.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">SAML supporting classes — all call into the same <code>XMLSignatureUtil</code> / <code>XMLEncryptionUtil</code> / <code>SignatureAlgorithm</code> layer covered by rows 18–20. No independent PQC gaps.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>protocol/oidc/AccessTokenIntrospectionProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Already row 5 in the main table — left blank intentionally as it inherits the <code>DefaultTokenManager</code> path from row 1.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/…/crypto/AsymmetricSignatureSignerContext.java</code><br /><code>core/…/crypto/AsymmetricSignatureVerifierContext.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Base signer/verifier context implementations. Fully algorithm-agnostic: <code>sign()</code> and <code>verify()</code> resolve the JCE algorithm name via <code>JavaAlgorithm.getJavaAlgorithm()</code> and fall back to <code>CryptoIntegration.getProvider().getSignature()</code> — no hardcoded algorithm. Will support ML-DSA automatically once <code>JavaAlgorithm</code> mappings and JCE providers exist. No independent PQC gap.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/…/crypto/ECDSASignatureSignerContext.java</code><br /><code>core/…/crypto/ECDSASignatureVerifierContext.java</code><br /><code>services/…/crypto/ServerECDSASignatureSignerContext.java</code><br /><code>services/…/crypto/ServerECDSASignatureVerifierContext.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">ECDSA-specific signer/verifier contexts that handle the ASN.1 DER ↔ concatenated (r,s) format conversion required by the JWS spec. ECDSA-only by design; ML-DSA uses a completely different code path and does not require this conversion. No PQC gap here.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/…/crypto/ServerEdDSASignatureSignerContext.java</code><br /><code>services/…/crypto/ServerEdDSASignatureVerifierContext.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Thin session-aware wrappers around <code>AsymmetricSignatureSignerContext</code> / <code>AsymmetricSignatureVerifierContext</code> for EdDSA. No hardcoding beyond resolving the active EdDSA key from the session via <code>ServerAsymmetricSignatureSignerContext.getKey()</code>. No PQC gap of their own.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/…/jose/jws/JWSInput.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Pure structural JWS parser — splits the compact serialisation into header, payload, and signature parts and base64url-decodes them. No algorithm logic; algorithm name is read from the decoded header as a raw string. Fully algorithm-agnostic. No PQC gap.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/…/jose/jwk/ECPublicJWK.java</code><br /><code>core/…/jose/jwk/OKPPublicJWK.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Jackson POJO data models for EC (<code>kty: EC</code>) and OKP/EdDSA (<code>kty: OKP</code>) JWK representations respectively. No logic — pure field containers. ML-DSA uses the separate <code>AKPPublicJWK</code> model (already covered in row 45). No PQC gap.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/…/jose/jwk/EdECUtils.java</code><br /><code>core/…/jose/jwk/EdECUtilsImpl.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Internal interface and JDK-15+ implementation for EdDSA/OKP JWK encode and decode (<code>okp()</code> and <code>createOKPPublicKey()</code>). EdDSA-specific by design. ML-DSA JWK serialisation is handled by the separate <code>AKPUtils</code> class (row 45). No PQC gap here.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>common/…/util/CertificateUtils.java</code><br /><code>common/…/crypto/CertificateUtilsProvider.java</code><br /><code>crypto/default/…/BCCertificateUtilsProvider.java</code><br /><code>crypto/elytron/…/ElytronCertificateUtilsProvider.java</code><br /><code>crypto/fips1402/…/BCFIPSCertificateUtilsProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Certificate validation, chain-building, and utility infrastructure across all three crypto backends (BC default, Elytron, BC-FIPS). <code>CertificateUtils</code> is a facade delegating entirely to <code>CryptoIntegration.getProvider().getCertificateUtils()</code>. No hardcoded algorithm — the backend provider determines what certificate key types are supported. PQC readiness tracks with the underlying crypto provider (rows 42–44); in FIPS mode the BC-FIPS blocker (GAP-6) applies. No independent Keycloak code gap.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>common/…/util/KeystoreUtil.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Keystore format detection (JKS / PKCS12 / BCFKS by file extension) and loading utilities. Delegates keystore instantiation to <code>CryptoIntegration.getProvider().getKeyStore(format)</code>. Algorithm-agnostic — the gap is in the provider-layer key import logic covered by rows 33–34 (GAP-5, GAP-16). No independent gap.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/…/truststore/FileTruststoreProvider.java</code><br /><code>services/…/truststore/FileTruststoreProviderFactory.java</code><br /><code>services/…/truststore/JSSETruststoreConfigurator.java</code><br /><code>services/…/truststore/TruststoreBuilder.java</code><br /><code>services/…/truststore/SSLSocketFactory.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Truststore and outbound TLS infrastructure. Loads X.509 certificate chains into a <code>KeyStore</code> and configures a system-wide JSSE <code>SSLSocketFactory</code> / <code>SSLContext</code>. Algorithm-agnostic at the application layer — PQC readiness depends on the JVM's TLS 1.3 stack supporting PQC KEMs and signatures (external dependency, same category as rows 11, 13, 39). No Keycloak code changes are required; quantum-safety tracks with the JVM and network stack.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/…/credential/CredentialPublicKeyConverter.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Converts WebAuthn4J <code>COSEKey</code> objects to/from a base64url-encoded CBOR byte string for database storage. Thin CBOR serialisation wrapper — no algorithm logic. The gap for WebAuthn PQC is in the FIDO2/COSE spec (row 14). No independent gap.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>server-spi/…/models/credential/WebAuthnCredentialModel.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Data model class wrapping WebAuthn credential secret data and credential data. No cryptographic logic — pure model. All WebAuthn PQC gaps are at the spec and library layer covered by row 14. No independent gap.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/…/broker/trust/TrustKeyUtil.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Utility that filters a <code>Stream&lt;JWK&gt;</code> by <code>kid</code>, <code>algorithm</code>, and <code>use</code> fields. No cryptographic operations — pure predicate filtering on JWK metadata. Algorithm-agnostic. No PQC gap.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/…/broker/trust/DefaultTrustMaterialPublicKeyLoader.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Fetches public keys from a configured JWKS URL or inline JWKS string via <code>JWKSUtils.getKeyWrappersForUse()</code>. Algorithm-agnostic — <code>JWKSUtils</code> already handles AKP (ML-DSA) key types. No independent PQC gap; covered under the OIDC broker trust domain.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/…/broker/kubernetes/KubernetesJwksEndpointLoader.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Fetches the Kubernetes API server JWKS by first resolving the OIDC well-known endpoint, then calling <code>JWKSUtils.getKeyWrappersForUse()</code>. Algorithm-agnostic JWKS loader. Covered under row 22 (Kubernetes Identity Provider). No independent PQC gap.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/…/broker/spiffe/SpiffeBundleEndpointLoader.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Fetches keys from a SPIFFE bundle endpoint via <code>JWKSUtils.getKeyWrappersForUse()</code>, with fallback from <code>JWK.Use.JWT_SVID</code> to <code>JWK.Use.SIG</code>. Algorithm-agnostic JWKS loader. Covered under row 23 (SPIFFE Identity Provider). No independent PQC gap.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/…/services/util/CertificateInfoHelper.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Manages client key/certificate attribute read and write (PEM, JWK, keystore upload). Delegates key parsing to <code>JWKParser</code>, <code>PemUtils</code>, and <code>CryptoIntegration.getProvider().getKeyStore()</code> — all algorithm-agnostic. The keystore upload path calls <code>KeycloakModelUtils.getPublicKey()</code> which is PEM-based and also algorithm-agnostic. No independent PQC gap; any limitation tracks with the key import provider work in rows 33–34.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>social/linkedin/LinkedInPublicKeyLoader.java</code><br /><code>social/google/GoogleIdentityProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Social IdP public key loaders. <code>LinkedInPublicKeyLoader</code> calls <code>JWKSUtils.getKeyWrappersForUse()</code> with a forced-use parameter to work around LinkedIn omitting the <code>use</code> claim — algorithm-agnostic. <code>GoogleIdentityProvider</code> subclasses <code>OIDCIdentityProvider</code> (row 21) and only hardcodes Google endpoint URLs — zero independent crypto logic. Both inherit all PQC characteristics from the OIDC provider path.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/…/x509/DefaultClientCertificateLookup.java</code><br /><code>services/…/x509/NginxProxySslClientCertificateLookup.java</code><br /><code>services/…/x509/HaProxySslClientCertificateLookup.java</code><br /><em>(+ TraefikProxy, EnvoyProxy, ApacheProxy, Rfc9440 variants)</em></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">X.509 client certificate extraction from direct TLS or reverse proxy HTTP headers (nginx, HAProxy, Traefik, Envoy, Apache, RFC 9440). Purely structural extraction — no signing. Certificate bytes are parsed and passed to <code>CertificateValidator</code> (rows 11, 13). PQC readiness is at the issuing CA and TLS stack level, same external dependency as rows 11/13/39.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/…/utils/OCSPProvider.java</code> (SPI)<br /><code>crypto/def/BCOCSPProvider.java</code><br /><code>crypto/elytron/ElytronOCSPProvider.java</code><br /><code>crypto/fips1402/BCFIPSOCSPProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">OCSP certificate revocation checking across all three crypto backends. Algorithm-agnostic at the application layer — OCSP response signature verification is delegated to BouncyCastle/Elytron/BC-FIPS. PQC readiness tracks with the crypto backend (rows 42–44) and the issuing CA's OCSP responder. No Keycloak code changes required.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/…/utils/CRLUtils.java</code><br /><code>server-spi-private/…/crl/CrlStorageProvider.java</code><br /><code>server-spi-private/…/crl/CrlStorageSpi.java</code><br /><code>server-spi-private/…/crl/CrlStorageProviderFactory.java</code><br /><code>model/infinispan/…/crl/infinispan/InfinispanCrlStorageProvider.java</code><br /><code>model/infinispan/…/crl/infinispan/InfinispanCrlStorageProviderFactory.java</code><br /><code>model/infinispan/…/crl/infinispan/InfinispanCacheCrlProvider.java</code><br /><code>model/infinispan/…/crl/infinispan/X509CRLEntry.java</code><br /><code>services/resources/admin/ClearCrlCacheResource.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Full CRL stack: download and parsing (<code>CRLUtils</code>), SPI interface and factory (<code>CrlStorageProvider</code>, <code>CrlStorageSpi</code>, <code>CrlStorageProviderFactory</code>), Infinispan-backed cache implementation (<code>InfinispanCrlStorageProvider</code>, <code>InfinispanCacheCrlProvider</code>, <code>X509CRLEntry</code>), and admin REST endpoint to flush the cache (<code>ClearCrlCacheResource</code>). CRL signature verification is performed by the JVM <code>CertPathBuilder</code> — algorithm-agnostic. PQC readiness is an external dependency (issuing CA and JVM). No Keycloak code changes required.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>common/…/crypto/UserIdentityExtractorProvider.java</code> (SPI)<br /><code>crypto/def/BCUserIdentityExtractorProvider.java</code><br /><code>crypto/elytron/ElytronUserIdentityExtractorProvider.java</code><br /><code>crypto/fips1402/BCFIPSUserIdentityExtractorProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Extracts user identity claims (DN, SAN, custom OIDs) from X.509 client certificates. No signing operations — reads certificate subject attributes only. PQC gap is in the issuing CA's key algorithm, not Keycloak code.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>vault/FilesKeystoreVaultProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Vault provider that loads secrets from PKCS12/BCFKS keystores. Delegates to <code>CryptoIntegration.getProvider().getKeyStore(format)</code> — algorithm-agnostic. No direct cryptographic operations. Any ML-DSA key import limitation tracks with rows 33–34 (GAP-5, GAP-16).</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>connections/httpclient/HttpClientBuilder.java</code><br /><code>email/DefaultEmailSenderProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Outbound HTTP client and email sender with TLS/STARTTLS configuration. Configure <code>SSLContext</code> using the system truststore — algorithm-agnostic. PQC readiness depends on the JVM TLS 1.3 stack and the remote server's certificate (external dependency, same category as rows 11/13/39).</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>authz/client/…/util/crypto/AuthzClientCryptoProvider.java</code><br /><code>authz/client/…/util/crypto/ASN1Encoder.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Authorization client (UMA/authz) crypto layer. <code>AuthzClientCryptoProvider</code> calls <code>JWSBuilder.rsa256()</code> — the same hardcoded RS256 pattern as row 38 (admin CLI) but in the separate <code>keycloak-authz-client</code> library. An independent instance of GAP-13 at lower priority. No separate tracking issue; would need a fix analogous to row 38's recommended <code>--sigalg</code> plumbing.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>keys/loader/OIDCIdentityProviderPublicKeyLoader.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">OIDC identity provider public key loader — fetches keys from a JWKS URL or parses a PEM public key via <code>JWKSUtils.getKeyWrappersForUse()</code>. Algorithm-agnostic. Covered under the OIDC IdP broker domain (row 21). No independent PQC gap.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>keys/AbstractEcKeyProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Base class for ECDSA/ECDH key providers. ECDSA/EC-specific base — no PQC gap of its own. Covered by rows 30 and 32.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/jose/jwe/JWE.java</code>, <code>JWEHeader.java</code>, <code>JWERegistry.java</code>, <code>JWEUtils.java</code>, <code>JWEKeyStorage.java</code><br /><code>core/jose/jwk/JWK.java</code>, <code>JWKUtil.java</code>, <code>JSONWebKeySet.java</code>, <code>RSAPublicJWK.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JWE structural model (header, key storage, algorithm/encryption registries) and JWK base/RSA data models. Pure data model and routing infrastructure — no hardcoded algorithm logic. PQC gaps are in the CEK management providers (rows 2, 8, 19) and JWK thumbprint (row 45). No independent gaps.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>crypto/def/AesKeyWrapAlgorithmProvider.java</code><br /><code>crypto/elytron/AesKeyWrapAlgorithmProvider.java</code><br /><code>crypto/fips1402/FIPSAesKeyWrapAlgorithmProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Symmetric AES Key Wrap (A128KW, A192KW, A256KW) algorithm providers — the symmetric wrapping step inside ECDH-ES+AxxxKW JWE algorithms. AES-256 key wrap is quantum-safe. The asymmetric part of ECDH-ES is the gap, covered by rows 2, 8, 19. No PQC gap here.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>authentication/actiontoken/TokenUtils.java</code><br /><code>authentication/actiontoken/AbstractActionTokenHandler.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Action token infrastructure (email verification, password reset, etc.). <code>TokenUtils</code> is a pure predicate-helper with no crypto. <code>AbstractActionTokenHandler</code> verifies action tokens via the <code>SignatureProvider</code> SPI path — same as row 6. No independent PQC gap.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>protocol/oidc/utils/JWKSHttpUtils.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">HTTP client for fetching JWKS from remote URLs with caching logic. Algorithm-agnostic HTTP fetch + JSON deserialise — delegates all key-type handling to <code>JWKSUtils.getKeyWrappersForUse()</code>. No PQC gap.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>saml-core/…/processing/core/saml/v2/util/SignatureUtil.java</code><br /><code>saml-core/…/processing/core/saml/v2/util/AssertionUtil.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Low-level SAML signature utility helpers — delegate to <code>XMLSignatureUtil</code> and <code>SAML2Signature</code>. No independent algorithm logic beyond what is already covered by rows 18–20 and row 61 (<code>SAML2Signature</code> default RSA-SHA1). No additional PQC gap.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/crypto/AsymmetricClientSignatureVerifierProvider.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Abstract parent class for the client-side asymmetric signature verifier provider hierarchy (ECDSA, EdDSA, and RSA paths). Covered by row 53 — listed separately for completeness. SPI-driven; no independent PQC gap beyond those identified in row 53.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>model/infinispan/…/jgroups/certificates/JGroupsCertificate.java</code><br /><code>model/infinispan/…/jgroups/certificates/ReloadingX509ExtendedKeyManager.java</code><br /><code>model/infinispan/…/jgroups/certificates/ReloadingX509ExtendedTrustManager.java</code><br /><code>model/infinispan/…/jgroups/certificates/Utils.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JGroups cluster mTLS certificate management — handles dynamic hot-reloading of X.509 certificates for the production cluster TLS path referenced in row 39. <code>ReloadingX509ExtendedKeyManager</code> and <code>ReloadingX509ExtendedTrustManager</code> wrap the JVM JSSE <code>X509ExtendedKeyManager</code>/<code>X509ExtendedTrustManager</code> with file-watch-based reload logic. Algorithm-agnostic at the application layer — PQC readiness tracks with the JVM TLS 1.3 stack and the CA issuing the cluster certificates (external dependency, same category as rows 11, 13, 39). No Keycloak code changes required.</td>
+</tr>
+</tbody>
+</table>
+
+
+<!-- ═══════════════════════════════════════════════════════════ -->
+<!-- FINAL SUMMARY                                              -->
+<!-- ═══════════════════════════════════════════════════════════ -->
+
+<h2 style="font-size:18px; margin: 48px 0 12px; color:#1f2328;">Analysis Complete — All 61 Domains</h2>
+
+<h3 style="font-size:15px; margin: 24px 0 8px;">Status Distribution (All 61 Domains)</h3>
+
+<table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:24px;">
+<thead>
+<tr>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:200px;">Status</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:80px; text-align:center;">Count</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328;">Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><span class="pqc pqc-pending">PENDING PROVIDERS</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">20</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Will work automatically once ML-DSA/ML-KEM providers exist. No independent code gap.</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><span class="pqc pqc-partial">PARTIAL</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">10</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Mostly ready; specific gaps to fix (e.g., missing AKP cases, hardcoded fallbacks).</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><span class="pqc pqc-blocked">BLOCKED</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">24</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Require code changes before PQC can work (hardcoded algorithms, missing providers, bootstrap logic).</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><span class="pqc pqc-safe">SAFE</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">4</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Quantum-safe (symmetric algorithms, algorithm-agnostic cert validation) or CA-controlled.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><span class="pqc pqc-external">EXTERNAL DEPENDENCY</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">3</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Blocked on external specs (FAPI 2.0, CAEP, FIDO Alliance) or libraries (BC-FIPS, WildFly Elytron).</td>
+</tr>
+</tbody>
+</table>
+
+<h3 style="font-size:15px; margin: 24px 0 8px;">Critical Gaps Summary</h3>
+
+<h4 style="font-size:13px; margin: 16px 0 6px; color:#991b1b; font-weight:600;">CRITICAL Priority</h4>
+<ul style="margin:0 0 16px 0; padding-left:24px; font-size:12px; line-height:1.6;">
+  <li><strong>GAP-1</strong> (Domains 12, 15, 45): JWK thumbprint for AKP keys — blocks DPoP and attestation-based client authentication</li>
+  <li><strong>GAP-4</strong> (Domains 2, 4, 8): No ML-KEM CekManagementProvider — blocks all JWE token encryption</li>
+  <li><strong>GAP-9</strong> (Domains 18, 20, 59-61): SAML hardcoded RS256 key selection — 4 call sites bypass ML-DSA keys</li>
+</ul>
+
+<h4 style="font-size:13px; margin: 16px 0 6px; color:#d97706; font-weight:600;">HIGH Priority</h4>
+<ul style="margin:0 0 16px 0; padding-left:24px; font-size:12px; line-height:1.6;">
+  <li><strong>GAP-2</strong> (Domains 18-20, 59-61): SAML XML Signature URIs for ML-DSA not registered</li>
+  <li><strong>GAP-6</strong> (Domains 11, 13, 43): BC-FIPS 2.1.2 lacks ML-DSA — external blocker for FIPS deployments</li>
+  <li><strong>GAP-8</strong> (Domains 16, 41): FAPI allowlist actively blocks ML-DSA — spec-gated on FAPI 2.0</li>
+  <li><strong>GAP-15</strong> (Domains 28, 30-31, 46): No ML-DSA key generation — covered by <a href="https://github.com/keycloak/keycloak/issues/48824">#48824</a></li>
+  <li><strong>Domain 48</strong>: JWKS endpoint omits AKP keys (returns null)</li>
+  <li><strong>Domain 53</strong>: Client signature verifier RSA guard blocks ML-DSA assertions</li>
+</ul>
+
+<h4 style="font-size:13px; margin: 16px 0 6px; color:#57606a; font-weight:600;">MEDIUM Priority</h4>
+<ul style="margin:0 0 16px 0; padding-left:24px; font-size:12px; line-height:1.6;">
+  <li><strong>ML-KEM keygen</strong> (Domains 29, 32): No ML-KEM key generation provider (separate from GAP-15 which covers ML-DSA only)</li>
+  <li><strong>GAP-5 + GAP-16</strong> (Domains 33-34): Keystore import lacks ML-DSA support</li>
+  <li><strong>GAP-19</strong> (Domain 42): No Maven enforcer for bcprov minimum version — silent regression risk</li>
+  <li><strong>GAP-20</strong> (Domain 8): JAR encrypted request object decryption — no ML-KEM inbound path</li>
+  <li><strong>GAP-21</strong> (Domain 4): UserInfo per-client signature attribute doesn't follow realm default</li>
+  <li><strong>GAP-22</strong> (Domain 12): Attestation algorithm enforcement TODO not implemented</li>
+  <li><strong>GAP-23</strong> (Domain 36): OIDC discovery hardcoded constant for CIBA signing algorithms</li>
+  <li><strong>Domains 49-51</strong>: Admin API and Client SDK missing AKP support</li>
+</ul>
+
+<h3 style="font-size:15px; margin: 24px 0 8px;">New GitHub Issues Needed</h3>
+<p style="font-size:12px; margin:0 0 12px 0; line-height:1.5;">Based on the complete analysis, these new issues should be created under <a href="https://github.com/keycloak/keycloak/issues/43690">#43690</a>:</p>
+
+<table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:24px;">
+<thead>
+<tr>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:60px; text-align:center;">Priority</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:120px;">Gap/Domain</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328;">Title</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">CRIT</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-1</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JWK Thumbprint for AKP (ML-DSA) Keys</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#d97706; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-4</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">ML-KEM CekManagementProvider for OIDC Token Encryption</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#d97706; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-9</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">SAML: Replace Hardcoded RS256 Key Selection (3rd sub-issue under #50292)</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#d97706; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Domain 48</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JWKS Endpoint: Add AKP Branch to JWKSServerUtils.toJwk()</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#d97706; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Domain 53</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Client Signature Verifier: Add AKP Support / Remove RSA-Only Guard</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-5, GAP-16</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Keystore Import: Add ML-DSA Support (Domains 33-34)</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Domains 29, 32</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">ML-KEM Key Generation Provider (Separate from GAP-15)</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-19</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Maven Enforcer: bcprov-jdk18on ≥ 1.78 Minimum Version</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-23</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">OIDC Discovery: Make DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED Dynamic</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-22</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Attestation-Based Client Auth: Enforce Asymmetric Algorithm Requirement</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Domain 49</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Admin API: Client Keypair Generation Algorithm Parameter</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">LOW</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Domains 50-51</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Client SDK: Add AKP Support to JWTClientCredentialsProvider & DPoPGenerator</td>
+</tr>
+</tbody>
+</table>
+
+<h3 style="font-size:15px; margin: 24px 0 8px;">Key Architectural Insights</h3>
+<ol style="margin:0 0 16px 0; padding-left:24px; font-size:12px; line-height:1.6;">
+  <li><strong>SPI-Driven Success:</strong> 20 domains are PENDING PROVIDERS because they inherit from well-designed SPIs (SignatureProvider, ClientSignatureVerifierProvider, CekManagementProvider). This is the right architectural pattern.</li>
+  <li><strong>Hardcoded Algorithm Selections:</strong> Major blocker pattern across SAML (GAP-9), FAPI (GAP-8), OID4VC (GAP-18), IdP broker (GAP-10), Admin CLI (GAP-13). These are the primary implementation gaps.</li>
+  <li><strong>Two-Level SAML Gap:</strong> Both algorithm URIs (GAP-2) AND key selection logic (GAP-9) must be fixed. Fixing only one layer won't enable SAML PQC.</li>
+  <li><strong>Encryption Gaps Separate:</strong> ML-KEM key generation and CekManagement are distinct from ML-DSA signature work. Encryption readiness requires parallel implementation tracks.</li>
+  <li><strong>FIPS Hard Blocker:</strong> BC-FIPS 2.1.2 complete absence of ML-DSA blocks all FIPS deployments until BC-FIPS releases FIPS 140-3 validated PQC.</li>
+</ol>
+
+<p style="font-size:12px; margin:24px 0 12px 0; padding:12px; background:#f0f9ff; border-left:4px solid #3b82d4;">
+  <strong>Analysis Status:</strong> All 61 domains complete. Each domain has a dedicated implementation plan file (Domain_N_*.md) with detailed gap analysis and remediation steps. Ready for GitHub issue creation phase.
+</p>
+
+<footer>
+  <p>Made with IBM Bob</p>
+</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Domain 2 — ID Token / JARM Encryption (ML-KEM)</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #ffffff;
+    margin: 0;
+    padding: 28px 20px 60px;
+  }
+  .wrap { max-width: 760px; margin: 0 auto; }
+  h1 { font-size: 20px; margin: 0 0 4px; }
+  .subtitle { color: #57606a; font-size: 12px; margin-bottom: 24px; }
+  h2 { font-size: 15px; font-weight: 700; margin: 32px 0 10px; padding-bottom: 6px; border-bottom: 2px solid #e5e7eb; color: #1f2328; }
+  h3 { font-size: 13px; font-weight: 700; margin: 20px 0 6px; color: #1f2328; }
+  p { margin: 0 0 10px; }
+  ul { margin: 0 0 12px; padding-left: 20px; }
+  ul li { margin-bottom: 4px; }
+  code { font-family: "Consolas", "SFMono-Regular", monospace; font-size: 11.5px; background: #f0f2f5; border: 1px solid #dde0e4; border-radius: 3px; padding: 1px 5px; white-space: nowrap; }
+  pre { background: #f7f8fa; border: 1px solid #e5e7eb; border-radius: 5px; padding: 14px 16px; overflow-x: auto; font-family: "Consolas", "SFMono-Regular", monospace; font-size: 11.5px; line-height: 1.6; margin: 8px 0 16px; color: #1f2328; }
+  pre code { background: none; border: none; padding: 0; white-space: pre; font-size: inherit; }
+  .badge { display: inline-block; font-size: 10px; font-weight: 700; padding: 2px 8px; border-radius: 10px; white-space: nowrap; line-height: 1.6; vertical-align: middle; }
+  .badge-blocked { background: #991b1b; color: #fff; }
+  .badge-gap { background: #fee2e2; color: #991b1b; border-radius: 3px; }
+  .badge-issue { background: #dbeafe; color: #1e40af; border-radius: 3px; }
+  .badge-new-issue { background: #fef9c3; color: #92400e; border-radius: 3px; }
+  .status-box { background: #f7f8fa; border: 1px solid #e5e7eb; border-left: 4px solid #991b1b; border-radius: 4px; padding: 12px 14px; margin-bottom: 20px; font-size: 13px; }
+  .no-groundwork-box { background: #fff7ed; border: 1px solid #fed7aa; border-left: 4px solid #ea580c; border-radius: 4px; padding: 12px 14px; margin-bottom: 20px; font-size: 13px; }
+  .dep-box { background: #fefce8; border: 1px solid #fde68a; border-left: 4px solid #d97706; border-radius: 4px; padding: 12px 14px; margin-top: 24px; font-size: 13px; }
+  .no-change-box { background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 4px; padding: 12px 14px; margin-bottom: 12px; font-size: 13px; }
+  .issue-box { background: #fffbeb; border: 1px solid #fde68a; border-radius: 4px; padding: 12px 14px; margin-bottom: 20px; font-size: 13px; }
+  .file-tag { display: inline-block; font-family: "Consolas", "SFMono-Regular", monospace; font-size: 11px; background: #1f2328; color: #e6edf3; border-radius: 3px; padding: 2px 8px; margin-bottom: 8px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; margin-bottom: 16px; }
+  th { background: #1f2328; color: #fff; text-align: left; padding: 7px 10px; font-weight: 600; }
+  td { padding: 6px 10px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7f8fa; }
+  .note { font-size: 12px; color: #57606a; font-style: italic; margin-top: 4px; }
+  .change-num { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: #1f2328; color: #fff; border-radius: 50%; font-size: 11px; font-weight: 700; margin-right: 8px; flex-shrink: 0; vertical-align: middle; }
+  .nav-bar { font-size: 12px; margin-bottom: 20px; color: #57606a; }
+  .nav-bar a { color: #3b82d4; text-decoration: none; }
+  .nav-bar a:hover { text-decoration: underline; }
+  footer { margin-top: 48px; padding-top: 10px; border-top: 1px solid #e5e7eb; text-align: center; font-size: 11px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<p class="nav-bar"><a href="pqc_overview.html">← Keycloak PQC Readiness Overview</a></p>
+
+<h1>Domain 2 — ID Token / JARM Encryption</h1>
+<p class="subtitle">
+  ML-KEM implementation plan &nbsp;·&nbsp;
+  <span class="badge badge-new-issue">New issue needed under #48821</span>
+  &nbsp;
+  <span class="badge badge-gap">GAP-4</span>
+  &nbsp;·&nbsp;
+  PQC Readiness Gap Analysis
+</p>
+
+<!-- Plain-language explanation -->
+<h2>What is this domain?</h2>
+<p>
+  When a client registers with Keycloak and requests <strong>encrypted ID tokens</strong> (or
+  encrypted JARM authorization response JWTs), Keycloak must encrypt the token before
+  sending it. JWE (JSON Web Encryption) works in two layers:
+</p>
+<ul>
+  <li>The token content is encrypted with a fast symmetric key called the <strong>CEK</strong> (Content Encryption Key)</li>
+  <li>That CEK is then <strong>wrapped/encrypted using the client's public key</strong> — this is the asymmetric step</li>
+</ul>
+<p>
+  Domain 2 is entirely about that second step — the <strong>asymmetric key-wrapping of the CEK</strong>.
+  Today Keycloak does this with RSA-OAEP or ECDH-ES, both of which are quantum-vulnerable.
+  The PQC replacement is <strong>ML-KEM</strong> (FIPS 203, formerly Kyber), which performs
+  key <em>encapsulation</em> rather than key wrapping — the client encapsulates a shared secret
+  using its public key, and Keycloak decapsulates it using its private key to recover the CEK.
+  Without ML-KEM support, any client requesting an encrypted token has no quantum-safe option.
+</p>
+
+<!-- Current state -->
+<div class="status-box">
+  <span class="badge badge-blocked">BLOCKED</span>
+  &nbsp;
+  <strong>Current state:</strong> Zero ML-KEM code exists anywhere in the codebase. No constants,
+  no <code>JWEAlgorithmProvider</code>, no <code>CekManagementProviderFactory</code>, no key provider.
+  This is a ground-up implementation — unlike Domain 1 where JWK infrastructure was already
+  partially in place, Domain 2 has no existing groundwork beyond BouncyCastle 1.84 providing
+  the JCA implementation.
+</div>
+
+<div class="no-groundwork-box">
+  <strong>No existing groundwork</strong> — confirmed by codebase search: zero matches for
+  <code>ML.KEM</code>, <code>ML_KEM</code>, or <code>mlkem</code> across all Java source files.
+  <code>CryptoConstants.java</code>, <code>JWEConstants.java</code>, <code>Algorithm.java</code>,
+  and <code>DefaultCryptoProvider.java</code> all have no ML-KEM entries.
+  BouncyCastle 1.84 provides <code>org.bouncycastle.jcajce.provider.asymmetric.mlkem.*</code>
+  — the crypto layer is available but nothing in Keycloak wires it.
+</div>
+
+<!-- Issue -->
+<div class="issue-box">
+  <strong>GitHub issue:</strong> No existing issue covers this specifically.
+  A new issue should be created as a sub-issue under
+  <a href="https://github.com/keycloak/keycloak/issues/48821">48821</a>
+  (PQC support for OAuth 2.0 and OpenID Connect).<br/><br/>
+  <strong>Proposed title:</strong> Implement ML-KEM <code>CekManagementProviderFactory</code> for encrypted ID token / JARM support (FIPS 203)<br/><br/>
+  <strong>Proposed description:</strong> Keycloak has no <code>CekManagementProviderFactory</code>
+  implementation for ML-KEM (FIPS 203). All existing CEK management providers use RSA-OAEP or
+  ECDH-ES. Clients requesting encrypted ID tokens or encrypted JARM authorization responses have
+  no quantum-safe key-encapsulation option. This issue tracks implementing
+  <code>MLKemJWEAlgorithmProvider</code>, <code>MLKemCekManagementProvider</code>, and three
+  <code>MLKemCekManagementProviderFactory</code> classes (one per ML-KEM parameter set:
+  512, 768, 1024), registering them in <code>DefaultCryptoProvider</code> and the
+  <code>CekManagementProviderFactory</code> service file. Depends on ML-KEM realm key generation.
+  BouncyCastle 1.84 provides the JCA implementation.
+</div>
+
+<!-- Summary table -->
+<h2>Required Changes — Summary</h2>
+<table>
+  <thead>
+    <tr><th>#</th><th>File / Location</th><th>Change</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>1</td><td><code>common/…/crypto/CryptoConstants.java</code></td><td>Add ML-KEM algorithm name constants</td></tr>
+    <tr><td>2</td><td><code>core/…/jose/jwe/JWEConstants.java</code></td><td>Expose ML-KEM constants (derive from <code>CryptoConstants</code>)</td></tr>
+    <tr><td>3</td><td><code>crypto/default/…/def/MLKemJWEAlgorithmProvider.java</code></td><td>New class — implements <code>JWEAlgorithmProvider</code> using ML-KEM encapsulation / decapsulation</td></tr>
+    <tr><td>4</td><td><code>crypto/default/…/def/DefaultCryptoProvider.java</code></td><td>Register <code>MLKemJWEAlgorithmProvider</code> for each ML-KEM parameter set</td></tr>
+    <tr><td>5</td><td><code>services/…/crypto/MLKemCekManagementProvider.java</code></td><td>New class — implements <code>CekManagementProvider</code></td></tr>
+    <tr><td>6</td><td><code>services/…/crypto/MLKem{512,768,1024}CekManagementProviderFactory.java</code></td><td>New classes (×3) — one factory per ML-KEM parameter set</td></tr>
+    <tr><td>7</td><td><code>META-INF/services/…CekManagementProviderFactory</code></td><td>Register the three new factories</td></tr>
+    <tr><td>8</td><td>ML-KEM realm <code>KeyProvider</code></td><td>Covered by Domain 29 — realm must be able to hold an ML-KEM ENC key for decapsulation</td></tr>
+  </tbody>
+</table>
+
+<!-- Change 1 & 2 -->
+<h2><span class="change-num">1</span> <code>common/src/main/java/org/keycloak/common/crypto/CryptoConstants.java</code></h2>
+
+<p>Add ML-KEM algorithm name constants alongside the existing JWE algorithm strings:</p>
+<pre><code>// ML-KEM Key Encapsulation (FIPS 203)
+public static final String ML_KEM_512  = "ML-KEM-512";
+public static final String ML_KEM_768  = "ML-KEM-768";
+public static final String ML_KEM_1024 = "ML-KEM-1024";</code></pre>
+
+<h2><span class="change-num">2</span> <code>core/src/main/java/org/keycloak/jose/jwe/JWEConstants.java</code></h2>
+
+<p>Expose the new constants from <code>JWEConstants</code>, following the same pattern as existing entries:</p>
+<pre><code>public static final String ML_KEM_512  = CryptoConstants.ML_KEM_512;
+public static final String ML_KEM_768  = CryptoConstants.ML_KEM_768;
+public static final String ML_KEM_1024 = CryptoConstants.ML_KEM_1024;</code></pre>
+
+<!-- Change 3 -->
+<h2><span class="change-num">3</span> New <code>MLKemJWEAlgorithmProvider</code></h2>
+
+<h3><span class="file-tag">crypto/default/…/def/MLKemJWEAlgorithmProvider.java</span></h3>
+<p>
+  ML-KEM uses <em>key encapsulation</em>, not key wrapping. <code>encodeCek()</code>
+  calls ML-KEM <em>encapsulate</em> against the recipient's public key — the result is
+  an encapsulated key (ciphertext) and a shared secret; the shared secret becomes (or
+  derives) the CEK. <code>decodeCek()</code> calls ML-KEM <em>decapsulate</em> using the
+  realm's private key to recover the shared secret / CEK.
+</p>
+<pre><code>public class MLKemJWEAlgorithmProvider implements JWEAlgorithmProvider {
+
+    @Override
+    public byte[] encodeCek(JWEEncryptionProvider encryptionProvider,
+                            JWEKeyStorage keyStorage,
+                            Key recipientPublicKey,
+                            JWEHeaderBuilder headerBuilder) throws Exception {
+        // Use BouncyCastle ML-KEM KEM via JCA
+        KeyGenerator kemGen = KeyGenerator.getInstance(recipientPublicKey.getAlgorithm());
+        // BC ML-KEM: encapsulate returns {sharedSecret, encapsulation}
+        KEMGenerateSpec spec = new KEMGenerateSpec((PublicKey) recipientPublicKey, "AES");
+        kemGen.init(spec);
+        SecretKeyWithEncapsulation result =
+            (SecretKeyWithEncapsulation) kemGen.generateKey();
+
+        // The shared secret becomes the CEK
+        keyStorage.setCEKBytes(result.getEncoded());
+
+        // Return the encapsulation (ciphertext) — stored in the JWE encrypted_key field
+        return result.getEncapsulation();
+    }
+
+    @Override
+    public byte[] decodeCek(byte[] encapsulation,
+                            Key recipientPrivateKey,
+                            JWEHeader header,
+                            JWEEncryptionProvider encryptionProvider) throws Exception {
+        // Decapsulate using realm private ML-KEM key
+        KeyAgreement kem = KeyAgreement.getInstance("ML-KEM");
+        kem.init(recipientPrivateKey);
+        kem.doPhase(/* encapsulation key */ null, true);
+        // BC API: use decapsulate to recover shared secret
+        SecretKey sharedSecret = kem.generateSecret(
+            new KEMExtractSpec((PrivateKey) recipientPrivateKey, encapsulation, "AES"));
+        return sharedSecret.getEncoded();
+    }
+}</code></pre>
+
+<p class="note">
+  Note: The exact BouncyCastle JCA API for ML-KEM encapsulation/decapsulation uses
+  <code>KEMGenerateSpec</code> and <code>KEMExtractSpec</code> from
+  <code>org.bouncycastle.jcajce.spec</code>. The pseudocode above shows the intent;
+  the precise call sequence should be validated against the BC 1.84 API and the
+  IETF draft-irtf-cfrg-hpke / JOSE ML-KEM spec for the correct KDF step that
+  derives the CEK from the ML-KEM shared secret.
+</p>
+
+<!-- Change 4 -->
+<h2><span class="change-num">4</span> Register in <code>DefaultCryptoProvider</code></h2>
+
+<h3><span class="file-tag">crypto/default/…/def/DefaultCryptoProvider.java</span></h3>
+<p>Add three entries to the <code>providers</code> map in the constructor, after the existing ECDH-ES entries (lines 62–65):</p>
+<pre><code>providers.put(CryptoConstants.ML_KEM_512,  new MLKemJWEAlgorithmProvider());
+providers.put(CryptoConstants.ML_KEM_768,  new MLKemJWEAlgorithmProvider());
+providers.put(CryptoConstants.ML_KEM_1024, new MLKemJWEAlgorithmProvider());</code></pre>
+
+<p class="note">
+  Note: The same pattern must be applied to
+  <code>crypto/fips1402/…/FIPS1402Provider.java</code> once BC-FIPS includes ML-KEM
+  support (currently blocked — see GAP-6). No change to the FIPS provider now.
+</p>
+
+<!-- Change 5 & 6 -->
+<h2><span class="change-num">5</span> New <code>MLKemCekManagementProvider</code> + factories</h2>
+
+<h3><span class="file-tag">services/…/crypto/MLKemCekManagementProvider.java</span></h3>
+<p>
+  Analogous to <code>RsaCekManagementProvider</code> and <code>EcdhEsCekManagementProvider</code>.
+  Returns the ML-KEM <code>JWEAlgorithmProvider</code> from the crypto provider:
+</p>
+<pre><code>public class MLKemCekManagementProvider implements CekManagementProvider {
+
+    private final KeycloakSession session;
+    private final String jweAlgorithmName;
+
+    public MLKemCekManagementProvider(KeycloakSession session, String jweAlgorithmName) {
+        this.session = session;
+        this.jweAlgorithmName = jweAlgorithmName;
+    }
+
+    @Override
+    public JWEAlgorithmProvider jweAlgorithmProvider() {
+        if (JWEConstants.ML_KEM_512.equals(jweAlgorithmName)
+                || JWEConstants.ML_KEM_768.equals(jweAlgorithmName)
+                || JWEConstants.ML_KEM_1024.equals(jweAlgorithmName)) {
+            return CryptoIntegration.getProvider()
+                .getAlgorithmProvider(JWEAlgorithmProvider.class, jweAlgorithmName);
+        }
+        return null;
+    }
+}</code></pre>
+
+<h3><span class="file-tag">services/…/crypto/MLKem512CekManagementProviderFactory.java</span></h3>
+<p>
+  Following the pattern of <code>RsaesOaepCekManagementProviderFactory</code>.
+  Repeat for <code>MLKem768</code> and <code>MLKem1024</code> substituting
+  <code>JWEConstants.ML_KEM_768</code> / <code>JWEConstants.ML_KEM_1024</code>:
+</p>
+<pre><code>public class MLKem512CekManagementProviderFactory implements CekManagementProviderFactory {
+
+    public static final String ID = JWEConstants.ML_KEM_512;
+
+    @Override
+    public String getId() { return ID; }
+
+    @Override
+    public CekManagementProvider create(KeycloakSession session) {
+        return new MLKemCekManagementProvider(session, ID);
+    }
+}</code></pre>
+
+<!-- Change 7 -->
+<h2><span class="change-num">7</span> Register <code>CekManagementProviderFactory</code> services</h2>
+
+<p>Append to <code>services/src/main/resources/META-INF/services/org.keycloak.crypto.CekManagementProviderFactory</code>:</p>
+<pre><code>org.keycloak.crypto.MLKem512CekManagementProviderFactory
+org.keycloak.crypto.MLKem768CekManagementProviderFactory
+org.keycloak.crypto.MLKem1024CekManagementProviderFactory</code></pre>
+
+<!-- Change 8 -->
+<h2><span class="change-num">8</span> ML-KEM Realm Key Provider (Domain 29)</h2>
+
+<p>
+  For Keycloak to <em>decapsulate</em> an ML-KEM encrypted token (i.e. when Keycloak
+  itself is the recipient), the realm must hold an ML-KEM private key registered for
+  <code>KeyUse.ENC</code>. This is covered by <strong>Domain 29</strong> (Generated RSA
+  Encryption Key Provider equivalent for ML-KEM) and is a prerequisite for the inbound
+  decapsulation path. The outbound encapsulation path (Keycloak encrypting to a client's
+  ML-KEM public key fetched from the client's JWKS) does not require a realm key —
+  it uses the client's public key directly.
+</p>
+
+<!-- What does NOT need changing -->
+<h2>What Does NOT Need Changing</h2>
+<div class="no-change-box">
+  <ul style="margin:0; padding-left:18px;">
+    <li><code>DefaultTokenManager</code> — the JWE encryption path calls <code>CekManagementProvider</code> via SPI; no change needed once factories are registered</li>
+    <li><code>CekManagementProvider</code> / <code>CekManagementProviderFactory</code> SPI interfaces — already sufficient</li>
+    <li><code>JWEKeyStorage</code>, <code>JWE</code>, <code>JWEHeader</code> — content-agnostic; no change needed</li>
+    <li>Content encryption (AES-GCM, AES-CBC) — unaffected; only the key-wrapping layer changes</li>
+  </ul>
+</div>
+
+<!-- Dependency note -->
+<div class="dep-box">
+  <strong>Dependencies:</strong>
+  <ul style="margin: 6px 0 0; padding-left: 18px;">
+    <li><strong>BouncyCastle 1.84</strong> (non-FIPS) — confirmed to include
+      <code>org.bouncycastle.jcajce.provider.asymmetric.mlkem.*</code>. Available now.</li>
+    <li><strong>BC-FIPS</strong> — ML-KEM not present in BC-FIPS 2.1.2. FIPS deployments
+      remain blocked until a future BC-FIPS release. No change to the FIPS provider until then.</li>
+    <li><strong>Domain 29</strong> — ML-KEM realm <code>KeyProvider</code> is required before
+      Keycloak can act as the <em>recipient</em> of an ML-KEM encrypted token. The outbound
+      path (encrypting to a client) does not depend on Domain 29.</li>
+    <li><strong>IETF JOSE ML-KEM spec</strong> — the JWE algorithm identifier strings
+      (<code>"ML-KEM-512"</code> etc.) and the KDF step between the ML-KEM shared secret
+      and the CEK should be validated against the current IETF draft
+      (draft-ietf-jose-json-web-algorithms-pqc or equivalent) before finalising.</li>
+  </ul>
+</div>
+
+<footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>
