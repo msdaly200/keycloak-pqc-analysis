@@ -379,6 +379,8 @@
   </td>
   <td>
     No code change required beyond core ML-DSA provider work. Ensure SPIFFE bundle endpoint returns AKP-type JWKs correctly once ML-DSA is deployed.
+  <br />
+    <a href="Domain_54_Federated_JWT_Client_Auth.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -555,6 +557,8 @@
   </td>
   <td>
     No code change required beyond core ML-DSA provider work. DPoP fix (row 15) is a prerequisite for DPoP-bound token exchange with ML-DSA.
+  <br />
+    <a href="Domain_57_Token_Exchange.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -575,6 +579,8 @@
   </td>
   <td>
     No code change required beyond core ML-DSA provider work.
+  <br />
+    <a href="Domain_58_Device_Authorization.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -688,6 +694,8 @@
   </td>
   <td>
     No code change required beyond core ML-DSA provider work.
+  <br />
+    <a href="Domain_55_Default_Trust_IdP.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -708,6 +716,8 @@
   </td>
   <td>
     No change needed to this class. Fix depends on GAP-2 (SAML algorithm URIs) and GAP-9 (hardcoded RS256 key selection) being resolved first.
+  <br />
+    <a href="Domain_59_SAML_Metadata_Loader.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -727,6 +737,8 @@
   </td>
   <td>
     Blocked on same GAP-2 / GAP-9 fixes as rows 18–20. No additional code changes needed beyond those.
+  <br />
+    <a href="Domain_60_SAML_Artifact_Resolution.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -745,6 +757,8 @@
   </td>
   <td>
     Update default <code>signatureMethod</code> to be driven by realm configuration rather than a hardcoded constant. SHA-1 digest should also be updated to SHA-256 as a minimum. Part of the broader SAML PQC work under <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a>.
+  <br />
+    <a href="Domain_61_SAML2Signature_Default.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -826,6 +840,8 @@
   </td>
   <td>
     No code change required beyond core ML-DSA provider work.
+  <br />
+    <a href="Domain_56_SD_JWT_Issuer.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -973,7 +989,7 @@
 
 <tr>
   <td class="num">31</td>
-  <td><strong>Generated EdDSA Signing Key Provider</strong><br /><a href="Domain_31_Generated_EdDSA_Signing_Keys.md">→ View implementation plan</a></td>
+  <td><strong>Generated EdDSA Signing Key Provider</strong></td>
   <td class="files">
     <code>keys/GeneratedEddsaKeyProviderFactory.java</code><br />
     <code>keys/AbstractEddsaKeyProvider.java</code><br />
@@ -987,13 +1003,14 @@
     Same gap as row 28 — no ML-DSA key generation provider. <a class="gap-tag" href="#gap-15">GAP-15</a>
   </td>
   <td>
-    Covered by same <code>GeneratedAKPKeyProviderFactory</code> work as row 28.
+    Covered by same <code>GeneratedAKPKeyProviderFactory</code> work as row 28.<br />
+    <a href="Domain_31_Generated_EdDSA_Signing_Keys.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
 <tr>
   <td class="num">32</td>
-  <td><strong>Generated ECDH Encryption Key Provider</strong><br /><a href="Domain_32_Generated_ECDH_Encryption_Keys.md">→ View implementation plan</a></td>
+  <td><strong>Generated ECDH Encryption Key Provider</strong></td>
   <td class="files">
     <code>keys/GeneratedEcdhKeyProviderFactory.java</code><br />
     <code>keys/GeneratedEcdhKeyProvider.java</code>
@@ -1007,12 +1024,14 @@
   </td>
   <td>
     Implement ML-KEM ENC key generation provider. Needs explicit tracking.
+  <br />
+    <a href="Domain_32_Generated_ECDH_Encryption_Keys.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
 <tr>
   <td class="num">33</td>
-  <td><strong>Imported RSA Signing Key Provider</strong><br /><a href="Domain_33_Imported_RSA_Signing_Keys.md">→ View implementation plan</a></td>
+  <td><strong>Imported RSA Signing Key Provider</strong></td>
   <td class="files">
     <code>keys/ImportedRsaKeyProviderFactory.java</code><br />
     <code>keys/AbstractImportedRsaKeyProviderFactory.java</code>
@@ -1024,12 +1043,14 @@
     <span class="pqc pqc-blocked">BLOCKED</span><br />
     No ML-DSA key import path. Implicit in keystore import gap. <a class="gap-tag" href="#gap-5">GAP-5</a> <a class="gap-tag" href="#gap-16">GAP-16</a>
   </td>
-  <td></td>
+  <td><br />
+    <a href="Domain_33_Imported_RSA_Signing_Keys.md" class="detail-link">→ View implementation plan</a>
+  </td>
 </tr>
 
 <tr>
   <td class="num">34</td>
-  <td><strong>Java Keystore Key Provider (PKCS12 / BCFKS)</strong><br /><a href="Domain_34_Java_Keystore_Provider.md">→ View implementation plan</a></td>
+  <td><strong>Java Keystore Key Provider (PKCS12 / BCFKS)</strong></td>
   <td class="files">
     <code>keys/JavaKeystoreKeyProviderFactory.java</code><br />
     <code>keys/JavaKeystoreKeyProvider.java</code>
@@ -1043,6 +1064,8 @@
   </td>
   <td>
     Extend <code>JavaKeystoreKeyProviderFactory</code> import logic and <code>mergedAlgorithmProperties()</code> to expose ML-DSA. Tracked under GAP-5 / GAP-16.
+  <br />
+    <a href="Domain_34_Java_Keystore_Provider.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -1051,7 +1074,7 @@
 
 <tr>
   <td class="num">35</td>
-  <td><strong>Dynamic Client Registration Tokens</strong><br /><a href="Domain_35_Client_Registration_Tokens.md">→ View implementation plan</a></td>
+  <td><strong>Dynamic Client Registration Tokens</strong></td>
   <td class="files">
     <code>clientregistration/ClientRegistrationTokenUtils.java</code>
   </td>
@@ -1064,12 +1087,14 @@
   </td>
   <td>
     Update RS256 special-case logic in <code>DescriptionConverter.java</code> to handle ML-DSA as a valid realm default. Document migration risk for <code>DEFAULT_SIGNATURE_ALGORITHM</code> fallback. <a class="gap-tag" href="#gap-12">GAP-12</a>
+  <br />
+    <a href="Domain_35_Client_Registration_Tokens.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
 <tr>
   <td class="num">36</td>
-  <td><strong>OIDC Well-Known Discovery — Algorithm Advertisement</strong><br /><a href="Domain_36_OIDC_Well_Known_Discovery.md">→ View implementation plan</a></td>
+  <td><strong>OIDC Well-Known Discovery — Algorithm Advertisement</strong></td>
   <td class="files">
     <code>protocol/oidc/OIDCWellKnownProvider.java</code>
   </td>
@@ -1082,6 +1107,8 @@
   </td>
   <td>
     Replace static <code>DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED</code> constant with a dynamic lookup merging registered asymmetric <code>SignatureProvider</code> algorithm names. Same pattern as <code>id_token_signing_alg_values_supported</code>. <a class="gap-tag" href="#gap-23">GAP-23</a>
+  <br />
+    <a href="Domain_36_OIDC_Well_Known_Discovery.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -1090,7 +1117,7 @@
 
 <tr>
   <td class="num">37</td>
-  <td><strong>Security Event Token (SET) Signing</strong><br /><a href="Domain_37_SET_Signing.md">→ View implementation plan</a></td>
+  <td><strong>Security Event Token (SET) Signing</strong></td>
   <td class="files">
     <code>ssf/transmitter/…/event/SecurityEventTokenEncoder.java</code><br />
     <code>ssf/transmitter/…/event/SsfSignatureAlgorithms.java</code><br />
@@ -1105,6 +1132,8 @@
   </td>
   <td>
     Update <code>ALLOWED</code> set in <code>SsfSignatureAlgorithms.java</code> once CAEP spec includes PQC algorithms. One-line fix when spec moves.
+  <br />
+    <a href="Domain_37_SET_Signing.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -1113,7 +1142,7 @@
 
 <tr>
   <td class="num">38</td>
-  <td><strong>kcadm.sh / kcreg.sh — private_key_jwt Auth</strong><br /><a href="Domain_38_Admin_CLI.md">→ View implementation plan</a></td>
+  <td><strong>kcadm.sh / kcreg.sh — private_key_jwt Auth</strong></td>
   <td class="files">
     <code>client-cli/admin-cli/…/util/AuthUtil.java</code><br />
     <code>core/…/jose/jws/JWSBuilder.java</code>
@@ -1127,6 +1156,8 @@
   </td>
   <td>
     Add algorithm parameter to <code>getSignedRequestToken()</code>. Plumb a <code>--sigalg</code> option through the credential configuration command chain. Track under <a href="https://github.com/keycloak/keycloak/issues/48824">48824</a> or dedicated CLI sub-issue.
+  <br />
+    <a href="Domain_38_Admin_CLI.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -1135,7 +1166,7 @@
 
 <tr>
   <td class="num">39</td>
-  <td><strong>JGroups ASYM_ENCRYPT (non-default / test config)</strong><br /><a href="Domain_39_JGroups_ASYM_ENCRYPT.md">→ View implementation plan</a></td>
+  <td><strong>JGroups ASYM_ENCRYPT (non-default / test config)</strong></td>
   <td class="files">
     <code>quarkus/tests/integration/…/cache-ispn-asym-enc.xml</code>
   </td>
@@ -1148,6 +1179,8 @@
   </td>
   <td>
     No code change needed. Document in operator migration guidance: operators using <code>ASYM_ENCRYPT</code> should switch to <code>SSL_KEY_EXCHANGE</code>. Track under <a href="https://github.com/keycloak/keycloak/issues/48823">48823</a>.
+  <br />
+    <a href="Domain_39_JGroups_ASYM_ENCRYPT.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -1156,7 +1189,7 @@
 
 <tr>
   <td class="num">40</td>
-  <td><strong>Organisation Invitation Token Verification</strong><br /><a href="Domain_40_Organisation_Invitation_Tokens.md">→ View implementation plan</a></td>
+  <td><strong>Organisation Invitation Token Verification</strong></td>
   <td class="files">
     <code>organization/utils/Organizations.java</code>
   </td>
@@ -1167,7 +1200,9 @@
     <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
     Inherits SPI-driven verification path. Will support ML-DSA once providers exist. No independent gap.
   </td>
-  <td></td>
+  <td><br />
+    <a href="Domain_40_Organisation_Invitation_Tokens.md" class="detail-link">→ View implementation plan</a>
+  </td>
 </tr>
 
 
@@ -1175,7 +1210,7 @@
 
 <tr>
   <td class="num">41</td>
-  <td><strong>FAPI Algorithm Allowlist Enforcement</strong><br /><a href="Domain_41_FAPI_Algorithm_Allowlist.md">→ View implementation plan</a></td>
+  <td><strong>FAPI Algorithm Allowlist Enforcement</strong></td>
   <td class="files">
     <code>clientpolicy/executor/FapiConstant.java</code><br />
     <code>clientpolicy/executor/SecureSigningAlgorithmExecutor.java</code><br />
@@ -1192,6 +1227,8 @@
   </td>
   <td>
     Extend <code>FapiConstant.ALLOWED_ALGORITHMS</code> with ML-DSA once FAPI 2.0 / FAPI profiles include PQC. Update <code>SecureSigningAlgorithmExecutorFactory</code> and <code>SecureCibaAuthenticationRequestSigningAlgorithmExecutorFactory</code> admin UI option lists to surface ML-DSA. <a class="gap-tag" href="#gap-8">GAP-8</a>
+  <br />
+    <a href="Domain_41_FAPI_Allowlist.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -1200,7 +1237,7 @@
 
 <tr>
   <td class="num">42</td>
-  <td><strong>CryptoProvider SPI — BouncyCastle Default Backend</strong><br /><a href="Domain_42_CryptoProvider_BouncyCastle.md">→ View implementation plan</a></td>
+  <td><strong>CryptoProvider SPI — BouncyCastle Default Backend</strong></td>
   <td class="files">
     <code>crypto/default/…/def/DefaultCryptoProvider.java</code><br />
     <code>common/…/crypto/CryptoProvider.java</code>
@@ -1214,12 +1251,14 @@
   </td>
   <td>
     Add Maven enforcer minimum-version constraint for <code>bcprov-jdk18on</code> (≥ 1.78). Tracked under GAP-19.
+  <br />
+    <a href="Domain_42_CryptoProvider_BouncyCastle.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
 <tr>
   <td class="num">43</td>
-  <td><strong>CryptoProvider SPI — FIPS 140-2/3 Backend (BC-FIPS)</strong><br /><a href="Domain_43_CryptoProvider_FIPS.md">→ View implementation plan</a></td>
+  <td><strong>CryptoProvider SPI — FIPS 140-2/3 Backend (BC-FIPS)</strong></td>
   <td class="files">
     <code>crypto/fips1402/…/fips/FIPS1402Provider.java</code><br />
     <code>crypto/fips1402/…/fips/BCFIPSCertificateUtilsProvider.java</code>
@@ -1233,12 +1272,14 @@
   </td>
   <td>
     Upgrade <code>bc-fips</code> to a version that includes FIPS 140-3 validated ML-DSA/ML-KEM support once available. Dependency on BC-FIPS release schedule.
+  <br />
+    <a href="Domain_43_CryptoProvider_FIPS.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
 <tr>
   <td class="num">44</td>
-  <td><strong>CryptoProvider SPI — WildFly Elytron Backend</strong><br /><a href="Domain_44_CryptoProvider_Elytron.md">→ View implementation plan</a></td>
+  <td><strong>CryptoProvider SPI — WildFly Elytron Backend</strong></td>
   <td class="files">
     <code>crypto/elytron/…/elytron/WildFlyElytronProvider.java</code>
   </td>
@@ -1249,7 +1290,9 @@
     <span class="pqc pqc-external">EXTERNAL DEPENDENCY</span><br />
     WildFly Elytron backend currently has no PQC support. Dependent on Elytron roadmap.
   </td>
-  <td></td>
+  <td><br />
+    <a href="Domain_44_CryptoProvider_Elytron.md" class="detail-link">→ View implementation plan</a>
+  </td>
 </tr>
 
 
@@ -1257,7 +1300,7 @@
 
 <tr>
   <td class="num">45</td>
-  <td><strong>JWK Serialisation &amp; Thumbprint</strong><br /><a href="Domain_45_JWK_Serialisation_Thumbprint.md">→ View implementation plan</a></td>
+  <td><strong>JWK Serialisation &amp; Thumbprint</strong></td>
   <td class="files">
     <code>core/…/jose/jwk/JWKBuilder.java</code><br />
     <code>core/…/jose/jwk/JWKParser.java</code><br />
@@ -1274,6 +1317,8 @@
   </td>
   <td>
     Add AKP to <code>JWK_THUMBPRINT_REQUIRED_MEMBERS</code> in <code>JWKSUtils</code> and implement <code>computeThumbprint()</code> for AKP JWKs. High-priority blocker affecting DPoP (row 15) and attestation-based auth (row 12).
+  <br />
+    <a href="Domain_45_JWK_Thumbprint.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -1282,7 +1327,7 @@
 
 <tr>
   <td class="num">46</td>
-  <td><strong>Default Realm Key Providers (Bootstrap)</strong><br /><a href="Domain_46_Realm_Bootstrap.md">→ View implementation plan</a></td>
+  <td><strong>Default Realm Key Providers (Bootstrap)</strong></td>
   <td class="files">
     <code>server-spi-private/…/utils/DefaultKeyProviders.java</code>
   </td>
@@ -1295,6 +1340,8 @@
   </td>
   <td>
     Add conditional bootstrap of an ML-DSA SIG provider and an ML-KEM ENC provider in <code>createProviders()</code>, guarded by the same <code>hasProvider()</code> check pattern. Depends on GAP-15 / ML-DSA key provider work being completed first.
+  <br />
+    <a href="Domain_46_Default_Realm_Keys.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -1303,7 +1350,7 @@
 
 <tr>
   <td class="num">47</td>
-  <td><strong>Client Public Key Loader (JWKS URL &amp; Stored Cert)</strong><br /><a href="Domain_47_Client_Public_Key_Loader.md">→ View implementation plan</a></td>
+  <td><strong>Client Public Key Loader (JWKS URL &amp; Stored Cert)</strong></td>
   <td class="files">
     <code>keys/loader/ClientPublicKeyLoader.java</code><br />
     <code>keys/loader/HardcodedPublicKeyLoader.java</code>
@@ -1315,7 +1362,9 @@
     <span class="pqc pqc-partial">PARTIAL</span><br />
     JWKS URL / JWKS string path calls <code>JWKSUtils.getKeyWrappersForUse()</code>, which already handles AKP (ML-DSA) key types — so loading ML-DSA keys from a client JWKS URL will work once <code>JWKParser</code> supports AKP. The stored-certificate path (<code>getSignatureValidationKey()</code>) uses X.509 cert parsing and is algorithm-agnostic via <code>CertPathBuilder</code>. No explicit ML-DSA block here, but end-to-end verification still depends on ML-DSA <code>SignatureProviderFactory</code> existing.
   </td>
-  <td></td>
+  <td><br />
+    <a href="Domain_47_Client_Public_Key_Loader.md" class="detail-link">→ View implementation plan</a>
+  </td>
 </tr>
 
 
@@ -1323,7 +1372,7 @@
 
 <tr>
   <td class="num">48</td>
-  <td><strong>Realm JWKS Endpoint — Key Serialisation</strong><br /><a href="Domain_48_Realm_JWKS_Endpoint.md">→ View implementation plan</a></td>
+  <td><strong>Realm JWKS Endpoint — Key Serialisation</strong></td>
   <td class="files">
     <code>protocol/oidc/utils/JWKSServerUtils.java</code>
   </td>
@@ -1336,6 +1385,8 @@
   </td>
   <td>
     Add an <code>AKP</code> branch in <code>toJwk()</code> calling <code>JWKBuilder.akp()</code>. Straightforward one-branch addition; <code>JWKBuilder.akp()</code> already exists.
+  <br />
+    <a href="Domain_48_Realm_JWKS_Endpoint.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -1344,7 +1395,7 @@
 
 <tr>
   <td class="num">49</td>
-  <td><strong>Admin API — Client Certificate &amp; Keypair Generation</strong><br /><a href="Domain_49_Admin_API_Client_Keypair.md">→ View implementation plan</a></td>
+  <td><strong>Admin API — Client Certificate &amp; Keypair Generation</strong></td>
   <td class="files">
     <code>services/resources/admin/ClientAttributeCertificateResource.java</code>
   </td>
@@ -1357,6 +1408,8 @@
   </td>
   <td>
     Expose an algorithm parameter in the <code>generateAndGetKeystore</code> endpoint and update <code>KeycloakModelUtils.generateKeyPairCertificate()</code> to support ML-DSA key generation once providers exist.
+  <br />
+    <a href="Domain_49_Admin_API_Cert_Generation.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -1365,7 +1418,7 @@
 
 <tr>
   <td class="num">50</td>
-  <td><strong>Client SDK — JWT Client Credentials Provider</strong><br /><a href="Domain_50_Client_SDK_JWT_Credentials.md">→ View implementation plan</a></td>
+  <td><strong>Client SDK — JWT Client Credentials Provider</strong></td>
   <td class="files">
     <code>core/…/client/authentication/JWTClientCredentialsProvider.java</code>
   </td>
@@ -1378,6 +1431,8 @@
   </td>
   <td>
     Add an <code>AKP</code> case to <code>setupKeyPair()</code> wiring an <code>AsymmetricSignatureSignerContext</code> for ML-DSA, once ML-DSA providers exist.
+  <br />
+    <a href="Domain_50_Client_SDK_JWT.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -1386,7 +1441,7 @@
 
 <tr>
   <td class="num">51</td>
-  <td><strong>Client SDK — DPoP Proof Generation</strong><br /><a href="Domain_51_Client_SDK_DPoP.md">→ View implementation plan</a></td>
+  <td><strong>Client SDK — DPoP Proof Generation</strong></td>
   <td class="files">
     <code>core/…/util/DPoPGenerator.java</code>
   </td>
@@ -1399,6 +1454,8 @@
   </td>
   <td>
     Add ML-DSA convenience method or update callers to use the generic <code>KeyWrapper</code> path. Low priority if callers already use the generic path.
+  <br />
+    <a href="Domain_51_Client_SDK_DPoP.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -1407,7 +1464,7 @@
 
 <tr>
   <td class="num">52</td>
-  <td><strong>Docker Registry — Self-Signed Certificate Generation</strong><br /><a href="Domain_52_Docker_Registry_Cert.md">→ View implementation plan</a></td>
+  <td><strong>Docker Registry — Self-Signed Certificate Generation</strong></td>
   <td class="files">
     <code>protocol/docker/installation/compose/DockerComposeCertsDirectory.java</code>
   </td>
@@ -1420,12 +1477,14 @@
   </td>
   <td>
     Make key algorithm and size configurable once ML-DSA cert generation is supported. Low urgency — Docker compose is a developer/test installation path.
+  <br />
+    <a href="Domain_52_Docker_Registry.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
 <tr>
   <td class="num">53</td>
-  <td><strong>Client Asymmetric Signature Verifier Context &amp; Providers</strong><br /><a href="Domain_53_Client_Asymmetric_Verifier.md">→ View implementation plan</a></td>
+  <td><strong>Client Asymmetric Signature Verifier Context &amp; Providers</strong></td>
   <td class="files">
     <code>services/crypto/ClientAsymmetricSignatureVerifierContext.java</code><br />
     <code>services/crypto/AsymmetricClientSignatureVerifierProvider.java</code><br />
@@ -1447,6 +1506,8 @@
   </td>
   <td>
     Remove or generalise the <code>KeyType.RSA</code> guard in <code>ClientAsymmetricSignatureVerifierContext</code> to accept any asymmetric key type, or add a dedicated AKP client verifier context + provider factory following the same pattern as the ECDSA/EdDSA paths. The ECDSA and EdDSA provider factories will automatically surface ML-DSA once core providers exist.
+  <br />
+    <a href="Domain_53_Client_Signature_Verifier.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
