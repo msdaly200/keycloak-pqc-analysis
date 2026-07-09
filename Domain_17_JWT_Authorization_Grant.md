@@ -1,5 +1,7 @@
 # Domain 17 — JWT Authorization Grant — Assertion Verification
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
 JWT Authorization Grant (also known as JWT Bearer Token Grant) is defined in [RFC 7523](https://www.rfc-editor.org/rfc/rfc7523.html). It allows a client to exchange a signed JWT assertion for an OAuth2 access token.
@@ -45,7 +47,7 @@ Signature verification is **entirely SPI-driven** and will support ML-DSA automa
 **None.**
 
 JWT authorization grant assertion verification will support ML-DSA automatically when:
-1. ML-DSA `SignatureProvider` exists (tracked under #48821 / #48824)
+1. ML-DSA `SignatureProvider` exists (tracked under [#48821](https://github.com/keycloak/keycloak/issues/48821) / [#48824](https://github.com/keycloak/keycloak/issues/48824))
 2. The `ClientSignatureVerifierProvider` SPI routes to it (happens automatically)
 
 ## What does NOT need changing
@@ -59,13 +61,13 @@ JWT authorization grant assertion verification will support ML-DSA automatically
 
 ## Dependencies
 
-1. **ML-DSA `SignatureProvider`** (tracked under #48821 / #48824) — required before JWT assertions can use ML-DSA signatures
+1. **ML-DSA `SignatureProvider`** (tracked under [#48821](https://github.com/keycloak/keycloak/issues/48821) / [#48824](https://github.com/keycloak/keycloak/issues/48824)) — required before JWT assertions can use ML-DSA signatures
 
 ## GitHub Issue Status
 
 No new issue needed.
 
-JWT authorization grant verification is covered by the core ML-DSA provider work under **#48824**. Once providers exist, this grant type will automatically support ML-DSA with zero code changes.
+JWT authorization grant verification is covered by the core ML-DSA provider work under [#48824](https://github.com/keycloak/keycloak/issues/48824). Once providers exist, this grant type will automatically support ML-DSA with zero code changes.
 
 ## What this means for operators
 

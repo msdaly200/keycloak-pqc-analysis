@@ -1,5 +1,7 @@
 # Domain 18 — SAML Assertion & Document Signing
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
 SAML (Security Assertion Markup Language) uses XML Digital Signatures to sign assertions and protocol messages. Keycloak acts as both a SAML Identity Provider (IdP) and Service Provider (SP) in federation scenarios.
@@ -170,14 +172,14 @@ KeyWrapper keyPair = keyManager.getActiveKey(realm, KeyUse.SIG, samlSignatureAlg
 
 **Partially tracked:**
 
-- **#50292** — SAML PQC (parent issue)
-- **#50294** — SAML signing algorithm URIs (likely covers Gap 1)
+- [#50292](https://github.com/keycloak/keycloak/issues/50292) — SAML PQC (parent issue)
+- [#50294](https://github.com/keycloak/keycloak/issues/50294) — SAML signing algorithm URIs (likely covers Gap 1)
 
-**GAP-2** and **GAP-9** are identified in the overview table. Check if #50294 covers both or if Gap 2 (URIs) and Gap 9 (hardcoded key selection) need separate issues.
+**GAP-2** and **GAP-9** are identified in the overview table. Check if [#50294](https://github.com/keycloak/keycloak/issues/50294) covers both or if Gap 2 (URIs) and Gap 9 (hardcoded key selection) need separate issues.
 
 **Recommended:**
 
-If #50294 only covers the URI registration (Gap 1), create a second sub-issue under #50292:
+If [#50294](https://github.com/keycloak/keycloak/issues/50294) only covers the URI registration (Gap 1), create a second sub-issue under [#50292](https://github.com/keycloak/keycloak/issues/50292):
 - **Title:** "SAML: replace hardcoded RS256 key selection with configurable algorithm"
 - **Description:** "4 call sites hardcode `Algorithm.RS256` when selecting SAML signing keys. Even after ML-DSA URIs are added, these lookups bypass ML-DSA keys. Make algorithm selection configurable."
 - **Tracks:** GAP-9

@@ -27,6 +27,11 @@ AI agents were used to perform a systematic grep-based sweep of the Keycloak sou
 
 Each distinct use-case was classified as an independent **domain**. 61 domains were identified in total. Each domain was assigned a PQC state and, where applicable, a concrete implementation plan.
 
+To verify each Domain, you can run the following prompt to ensure the information is still accurate. So for the first row in the table, run...
+ ```bash
+/verify-pqc-domain 1
+ ```
+
 ## Quick Start
 
   📊 **[View Main Analysis](pqc_overview.html)** - Complete table of all 61 domains with gaps and implementation plans

@@ -1,5 +1,7 @@
 # Domain 20 — SAML IdP Broker — SP Metadata & Federation Signing
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
 When Keycloak acts as a SAML Service Provider (SP) federating with an external SAML Identity Provider (IdP), it must:
@@ -120,10 +122,10 @@ When building the `<IDPSSODescriptor>` element's `<KeyDescriptor>` entries, incl
 
 **Partially tracked:**
 
-- **#50292** — SAML PQC (parent issue)
-- **#50295** — SAML encryption and signing (may cover this domain)
+- [#50292](https://github.com/keycloak/keycloak/issues/50292) — SAML PQC (parent issue)
+- [#50295](https://github.com/keycloak/keycloak/issues/50295) — SAML encryption and signing (may cover this domain)
 
-**GAP-9** is identified in the overview table. Check if #50295 covers both signing (Domain 18) and federation/brokering (Domain 20), or if they need separate sub-issues.
+**GAP-9** is identified in the overview table. Check if [#50295](https://github.com/keycloak/keycloak/issues/50295) covers both signing (Domain 18) and federation/brokering (Domain 20), or if they need separate sub-issues.
 
 ## What this means for operators
 

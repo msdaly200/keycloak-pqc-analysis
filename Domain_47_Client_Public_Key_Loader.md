@@ -1,26 +1,44 @@
 # Domain 47 — Client Public Key Loader (JWKS URL & Stored Cert)
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
-Loads client public keys from JWKS URL, inline JWKS string, or stored X.509 certificate.
+Loads client public keys from JWKS URL, inline JWKS string, or stored X.509 certificate. Used for `private_key_jwt` authentication and JAR signature verification.
 
 ## Gap
 
-None — JWKS path already handles AKP via `JWKSUtils.getKeyWrappersForUse()`. X.509 path is algorithm-agnostic via `CertPathBuilder`.
+**None** — already algorithm-agnostic.
+
+**File:** `services/src/main/java/org/keycloak/keys/loader/ClientPublicKeyLoader.java`
 
 ## Current PQC State
 
-**PARTIAL**
+**PENDING PROVIDERS**
 
-JWKS URL / JWKS string path calls `JWKSUtils.getKeyWrappersForUse()`, which already handles AKP (ML-DSA) key types. The stored-certificate path uses X.509 cert parsing and is algorithm-agnostic via `CertPathBuilder`. No explicit ML-DSA block here, but end-to-end verification still depends on ML-DSA `SignatureProviderFactory` existing.
+**Two loading paths:**
+
+1. **JWKS URL / inline JWKS** → calls `JWKSUtils.getKeyWrappersForUse()`
+   - ✅ Already handles AKP (ML-DSA) key types
+   - Will work automatically once providers exist
+
+2. **Stored X.509 certificate** → uses `CertPathBuilder`
+   - ✅ Algorithm-agnostic certificate parsing
+   - Will work automatically once providers exist
+
+**No code changes needed.** End-to-end verification depends on `SignatureProviderFactory` (GAP-15).
 
 ## Required Changes
 
-None — will work automatically once providers exist.
+**None.**
+
+## Dependencies
+
+**GAP-15** — ML-DSA SignatureProvider ([#48824](https://github.com/keycloak/keycloak/issues/48824))
 
 ## GitHub Issue Status
 
-Covered by [#48824](https://github.com/keycloak/keycloak/issues/48824).
+No dedicated issue needed. Covered by GAP-15.
 
 ---
 

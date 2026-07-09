@@ -1,5 +1,13 @@
 # Domain 8 — JAR: Encrypted Request Object Decryption
 
+[← Back to PQC Overview](pqc_overview.html)
+
+**ML-KEM implementation plan**  
+**Gap:** GAP-20  
+**Category:** PQC Readiness Gap Analysis
+
+---
+
 ## What is this?
 
 RFC 9101 (JAR) allows a client to **encrypt** its signed request object before sending it
@@ -22,7 +30,7 @@ encrypting the ID token or JARM response to the client — is Domain 2.
 
 ## Gap
 
-**BLOCKED.** Three independent gaps prevent ML-KEM decryption of JAR objects today.
+**BLOCKED (GAP-20).** Three independent gaps prevent ML-KEM decryption of JAR objects today.
 
 ### Gap 1 — No `JWEAlgorithmProvider` for ML-KEM in `CryptoIntegration`
 

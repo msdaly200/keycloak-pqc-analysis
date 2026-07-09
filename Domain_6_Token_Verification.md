@@ -1,5 +1,7 @@
 # Domain 6 — Token Verification (Identity & Session Tokens)
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
 Keycloak verifies signed JWTs in several internal flows — for example, validating identity tokens during authentication (`AuthenticationManager`), verifying action tokens in login flows (`LoginActionsService`), and re-validating session tokens. All of these call into the `SignatureProvider` SPI to verify the token's signature using the public key identified by the `kid` header.

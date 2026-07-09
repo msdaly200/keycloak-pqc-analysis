@@ -1,5 +1,7 @@
 # Domain 16 — CIBA Signed Backchannel Auth Request
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
 CIBA (Client-Initiated Backchannel Authentication) is an OAuth 2.0/OIDC flow defined in [OpenID Connect CIBA Core 1.0](https://openid.net/specs/openid-client-initiated-backchannel-authentication-core-1_0.html) that allows clients to initiate authentication flows where the user authenticates on a separate device (e.g., mobile app) rather than in the browser.
@@ -17,9 +19,9 @@ CIBA (Client-Initiated Backchannel Authentication) is an OAuth 2.0/OIDC flow def
 
 ## Gap
 
-**One gap prevents full ML-DSA support:**
+**Two gaps prevent full ML-DSA support:**
 
-### FAPI algorithm allowlist does not include ML-DSA (GAP-8)
+### Gap 1: FAPI algorithm allowlist does not include ML-DSA (GAP-8)
 
 **File:** `FapiConstant.java` (lines 30-37)
 
@@ -52,6 +54,19 @@ private static boolean isSecureAlgorithm(String sigAlg) {
 **When can ML-DSA be added?**
 
 The FAPI working group must publish an update to the FAPI CIBA profile that includes PQC algorithms. Until then, adding ML-DSA to the allowlist would violate the FAPI 1.0 Advanced profile specification.
+
+### Gap 2: Admin UI algorithm options blocked (GAP-17)
+
+**File:** `SecureCibaAuthenticationRequestSigningAlgorithmExecutorFactory.java`
+
+The executor factory builds the admin UI dropdown for `backchannel_authentication_request_signing_alg` directly from `FapiConstant.ALLOWED_ALGORITHMS`. Because GAP-8 blocks ML-DSA at the constant level, administrators cannot even configure a FAPI realm to accept ML-DSA in the UI.
+
+**Impact:**
+
+- **GAP-8** blocks ML-DSA at runtime (when validating requests)
+- **GAP-17** blocks ML-DSA in the admin console (when configuring client policies)
+
+**GAP-17 depends on GAP-8** — the admin UI option lists must be updated when `FapiConstant.ALLOWED_ALGORITHMS` is extended, but both are spec-gated on FAPI 2.0.
 
 ## Current PQC State
 
@@ -143,13 +158,22 @@ public static final Set<String> ALLOWED_ALGORITHMS = new LinkedHashSet<>(Arrays.
 
 **Critical:** Do not add ML-DSA to this list until the FAPI working group publishes an updated profile that explicitly permits PQC algorithms. Adding them prematurely would claim FAPI compliance for a non-compliant configuration.
 
-### Change: Update admin UI algorithm options
+### Change 2: Update admin UI algorithm options (GAP-17)
 
 **File:** `SecureCibaAuthenticationRequestSigningAlgorithmExecutorFactory.java`
 
-The admin UI configuration for the executor exposes algorithm options in a dropdown. This will need to include ML-DSA options once the FAPI spec is updated.
+The executor factory's `getConfigProperties()` method builds the admin UI dropdown for algorithm selection. This dropdown is populated from `FapiConstant.ALLOWED_ALGORITHMS`, so once GAP-8 is resolved (runtime allowlist extended), the factory must also be updated to surface ML-DSA options in the admin console.
 
-**Note:** The factory file was not read in this analysis, but based on the pattern in other executors, there's likely a `getConfigProperties()` method that returns a `SELECT_ONE` config property with algorithm options.
+**What needs to change:**
+
+The factory likely has code similar to:
+```java
+configProperty.setOptions(new ArrayList<>(FapiConstant.ALLOWED_ALGORITHMS));
+```
+
+This will automatically include ML-DSA once `FapiConstant.ALLOWED_ALGORITHMS` is extended (GAP-8 fix). However, if the factory has a hardcoded option list instead, it will need manual updates.
+
+**Dependency:** This change depends on GAP-8 being resolved first.
 
 ## What does NOT need changing
 
@@ -164,35 +188,37 @@ The admin UI configuration for the executor exposes algorithm options in a dropd
 ## Dependencies
 
 ### For non-FAPI deployments
-1. **ML-DSA `SignatureProvider`** (tracked under #48821 / #48824) — required before CIBA signed requests can use ML-DSA
+1. **ML-DSA `SignatureProvider`** (tracked under [#48821](https://github.com/keycloak/keycloak/issues/48821) / [#48824](https://github.com/keycloak/keycloak/issues/48824)) — required before CIBA signed requests can use ML-DSA
 
 ### For FAPI deployments
 2. **FAPI 2.0 specification update** — FAPI working group must publish an updated CIBA profile that includes PQC algorithms
 3. **GAP-8 fix** — update `FapiConstant.ALLOWED_ALGORITHMS` to include ML-DSA (only after FAPI spec allows it)
-4. **Admin UI updates** — expose ML-DSA algorithm options in the client policy executor configuration
+4. **GAP-17 fix** — update `SecureCibaAuthenticationRequestSigningAlgorithmExecutorFactory` admin UI algorithm options (depends on GAP-8)
 
 ## GitHub Issue Status
 
 **Partially tracked:**
 
-**GAP-8** is identified in the overview table but does not have a dedicated GitHub issue. The overview table correctly notes this is **spec-gated** — cannot be fixed until FAPI 2.0 includes PQC.
+**GAP-8** and **GAP-17** are identified in the overview table but do not have dedicated GitHub issues. The overview correctly notes these are **spec-gated** — cannot be fixed until FAPI 2.0 includes PQC.
 
 **Recommended approach:**
 
-Create a **placeholder issue** under #43690 with the title:
-- **"CIBA FAPI policy: add ML-DSA to allowed algorithms (pending FAPI 2.0 spec)"**
+Create a **placeholder issue** under [#43690](https://github.com/keycloak/keycloak/issues/43690) with the title:
+- **"FAPI CIBA: add ML-DSA to allowed algorithms and admin UI (pending FAPI 2.0 spec)"**
 - **Description:** 
-  > `FapiConstant.ALLOWED_ALGORITHMS` currently rejects ML-DSA algorithms even when ML-DSA `SignatureProvider` exists. This is correct behavior under FAPI 1.0 Advanced profile, which only permits PS256/384/512 and ES256/384/512.
+  > **GAP-8 (runtime enforcement):** `FapiConstant.ALLOWED_ALGORITHMS` currently rejects ML-DSA algorithms even when ML-DSA `SignatureProvider` exists. This is correct behavior under FAPI 1.0 Advanced profile, which only permits PS256/384/512 and ES256/384/512.
+  > 
+  > **GAP-17 (admin UI):** `SecureCibaAuthenticationRequestSigningAlgorithmExecutorFactory` builds its admin UI dropdown from `FapiConstant.ALLOWED_ALGORITHMS`, so administrators cannot configure ML-DSA in FAPI client policies until GAP-8 is resolved.
   > 
   > **Action required:** Once the FAPI working group publishes an updated CIBA profile that includes PQC algorithms:
-  > 1. Add ML-DSA, FN-DSA, SLH-DSA to `FapiConstant.ALLOWED_ALGORITHMS`
-  > 2. Update admin UI options in `SecureCibaAuthenticationRequestSigningAlgorithmExecutorFactory`
+  > 1. Add ML-DSA, FN-DSA, SLH-DSA to `FapiConstant.ALLOWED_ALGORITHMS` (GAP-8)
+  > 2. Verify admin UI options in `SecureCibaAuthenticationRequestSigningAlgorithmExecutorFactory` surface the new algorithms (GAP-17 — may be automatic if factory reads from the constant)
   > 
   > **Blocked on:** FAPI 2.0 specification (external dependency)
+  > 
+  > **Related:** Domain 41 (FAPI Algorithm Allowlist Enforcement) has the same GAP-8/GAP-17 pattern for JAR signed request objects
 - **Label:** `spec-gated`, `pqc-readiness`
-- **Sub-issue under:** #43690
-
-**GAP-17** is also mentioned in the overview — this may refer to a broader FAPI PQC gap across multiple domains (JAR, CIBA, etc.). Check if GAP-17 should be a parent issue covering all FAPI algorithm allowlists.
+- **Sub-issue under:** [#43690](https://github.com/keycloak/keycloak/issues/43690)
 
 ## What this means for operators
 

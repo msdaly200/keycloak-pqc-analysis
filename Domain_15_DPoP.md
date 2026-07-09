@@ -1,5 +1,7 @@
 # Domain 15 — DPoP (Demonstrating Proof of Possession)
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
 DPoP (Demonstrating Proof of Possession) is an OAuth 2.0 extension ([RFC 9449](https://www.rfc-editor.org/rfc/rfc9449.html)) that binds access tokens to the client's cryptographic key, preventing token theft and replay attacks.
@@ -151,8 +153,8 @@ This matches the OKP pattern (EdDSA uses the same structure).
 
 ## Dependencies
 
-1. **ML-DSA `SignatureProvider`** (tracked under #48821 / #48824) — required before DPoP can use ML-DSA for signing proofs
-2. **GAP-1 fix** (JWK thumbprint for AKP) — **critical blocker** for DPoP with ML-DSA; needs a new issue under #43690
+1. **ML-DSA `SignatureProvider`** (tracked under [#48821](https://github.com/keycloak/keycloak/issues/48821) / [#48824](https://github.com/keycloak/keycloak/issues/48824)) — required before DPoP can use ML-DSA for signing proofs
+2. **GAP-1 fix** (JWK thumbprint for AKP) — **critical blocker** for DPoP with ML-DSA; needs a new issue under [#43690](https://github.com/keycloak/keycloak/issues/43690)
 3. **PQC JWK specification** — IETF COSE/JOSE working group must finalize the structure for ML-DSA public keys in JWK format (may already exist in draft form)
 
 ## GitHub Issue Status
@@ -174,7 +176,7 @@ This matches the OKP pattern (EdDSA uses the same structure).
   > **Fix:** Add `KeyType.AKP` to `JWK_THUMBPRINT_REQUIRED_MEMBERS` map in `JWKSUtils.java` with appropriate required members (`crv`, `x`) per draft PQC JWK specifications.
   > 
   > **Depends on:** IETF finalizing PQC JWK structure (may already exist in COSE/JOSE drafts).
-- **Sub-issue under:** #43690
+- **Sub-issue under:** [#43690](https://github.com/keycloak/keycloak/issues/43690)
 - **Related domains:** Domain 12, Domain 15
 
 ## What this means for operators

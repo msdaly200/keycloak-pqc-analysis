@@ -1,14 +1,18 @@
 # Domain 35 — Dynamic Client Registration Tokens
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
-Registration and initial access tokens used in OAuth2 Dynamic Client Registration use symmetric HS512 signing.
+Registration and initial access tokens used in OAuth2 Dynamic Client Registration are signed using `TokenCategory.INTERNAL`, which routes to symmetric HS512 via **Domain 1** token routing logic.
 
 ## Gap
 
-**RS256 special-case logic (GAP-11, GAP-12).**
+**None.**
 
-RS256 special-case logic in `DescriptionConverter.java` (line 416) omits `id_token_signed_response_alg` only for RS256; no equivalent treatment for ML-DSA. Migration risk for `DEFAULT_SIGNATURE_ALGORITHM` fallback.
+Registration tokens themselves use **HS512** (symmetric, quantum-safe) via `TokenCategory.INTERNAL` routing. No PQC gap for this domain.
+
+**Note:** GAP-11 and GAP-12 relate to RS256 special-case logic in client registration **metadata** handling (`DescriptionConverter.java`), not the registration tokens themselves. Those gaps affect how clients declare their preferred algorithms during registration.
 
 ## Current PQC State
 
@@ -20,9 +24,13 @@ However, GAP-11 and GAP-12 relate to special-case handling that needs updating.
 
 Update RS256 special-case logic in `DescriptionConverter.java` to handle ML-DSA as a valid realm default. Document migration risk for `DEFAULT_SIGNATURE_ALGORITHM` fallback.
 
+## Dependencies
+
+**Domain 1** — Token routing logic (`TokenCategory.INTERNAL` → HS512)
+
 ## GitHub Issue Status
 
-**GAP-11** and **GAP-12** — document in [#48823](https://github.com/keycloak/keycloak/issues/48823) (operator guidance).
+No dedicated issue needed. Registration tokens are quantum-safe.
 
 ---
 

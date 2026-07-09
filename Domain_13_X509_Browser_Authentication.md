@@ -1,5 +1,7 @@
 # Domain 13 — X.509 Browser Authentication Flow
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
 X.509 Browser Authentication allows end-users to authenticate to Keycloak using an X.509 client certificate presented by their web browser during the TLS handshake (mutual TLS). This is a browser-based authentication flow, not client authentication.
@@ -134,8 +136,8 @@ Both domains:
 
 No new issue needed.
 
-- **GAP-6** (BC-FIPS blocker) is already identified in the overview table and should be tracked under the broader FIPS crypto provider work (likely a sub-issue under #43690 or #48820).
-- Operator migration guidance (informing operators that the PKI migration is the critical path, not Keycloak code changes) should be documented in **#48823** (Operator migration guidance).
+- **GAP-6** (BC-FIPS blocker) is already identified in the overview table and should be tracked under the broader FIPS crypto provider work (likely a sub-issue under [#43690](https://github.com/keycloak/keycloak/issues/43690) or [#48820](https://github.com/keycloak/keycloak/issues/48820)).
+- Operator migration guidance (informing operators that the PKI migration is the critical path, not Keycloak code changes) should be documented in [#48823](https://github.com/keycloak/keycloak/issues/48823) (Operator migration guidance).
 
 ## Related Domains
 

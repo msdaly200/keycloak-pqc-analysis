@@ -1,5 +1,7 @@
 # Domain 11 — X.509 mTLS Client Authentication
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
 X.509 mTLS (mutual TLS) Client Authentication allows OAuth2/OIDC clients to authenticate using X.509 client certificates instead of client secrets or JWT assertions. This is defined in RFC 8705 (OAuth 2.0 Mutual-TLS Client Authentication and Certificate-Bound Access Tokens).
@@ -87,8 +89,8 @@ For FIPS deployments: **no Keycloak code changes required** — this is a depend
 
 No new issue needed.
 
-- **GAP-6** (BC-FIPS blocker) is already identified in the overview table and should be tracked under the broader FIPS crypto provider work (likely a sub-issue under #43690 or #48820).
-- Operator migration guidance (informing operators that the CA migration is the critical path, not Keycloak code changes) should be documented in **#48823** (Operator migration guidance).
+- **GAP-6** (BC-FIPS blocker) is already identified in the overview table and should be tracked under the broader FIPS crypto provider work (likely a sub-issue under [#43690](https://github.com/keycloak/keycloak/issues/43690) or [#48820](https://github.com/keycloak/keycloak/issues/48820)).
+- Operator migration guidance (informing operators that the CA migration is the critical path, not Keycloak code changes) should be documented in [#48823](https://github.com/keycloak/keycloak/issues/48823) (Operator migration guidance).
 
 ## Related Domains
 

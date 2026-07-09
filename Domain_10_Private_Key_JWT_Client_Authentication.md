@@ -1,5 +1,7 @@
 # Domain 10 — private_key_jwt Client Authentication
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
 `private_key_jwt` is one of the client authentication methods defined in [OpenID Connect Core](https://openid.net/specs/openid-connect-core-1_0.html#ClientAuthentication) and [RFC 7523](https://www.rfc-editor.org/rfc/rfc7523). Instead of sending a client secret, the client proves its identity by presenting a signed JWT (`client_assertion`) at the token endpoint. Keycloak, acting as the authorization server, verifies that JWT's signature against the client's registered public key.
@@ -25,6 +27,12 @@ The only thing required for a client to authenticate with an ML-DSA (or FN-DSA /
 
 ---
 
+## Required Changes
+
+**None.** No code change required. Automatically resolved when Domain 1 is complete.
+
+---
+
 ## What does NOT need changing
 
 - `JWTClientAuthenticator.verifySignature()` — algorithm read from header; `ClientSignatureVerifierProvider` looked up dynamically
@@ -36,16 +44,16 @@ The only thing required for a client to authenticate with an ML-DSA (or FN-DSA /
 
 ## Dependencies
 
-| Dependency | Tracked by |
-|-----------|-----------|
-| ML-DSA / FN-DSA / SLH-DSA `ClientSignatureVerifierProvider` implementations | [#48824](https://github.com/keycloak/keycloak/issues/48824) |
-| Client public key registration (JWKS URL / JWK upload) supporting PQC key types | [#48824](https://github.com/keycloak/keycloak/issues/48824) |
+| Dependency | Domain | Tracked by |
+|-----------|--------|-----------|
+| ML-DSA / FN-DSA / SLH-DSA `ClientSignatureVerifierProvider` implementations | Domain 1 | [#48824](https://github.com/keycloak/keycloak/issues/48824) / [#43684](https://github.com/keycloak/keycloak/issues/43684) |
+| Client public key registration (JWKS URL / JWK upload) supporting PQC key types | Domain 1 | [#48824](https://github.com/keycloak/keycloak/issues/48824) |
 
 ---
 
 ## PQC State
 
-**PENDING PROVIDERS** — No independent code change required. `private_key_jwt` client authentication will automatically support PQC algorithms once the core signature provider implementations are available.
+**PENDING PROVIDERS** — No independent code change required. `private_key_jwt` client authentication will automatically support PQC algorithms once Domain 1 (ML-DSA ClientSignatureVerifierProvider implementations) is complete.
 
 ---
 

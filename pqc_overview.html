@@ -198,10 +198,10 @@
   <td>RSA (RS*/PS*), ECDSA (ES*), EdDSA token signing</td>
   <td>
     <span class="pqc pqc-partial">PARTIAL</span><br />
-    Early groundwork only. <code>Algorithm.java</code> has ML-DSA constants and <code>KeyType.AKP</code> exists. No ML-DSA <code>SignatureProviderFactory</code> or <code>KeyProvider</code> wired yet. Token signing cannot use ML-DSA end-to-end. <a class="gap-tag" href="#gap-4">GAP-4</a> <a class="gap-tag" href="#gap-15">GAP-15</a>
+    Early groundwork only. <code>Algorithm.java</code> has ML-DSA constants and <code>KeyType.AKP</code> exists. No ML-DSA <code>SignatureProviderFactory</code> or <code>KeyProvider</code> wired yet. Token signing cannot use ML-DSA end-to-end. <a class="gap-tag" href="#gap-15">GAP-15</a>
   </td>
   <td>
-    Implement ML-DSA <code>SignatureProviderFactory</code> + <code>KeyProvider</code>; wire <code>JavaAlgorithm</code> mappings for ML-DSA-44/65/87. Tracked under <a class="gap-tag" href="#gap-15">GAP-15</a> / <a href="https://github.com/keycloak/keycloak/issues/48821">48821</a>.<br/><a href="Domain_1_Access_Token_ID_Token_signing.md" class="detail-link">→ View implementation plan</a>
+    Implement ML-DSA <code>SignatureProviderFactory</code> + <code>KeyProvider</code>; wire <code>JavaAlgorithm</code> mappings for ML-DSA-44/65/87. Tracked under <a class="gap-tag" href="#gap-15">GAP-15</a> / <a href="https://github.com/keycloak/keycloak/issues/43692">43692</a>.<br/><a href="Domain_1_Access_Token_ID_Token_signing.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -260,7 +260,7 @@
   <td>RSA-OAEP / ECDH-ES asymmetric key encryption of UserInfo responses; RSA/ECDSA signing of signed UserInfo JWTs</td>
   <td>
     <span class="pqc pqc-blocked">BLOCKED</span><br />
-    Signing: uses a dedicated per-client attribute (<code>userinfo.response.signature.alg</code>) that does not automatically follow the realm default — explicit per-client update required on migration. Encryption: <code>jweFromContent()</code> uses <code>CekManagementProvider</code> SPI — no ML-KEM provider exists. <a class="gap-tag" href="#gap-21">GAP-21</a>
+    Signing: uses a dedicated per-client attribute (<code>userinfo.response.signature.alg</code>) that does not automatically follow the realm default — explicit per-client update required on migration. Encryption: <code>jweFromContent()</code> uses <code>CekManagementProvider</code> SPI — no ML-KEM provider exists. <a class="gap-tag" href="#gap-21">GAP-4</a> <a class="gap-tag" href="#gap-21">GAP-21</a>
   </td>
   <td>
     Encryption fix: contingent on ML-KEM <code>CekManagementProvider</code> (same as row 2). Signing fix: operator migration must explicitly update per-client <code>USER_INFO_RESPONSE_SIGNATURE_ALG</code> attributes. Document in <a href="https://github.com/keycloak/keycloak/issues/48823">48823</a>.<br />
@@ -1341,7 +1341,7 @@
   <td>
     Add conditional bootstrap of an ML-DSA SIG provider and an ML-KEM ENC provider in <code>createProviders()</code>, guarded by the same <code>hasProvider()</code> check pattern. Depends on GAP-15 / ML-DSA key provider work being completed first.
   <br />
-    <a href="Domain_46_Default_Realm_Keys.md" class="detail-link">→ View implementation plan</a>
+    <a href="Domain_46_Realm_Bootstrap.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -2138,7 +2138,7 @@
 </p>
 
 <footer>
-  <p>Made with IBM Bob</p>
+  <p>09 July 2026</p>
 </footer>
 </div>
 </body>

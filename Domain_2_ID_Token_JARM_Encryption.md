@@ -3,7 +3,7 @@
 [← Back to PQC Overview](pqc_overview.html)
 
 **ML-KEM implementation plan**  
-**New issue needed under:** [#48821](https://github.com/keycloak/keycloak/issues/48821)  
+**New issue needed under:** [#50299](https://github.com/keycloak/keycloak/issues/50299)  
 **Gaps:** GAP-4  
 **Category:** PQC Readiness Gap Analysis
 

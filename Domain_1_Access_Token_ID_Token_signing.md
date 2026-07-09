@@ -3,8 +3,9 @@
 [← Back to PQC Overview](pqc_overview.html)
 
 **ML-DSA implementation plan**  
-**GitHub Issue:** [#48821](https://github.com/keycloak/keycloak/issues/48821)  
-**Gaps:** GAP-4, GAP-15  
+**GitHub Issues:** [#43692](https://github.com/keycloak/keycloak/issues/43692), [#50678](https://github.com/keycloak/keycloak/issues/50678) 
+
+**Gaps:** GAP-15  
 **Category:** PQC Readiness Gap Analysis
 
 ---

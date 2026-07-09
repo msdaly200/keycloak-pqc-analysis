@@ -1,5 +1,7 @@
 # Domain 19 — SAML Assertion Encryption
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
 SAML assertions can be encrypted using XML Encryption to protect sensitive user attributes during transmission. Keycloak supports encrypting outbound assertions (when acting as IdP) and decrypting inbound assertions (when acting as SP in a federation scenario).
@@ -110,10 +112,10 @@ Add ML-KEM URIs to `SAMLEncryptionAlgorithms.java` (if such a constants file exi
 
 **Partially tracked:**
 
-- **#50292** — SAML PQC (parent issue)
-- **#50295** — SAML encryption (ML-KEM) (likely covers this domain)
+- [#50292](https://github.com/keycloak/keycloak/issues/50292) — SAML PQC (parent issue)
+- [#50295](https://github.com/keycloak/keycloak/issues/50295) — SAML encryption (ML-KEM) (likely covers this domain)
 
-**GAP-3** is identified in the overview table and should be tracked under #50295.
+**GAP-3** is identified in the overview table and should be tracked under [#50295](https://github.com/keycloak/keycloak/issues/50295).
 
 ## What this means for operators
 

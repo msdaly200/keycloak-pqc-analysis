@@ -1,5 +1,7 @@
 # Domain 9 — JARM Signed Authorization Response
 
+[← Back to PQC Overview](pqc_overview.html)
+
 ## What is this?
 
 JARM (JWT Secured Authorization Response Mode) is a mechanism defined in the [FAPI JARM specification](https://openid.net/specs/openid-financial-api-jarm-ID1.html) that wraps the OAuth 2.0 / OIDC authorization response (normally plain query parameters such as `code` and `state`) inside a signed JWT. Instead of receiving `?code=abc&state=xyz`, the client receives a single `?response=<JWT>`. The JWT is signed by the authorization server, allowing the client (or any party) to verify its authenticity and integrity.
@@ -22,6 +24,12 @@ The signing pipeline for JARM is identical to the one used for access tokens and
 
 ---
 
+## Required Changes
+
+**None.** No code change required. Automatically resolved when Domain 1 is complete.
+
+---
+
 ## What does NOT need changing
 
 - `JWTRedirectUriBuilder` — algorithm selection fully delegated via `TokenManager`
@@ -33,16 +41,16 @@ The signing pipeline for JARM is identical to the one used for access tokens and
 
 ## Dependencies
 
-| Dependency | Tracked by |
-|-----------|-----------|
-| ML-DSA / FN-DSA / SLH-DSA `SignatureProvider` implementations | [#48824](https://github.com/keycloak/keycloak/issues/48824) |
-| Realm-level default signature algorithm UI / defaults | [#48824](https://github.com/keycloak/keycloak/issues/48824) |
+| Dependency | Domain | Tracked by |
+|-----------|--------|-----------|
+| ML-DSA / FN-DSA / SLH-DSA `SignatureProvider` implementations | Domain 1 | [#48824](https://github.com/keycloak/keycloak/issues/48824) / [#43692](https://github.com/keycloak/keycloak/issues/43692) |
+| Realm-level default signature algorithm UI / defaults | Domain 1 | [#48824](https://github.com/keycloak/keycloak/issues/48824) |
 
 ---
 
 ## PQC State
 
-**PENDING PROVIDERS** — No independent code change required. JARM signing will automatically support PQC algorithms once the core signature providers are available.
+**PENDING PROVIDERS** — No independent code change required. JARM signing will automatically support PQC algorithms once Domain 1 (ML-DSA signature providers) is complete.
 
 ---
 
