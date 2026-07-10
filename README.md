@@ -31,7 +31,7 @@ Each distinct use-case was classified as an independent **domain**. 61 domains w
 
   📊 **[View Main Analysis](pqc_overview.html)** - Complete table of all 61 domains with gaps and implementation plans
 
-  To view the HTML file locally:
+  To view the HTML file locally, download all files and run:
   ```bash
   open pqc_overview.html
   ```
@@ -42,7 +42,7 @@ Each distinct use-case was classified as an independent **domain**. 61 domains w
 
 📋 **[View GitHub Issues Overview](Github_PQC_issues_overview.md)** - Complete hierarchy of all PQC-related GitHub issues
 
-This file tracks the relationship between the 28 identified gaps and existing GitHub issues in the [Keycloak repository](https://github.com/keycloak/keycloak). It provides:
+This file tracks PQC GitHub issues in the [Keycloak repository](https://github.com/keycloak/keycloak). It provides:
 
 - **Issue Hierarchy** - Visual tree structure showing parent/child relationships between all PQC issues
 - **Gap Mapping** - Which gaps are covered by existing issues vs. which need new issues
