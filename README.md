@@ -27,11 +27,6 @@ AI agents were used to perform a systematic grep-based sweep of the Keycloak sou
 
 Each distinct use-case was classified as an independent **domain**. 61 domains were identified in total. Each domain was assigned a PQC state and, where applicable, a concrete implementation plan.
 
-To verify each Domain, you can run the following prompt to ensure the information is still accurate. So for the first row in the table, run...
- ```bash
-/verify-pqc-domain 1
- ```
-
 ## Quick Start
 
   📊 **[View Main Analysis](pqc_overview.html)** - Complete table of all 61 domains with gaps and implementation plans
@@ -43,7 +38,26 @@ To verify each Domain, you can run the following prompt to ensure the informatio
 
   All links in the html file are markdown files.  It is recommended to include the markdown viewer extension in your browser to view the associated files. 
 
-  ## Status Distribution
+## GitHub Issues Tracking
+
+📋 **[View GitHub Issues Overview](Github_PQC_issues_overview.md)** - Complete hierarchy of all PQC-related GitHub issues
+
+This file tracks the relationship between the 28 identified gaps and existing GitHub issues in the [Keycloak repository](https://github.com/keycloak/keycloak). It provides:
+
+- **Issue Hierarchy** - Visual tree structure showing parent/child relationships between all PQC issues
+- **Gap Mapping** - Which gaps are covered by existing issues vs. which need new issues
+- **Status Tracking** - Current state (OPEN/CLOSED) and progress for each issue
+- **Domain Coverage** - Links between domains, gaps, and GitHub issues
+
+### Keeping the GitHub Issues Overview Updated
+
+To update the `Github_PQC_issues_overview.md` file with the latest GitHub issue status, use the following prompt file:
+
+```bash
+prompt_github_issues_overview.md
+```
+
+## Status Distribution
 
   - **PENDING PROVIDERS:** 20 domains (33%)
   - **PARTIAL:** 10 domains (16%)

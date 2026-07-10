@@ -1,0 +1,545 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Keycloak — PQC Symmetric Crypto Audit</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 13px;
+    line-height: 1.55;
+    color: #1f2328;
+    background: #ffffff;
+    margin: 0;
+    padding: 24px 18px 56px;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+  h1 { font-size: 19px; margin: 0 0 4px; }
+  h2 { font-size: 15px; margin: 40px 0 8px; border-bottom: 2px solid #e5e7eb; padding-bottom: 4px; }
+  .subtitle { color: #57606a; font-size: 12px; margin-bottom: 4px; }
+  p { margin: 0 0 12px; }
+
+  /* ─── Tables ──────────────────────────────────────── */
+  table { width: 100%; border-collapse: collapse; font-size: 12px; margin-bottom: 6px; }
+  th {
+    background: #1f2328; color: #fff;
+    text-align: left; padding: 8px 9px;
+    border: 1px solid #1f2328; font-weight: 600;
+    white-space: nowrap;
+  }
+  td { padding: 6px 9px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7f8fa; }
+  .files { line-height: 1.85; }
+  code {
+    font-family: "Consolas", "SFMono-Regular", monospace;
+    font-size: 10.5px;
+    background: #f0f2f5;
+    border: 1px solid #dde0e4;
+    border-radius: 3px;
+    padding: 1px 4px;
+    white-space: nowrap;
+  }
+
+  /* ─── Badges ──────────────────────────────────────── */
+  .badge {
+    display: inline-block;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 10px;
+    white-space: nowrap; line-height: 1.6;
+    margin-bottom: 2px;
+  }
+  .safe       { background: #166534; color: #fff; }
+  .warn       { background: #d97706; color: #fff; }
+  .vuln       { background: #991b1b; color: #fff; }
+  .info       { background: #1e40af; color: #fff; }
+  .neutral    { background: #57606a; color: #fff; }
+
+  .tag {
+    display: inline-block;
+    font-size: 10px; font-weight: 600;
+    padding: 1px 5px; border-radius: 3px;
+    white-space: nowrap; margin: 1px 2px 1px 0;
+  }
+  .t-sym  { background: #dcfce7; color: #166534; }
+  .t-hmac { background: #dbeafe; color: #1e40af; }
+  .t-kdf  { background: #f3e8ff; color: #6b21a8; }
+  .t-kw   { background: #fef9c3; color: #92400e; }
+  .t-enc  { background: #dcfce7; color: #166534; }
+  .t-otp  { background: #fee2e2; color: #991b1b; }
+
+  /* ─── Section divider rows ──────────────────────── */
+  .section-row td {
+    background: #f0f4f8; font-weight: 700; font-size: 11px;
+    color: #57606a; text-transform: uppercase;
+    letter-spacing: 0.06em; padding: 5px 9px;
+    border-top: 2px solid #d0d7de;
+  }
+
+  /* ─── Summary boxes ─────────────────────────────── */
+  .callout {
+    border-left: 4px solid;
+    padding: 10px 14px; margin: 16px 0; border-radius: 0 4px 4px 0;
+    font-size: 12.5px;
+  }
+  .callout-green  { border-color: #166534; background: #f0fdf4; }
+  .callout-amber  { border-color: #d97706; background: #fffbeb; }
+  .callout-red    { border-color: #991b1b; background: #fef2f2; }
+
+  /* ─── Legend ────────────────────────────────────── */
+  .legend { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 20px; align-items: center; }
+  .legend-label { font-size: 11px; color: #57606a; margin-right: 2px; }
+
+  footer {
+    margin-top: 40px; padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center; font-size: 11px; color: #57606a;
+  }
+  .muted { color: #57606a; font-size: 11px; font-style: italic; }
+  .num { color: #57606a; font-size: 11px; font-weight: 600; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Keycloak — PQC Symmetric Crypto Audit</h1>
+
+<h2>Symmetric Cryptographic Algorithm Inventory</h2>
+
+<p class="subtitle">All production (non-test) files in Keycloak that implement, register, or directly invoke symmetric cryptographic algorithms. PQC-vulnerable algorithms are highlighted in red.</p>
+
+<div class="legend">
+  <span class="legend-label">Type:</span>
+  <span class="tag t-enc">CONTENT ENC</span>
+  <span class="tag t-hmac">HMAC/MAC</span>
+  <span class="tag t-kdf">KDF / PASSWORD</span>
+  <span class="tag t-kw">KEY WRAP</span>
+  <span class="tag t-sym">KEY STORAGE</span>
+  <span class="tag t-otp">OTP</span>
+    
+  <span class="legend-label">PQC Status:</span>
+  <span class="badge safe">QUANTUM-SAFE</span>
+  <span class="badge warn">WEAK / LEGACY (classical, not quantum)</span>
+  <span class="badge vuln">PQC-VULNERABLE</span>
+</div>
+
+<table>
+<thead>
+<tr>
+  <th style="width:28px">#</th>
+  <th style="width:160px">Domain</th>
+  <th>Key Files</th>
+  <th style="width:200px">Algorithm(s)</th>
+  <th style="width:60px">Type</th>
+  <th style="width:220px">PQC / Security Status</th>
+  <th style="width:200px">Notes</th>
+</tr>
+</thead>
+<tbody>
+
+
+<tr class="section-row"><td colspan="7">AES Content Encryption (JWE)</td></tr>
+
+<tr>
+  <td class="num">S1</td>
+  <td><strong>AES-GCM Content Encryption</strong></td>
+  <td class="files">
+    <code>core/jose/jwe/enc/AesGcmEncryptionProvider.java</code><br />
+    <code>core/jose/jwe/enc/AesGcmJWEEncryptionProvider.java</code><br />
+    <code>services/crypto/Aes128GcmContentEncryptionProviderFactory.java</code><br />
+    <code>services/crypto/Aes192GcmContentEncryptionProviderFactory.java</code><br />
+    <code>services/crypto/Aes256GcmContentEncryptionProviderFactory.java</code><br />
+    <code>crypto/def/DefaultCryptoProvider.java</code><br />
+    <code>crypto/fips1402/FIPS1402Provider.java</code><br />
+    <code>crypto/elytron/WildFlyElytronProvider.java</code>
+  </td>
+  <td>AES-128-GCM, AES-192-GCM, AES-256-GCM<br /><em>(JWE enc: A128GCM, A192GCM, A256GCM)</em><br />Cipher: <code>AES/GCM/NoPadding</code><br />IV: 96-bit, Tag: 128-bit</td>
+  <td><span class="tag t-enc">CONTENT ENC</span></td>
+  <td>
+    <span class="badge safe">QUANTUM-SAFE</span><br />
+    AES-GCM is symmetric — not broken by Grover's algorithm to a meaningful degree at 256-bit (effective 128-bit post-quantum security). A256GCM is the recommended JWE content encryption algorithm. A128GCM provides ~64-bit post-quantum security — marginal.
+  </td>
+  <td>Used as the content encryption layer inside all JWE tokens (ID tokens, UserInfo, JARM, encrypted JARs). The asymmetric <em>key wrapping</em> layer (RSA-OAEP, ECDH-ES) is the PQC gap — these files are not the problem.</td>
+</tr>
+
+<tr>
+  <td class="num">S2</td>
+  <td><strong>AES-CBC-HMAC-SHA Content Encryption</strong></td>
+  <td class="files">
+    <code>core/jose/jwe/enc/AesCbcHmacShaEncryptionProvider.java</code><br />
+    <code>core/jose/jwe/enc/AesCbcHmacShaJWEEncryptionProvider.java</code><br />
+    <code>services/crypto/Aes128CbcHmacSha256ContentEncryptionProviderFactory.java</code><br />
+    <code>services/crypto/Aes192CbcHmacSha384ContentEncryptionProviderFactory.java</code><br />
+    <code>services/crypto/Aes256CbcHmacSha512ContentEncryptionProviderFactory.java</code><br />
+    <code>crypto/def/DefaultCryptoProvider.java</code><br />
+    <code>crypto/fips1402/FIPS1402Provider.java</code><br />
+    <code>crypto/elytron/WildFlyElytronProvider.java</code>
+  </td>
+  <td>A128CBC-HS256, A192CBC-HS384, A256CBC-HS512<br /><em>(RFC 7518 composite)</em><br />Cipher: <code>AES/CBC/PKCS7Padding</code><br />IV: 128-bit, HMAC over ciphertext</td>
+  <td><span class="tag t-enc">CONTENT ENC</span></td>
+  <td>
+    <span class="badge safe">QUANTUM-SAFE</span><br />
+    AES-CBC at 256-bit with HMAC-SHA512 is quantum-safe. A128CBC-HS256 provides ~64-bit post-quantum security — marginal at A128 level.
+  </td>
+  <td>Also used for internal CIBA request serialisation (<code>CIBAAuthenticationRequest</code>) which uses A256CBC-HS512 specifically — confirmed quantum-safe.</td>
+</tr>
+
+<tr>
+  <td class="num">S3</td>
+  <td><strong>AES XML Content Encryption (SAML)</strong></td>
+  <td class="files">
+    <code>saml-core/…/util/XMLEncryptionUtil.java</code><br />
+    <code>saml-core/…/BaseSAML2BindingBuilder.java</code><br />
+    <code>protocol/saml/SAMLEncryptionAlgorithms.java</code>
+  </td>
+  <td>AES-128, AES-192, AES-256 (CBC and GCM)<br />Default: AES-256-GCM<br />XML Encryption constants: <code>XMLCipher.AES_256_GCM</code>, <code>XMLCipher.AES_128</code>, <code>XMLCipher.AES_192</code>, <code>XMLCipher.AES_256</code></td>
+  <td><span class="tag t-enc">CONTENT ENC</span></td>
+  <td>
+    <span class="badge safe">QUANTUM-SAFE</span><br />
+    AES content encryption in SAML is quantum-safe at AES-256. The PQC gap in SAML encryption is entirely in the asymmetric <em>key transport</em> layer (RSA-OAEP/RSA1_5 — covered in row 19 / GAP-3).
+  </td>
+  <td>Default (<code>BaseSAML2BindingBuilder</code> line 73) is AES-256-GCM — good. Older AES-128-CBC variants remain available and are operator-selectable.</td>
+</tr>
+
+
+<tr class="section-row"><td colspan="7">HMAC — JWT Signing</td></tr>
+
+<tr>
+  <td class="num">S4</td>
+  <td><strong>HMAC JWT Signing (HS256/384/512)</strong></td>
+  <td class="files">
+    <code>core/jose/jws/crypto/HMACProvider.java</code><br />
+    <code>core/crypto/MacSignatureSignerContext.java</code><br />
+    <code>core/crypto/MacSignatureVerifierContext.java</code><br />
+    <code>core/crypto/ClientMacSignatureVerifierContext.java</code><br />
+    <code>core/crypto/JavaAlgorithm.java</code><br />
+    <code>services/crypto/MacSecretSignatureProvider.java</code><br />
+    <code>services/crypto/HS256SignatureProviderFactory.java</code><br />
+    <code>services/crypto/HS384SignatureProviderFactory.java</code><br />
+    <code>services/crypto/HS512SignatureProviderFactory.java</code>
+  </td>
+  <td>HS256 = <code>HMACSHA256</code><br />HS384 = <code>HMACSHA384</code><br />HS512 = <code>HMACSHA512</code><br /><em>Internal default: HS512</em></td>
+  <td><span class="tag t-hmac">HMAC/MAC</span></td>
+  <td>
+    <span class="badge safe">QUANTUM-SAFE</span><br />
+    HMAC is symmetric — not vulnerable to Shor's algorithm. Grover's provides at most quadratic speedup against the HMAC key. HS256 offers ~128-bit classical / ~128-bit post-quantum security. HS512 is fully quantum-safe.
+  </td>
+  <td>HS512 is the <code>INTERNAL_SIGNATURE_ALGORITHM</code> (<code>Constants.java</code> line 69) used for internal tokens (registration tokens, etc.). These are never exposed to external verifiers — no quantum threat vector.</td>
+</tr>
+
+
+<tr class="section-row"><td colspan="7">AES Key Wrapping (ECDH-ES+AxxxKW)</td></tr>
+
+<tr>
+  <td class="num">S5</td>
+  <td><strong>AES Key Wrap (A128KW / A192KW / A256KW)</strong></td>
+  <td class="files">
+    <code>crypto/def/AesKeyWrapAlgorithmProvider.java</code><br />
+    <code>crypto/elytron/AesKeyWrapAlgorithmProvider.java</code><br />
+    <code>crypto/fips1402/FIPSAesKeyWrapAlgorithmProvider.java</code>
+  </td>
+  <td>AES Key Wrap (RFC 3394)<br />A128KW — 128-bit AES<br />A192KW — 192-bit AES<br />A256KW — 256-bit AES<br />BouncyCastle <code>AESWrapEngine</code></td>
+  <td><span class="tag t-kw">KEY WRAP</span></td>
+  <td>
+    <span class="badge safe">QUANTUM-SAFE</span><br />
+    AES key wrap is symmetric — not vulnerable to Shor's algorithm. The <em>wrapping</em> step inside ECDH-ES+A256KW is safe; the quantum gap is the ECDH key agreement step (covered by rows 2, 8, 19 / GAP-4).
+  </td>
+  <td>These providers wrap the Content Encryption Key (CEK) inside ECDH-ES+AxxxKW JWE algorithms. The asymmetric ECDH part is where the PQC gap lies, not this symmetric wrapping step.</td>
+</tr>
+
+
+<tr class="section-row"><td colspan="7">AES Key Storage &amp; Management</td></tr>
+
+<tr>
+  <td class="num">S6</td>
+  <td><strong>Generated AES Key Provider</strong></td>
+  <td class="files">
+    <code>services/keys/GeneratedAesKeyProviderFactory.java</code><br />
+    <code>services/keys/AbstractGeneratedSecretKeyProvider.java</code><br />
+    <code>services/keys/DefaultKeyManager.java</code><br />
+    <code>server-spi/models/KeyManager.java</code>
+  </td>
+  <td>AES 128 / 192 / 256-bit<br />(<code>Algorithm.AES</code>, <code>KeyUse.ENC</code>)<br />Storage: <code>KeyStore.SecretKeyEntry</code><br />in PKCS12/BCFKS</td>
+  <td><span class="tag t-sym">KEY STORAGE</span></td>
+  <td>
+    <span class="badge safe">QUANTUM-SAFE</span><br />
+    AES-256 provides ~128-bit post-quantum security (Grover halves key space). Operators using AES-128 should consider migrating to AES-256 as a precaution, but neither is "broken" by quantum computing.
+  </td>
+  <td>Used for AES content encryption keys stored in realm key storage. <code>DefaultKeyManager.getActiveAesKey()</code> / <code>getAesSecretKey()</code> / <code>getAesKeys()</code>.</td>
+</tr>
+
+
+<tr class="section-row"><td colspan="7">HMAC Key Storage &amp; Management</td></tr>
+
+<tr>
+  <td class="num">S7</td>
+  <td><strong>Generated HMAC Key Provider</strong></td>
+  <td class="files">
+    <code>services/keys/GeneratedHmacKeyProviderFactory.java</code><br />
+    <code>services/keys/AbstractGeneratedSecretKeyProvider.java</code><br />
+    <code>services/keys/DefaultKeyManager.java</code><br />
+    <code>server-spi/models/KeyManager.java</code>
+  </td>
+  <td>HS256, HS384, HS512<br />Default: 128-byte (1024-bit) key<br />(<code>KeyUse.SIG</code>)<br />Storage: <code>KeyStore.SecretKeyEntry</code></td>
+  <td><span class="tag t-sym">KEY STORAGE</span></td>
+  <td>
+    <span class="badge safe">QUANTUM-SAFE</span><br />
+    HMAC key storage is quantum-safe. HS512 with a 512-bit key is fully post-quantum secure.
+  </td>
+  <td>Realm symmetric signing key management. <code>DefaultKeyManager.getActiveHmacKey()</code> / <code>getHmacSecretKey()</code> / <code>getHmacKeys()</code>.</td>
+</tr>
+
+
+<tr class="section-row"><td colspan="7">Password Hashing &amp; Key Derivation Functions</td></tr>
+
+<tr>
+  <td class="num">S8</td>
+  <td><strong>PBKDF2-HMAC-SHA256 Password Hash</strong></td>
+  <td class="files">
+    <code>server-spi-private/credential/hash/Pbkdf2Sha256PasswordHashProviderFactory.java</code><br />
+    <code>server-spi-private/credential/hash/Pbkdf2PasswordHashProvider.java</code>
+  </td>
+  <td>PBKDF2WithHmacSHA256<br />Iterations: 210,000+ (OWASP)<br />Key size: 256-bit<br /><code>SecretKeyFactory.getInstance()</code></td>
+  <td><span class="tag t-kdf">KDF / PASSWORD</span></td>
+  <td>
+    <span class="badge safe">QUANTUM-SAFE</span><br />
+    PBKDF2-SHA256 with 210,000+ iterations is the current OWASP recommended minimum. SHA-256 is not quantum-broken. PBKDF2 is <em>not</em> a quantum target — password cracking is the threat model, not Shor's algorithm.
+  </td>
+  <td>Default recommended password hashing algorithm. Replaces the deprecated SHA1 variant below.</td>
+</tr>
+
+<tr>
+  <td class="num">S9</td>
+  <td><strong>PBKDF2-HMAC-SHA512 Password Hash</strong></td>
+  <td class="files">
+    <code>server-spi-private/credential/hash/Pbkdf2Sha512PasswordHashProviderFactory.java</code><br />
+    <code>server-spi-private/credential/hash/Pbkdf2PasswordHashProvider.java</code>
+  </td>
+  <td>PBKDF2WithHmacSHA512<br />Iterations: 210,000+<br />Key size: 512-bit</td>
+  <td><span class="tag t-kdf">KDF / PASSWORD</span></td>
+  <td>
+    <span class="badge safe">QUANTUM-SAFE</span><br />
+    SHA-512 strengthens the underlying hash. Fully quantum-safe for password storage purposes.
+  </td>
+  <td>Alternative to SHA256 variant. Preferred for high-security deployments.</td>
+</tr>
+
+<tr>
+  <td class="num">S10</td>
+  <td><strong>PBKDF2-HMAC-SHA1 Password Hash</strong> <em>(Deprecated)</em></td>
+  <td class="files">
+    <code>server-spi-private/credential/hash/Pbkdf2PasswordHashProviderFactory.java</code>
+  </td>
+  <td>PBKDF2WithHmacSHA1<br />Algorithm constant line 37<br />Still available as a provider factory</td>
+  <td><span class="tag t-kdf">KDF / PASSWORD</span></td>
+  <td>
+    <span class="badge warn">WEAK / LEGACY</span><br />
+    SHA-1 is cryptographically broken (collision attacks). PBKDF2-SHA1 is deprecated in Keycloak. Not a quantum concern specifically, but should be retired entirely — any remaining credentials hashed with this algorithm should be force-rehashed on next login. This is a <em>classical</em> weakness, not a PQC one.
+  </td>
+  <td>Deprecated factory — retained for migration of existing stored credentials only. Not enabled by default. Credentials stored with this algorithm should be migrated.</td>
+</tr>
+
+<tr>
+  <td class="num">S11</td>
+  <td><strong>Argon2 Password Hash</strong></td>
+  <td class="files">
+    <code>crypto/default/…/hash/Argon2PasswordHashProviderFactory.java</code><br />
+    <code>crypto/default/…/hash/Argon2PasswordHashProvider.java</code><br />
+    <code>crypto/default/…/hash/Argon2Parameters.java</code>
+  </td>
+  <td>Argon2id, Argon2i, Argon2d<br />BouncyCastle <code>Argon2BytesGenerator</code><br />Configurable: memory, iterations, parallelism<br /><em>Not available in FIPS 140-2 mode</em></td>
+  <td><span class="tag t-kdf">KDF / PASSWORD</span></td>
+  <td>
+    <span class="badge safe">QUANTUM-SAFE</span><br />
+    Argon2id is the OWASP top recommendation for password hashing. Memory-hard — quantum speedup is negligible for memory-hard functions. Fully quantum-safe.
+  </td>
+  <td>Non-FIPS deployments only (BC default crypto backend). FIPS mode falls back to PBKDF2-SHA512. Argon2id is the strongest option available.</td>
+</tr>
+
+
+<tr class="section-row"><td colspan="7">OTP / TOTP / HOTP (HMAC-Based One-Time Passwords)</td></tr>
+
+<tr>
+  <td class="num">S12</td>
+  <td><strong>HOTP / TOTP OTP Generation</strong></td>
+  <td class="files">
+    <code>server-spi/models/utils/HmacOTP.java</code><br />
+    <code>server-spi/models/OTPPolicy.java</code><br />
+    <code>services/forms/login/freemarker/model/TotpBean.java</code><br />
+    <code>services/authentication/otp/MicrosoftAuthenticatorOTPProvider.java</code>
+  </td>
+  <td>HmacSHA1 (default — RFC 4226 mandate)<br />HmacSHA256<br />HmacSHA512<br /><code>Mac.getInstance(crypto)</code><br />Default policy: <code>OTPPolicy.DEFAULT_POLICY</code> = HmacSHA1</td>
+  <td><span class="tag t-otp">OTP</span></td>
+  <td>
+    <span class="badge warn">WEAK / LEGACY (HmacSHA1 default)</span><br />
+    <strong>HmacSHA1 is not quantum-vulnerable</strong> in the PQC sense, but SHA-1 has known classical weaknesses and is NIST-deprecated for new uses. The OTP secret is symmetric and short-lived — not a quantum harvest-now-decrypt-later target. The real concern is SHA-1 use more broadly.<br /><br />
+    <strong>The default realm OTP policy uses HmacSHA1</strong> — most deployments operate with this default. Upgrading to HmacSHA256 or HmacSHA512 is advisable as a hygiene measure.
+  </td>
+  <td>RFC 4226 (HOTP) and RFC 6238 (TOTP) formally specify HmacSHA1 as the reference algorithm. Many authenticator apps (Google Authenticator, Authy) only support HmacSHA1. Changing the default would break compatibility with enrolled devices. Considered a hygiene / deprecation concern rather than a PQC blocker.</td>
+</tr>
+
+
+<tr class="section-row"><td colspan="7">Client Secret &amp; Miscellaneous HMAC</td></tr>
+
+<tr>
+  <td class="num">S13</td>
+  <td><strong>Client Secret HMAC Utility</strong></td>
+  <td class="files">
+    <code>server-spi-private/models/utils/KeycloakModelUtils.java</code><br />
+    <code>services/resources/admin/ClientResource.java</code><br />
+    <code>services/clientpolicy/executor/ClientSecretRotationExecutor.java</code><br />
+    <code>services/protocol/oidc/OIDCLoginProtocolFactory.java</code>
+  </td>
+  <td>HmacSHA256 for client secret generation<br /><code>new SecretKeySpec(secret.getBytes(), "HmacSHA256")</code></td>
+  <td><span class="tag t-hmac">HMAC/MAC</span></td>
+  <td>
+    <span class="badge safe">QUANTUM-SAFE</span><br />
+    Used to validate client secrets via HMAC-SHA256. Client secrets are symmetric shared secrets — HMAC-SHA256 provides 128-bit classical security and is not a quantum target. Client secret rotation is handled by <code>ClientSecretRotationExecutor</code>.
+  </td>
+  <td><code>KeycloakModelUtils.generateSecret()</code> generates and stores client secrets. <code>client_secret_jwt</code> client authentication (rows 10, 21 / GAP-10) uses HS256/HS384/HS512 signing, not the asymmetric path.</td>
+</tr>
+
+<tr>
+  <td class="num">S14</td>
+  <td><strong>OCSP Request Nonce</strong></td>
+  <td class="files">
+    <code>crypto/def/BCOCSPProvider.java</code><br />
+    <code>crypto/fips1402/BCFIPSOCSPProvider.java</code>
+  </td>
+  <td>Random nonce for OCSP requests<br /><code>JWEUtils.generateSecret(16)</code> → 16 random bytes via <code>SecureRandom</code></td>
+  <td><span class="tag t-hmac">HMAC/MAC</span></td>
+  <td>
+    <span class="badge safe">QUANTUM-SAFE</span><br />
+    This is just secure random byte generation for a nonce — not a cryptographic algorithm in the symmetric cipher sense. No quantum concern.
+  </td>
+  <td>Used to prevent replay attacks on OCSP responses. The OCSP response signature verification itself delegates to BouncyCastle and is algorithm-agnostic (rows 42–44).</td>
+</tr>
+
+</tbody>
+</table>
+
+
+
+
+
+
+<h2>Summary — Symmetric Crypto &amp; PQC</h2>
+
+<div class="callout callout-green">
+  <strong>No PQC-broken symmetric algorithms found in Keycloak production code.</strong>
+  Symmetric algorithms (AES, HMAC, Argon2, PBKDF2) are not broken by Shor's algorithm. Grover's algorithm provides at most a quadratic speedup, effectively halving the key-length security margin. AES-256 and HS512 remain quantum-safe; AES-128 and HS256 retain ~64-bit post-quantum security which is marginal but not immediately threatened.
+</div>
+
+<div class="callout callout-amber">
+  <strong>Two classical (non-PQC) concerns worth addressing:</strong>
+  <ol style="margin:8px 0 0 0;padding-left:18px">
+    <li><strong>PBKDF2-HMAC-SHA1</strong> (S10) — Deprecated factory retained for migration. SHA-1 has classical collision weaknesses. Credentials stored with this algorithm should be force-rehashed at next login. Not a PQC concern but a hygiene one.</li>
+    <li><strong>HOTP/TOTP default = HmacSHA1</strong> (S12) — Default realm OTP policy uses SHA-1 per RFC 4226 compatibility. Not a quantum vulnerability (OTP secrets are not harvest-now-decrypt-later targets), but operators running security-sensitive deployments should consider migrating enrolled authenticators to HmacSHA256/512 where authenticator app support permits.</li>
+  </ol>
+</div>
+
+<div class="callout callout-green">
+  <strong>Symmetric algorithms are not the PQC risk surface in Keycloak.</strong>
+  The entire PQC risk sits in the <em>asymmetric</em> layer — RSA and ECDSA/ECDH key pairs used for JWT signing and JWE key encapsulation (your existing 61-row analysis). Symmetric content encryption (AES-GCM, AES-CBC-HMAC) is safe once the asymmetric key transport layer is replaced with ML-KEM.
+</div>
+
+<table style="margin-top:8px">
+<thead>
+<tr>
+  <th>Algorithm Family</th>
+  <th style="width:140px">Files</th>
+  <th style="width:130px">PQC Status</th>
+  <th>Action Required</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+  <td>AES-GCM (A128/192/256GCM)</td>
+  <td>S1 — 8 files</td>
+  <td><span class="badge safe">QUANTUM-SAFE</span></td>
+  <td>None. A256GCM preferred; A128GCM marginal (~64-bit PQ security).</td>
+</tr>
+<tr>
+  <td>AES-CBC-HMAC (A128/192/256CBC-HS*)</td>
+  <td>S2 — 8 files</td>
+  <td><span class="badge safe">QUANTUM-SAFE</span></td>
+  <td>None. A256CBC-HS512 fully safe; A128CBC-HS256 marginal.</td>
+</tr>
+<tr>
+  <td>AES XML Encryption (SAML)</td>
+  <td>S3 — 3 files</td>
+  <td><span class="badge safe">QUANTUM-SAFE</span></td>
+  <td>None for symmetric layer. Default is AES-256-GCM. PQC gap is in RSA-OAEP key transport (GAP-3).</td>
+</tr>
+<tr>
+  <td>HMAC JWT Signing (HS256/384/512)</td>
+  <td>S4 — 9 files</td>
+  <td><span class="badge safe">QUANTUM-SAFE</span></td>
+  <td>None.</td>
+</tr>
+<tr>
+  <td>AES Key Wrap (A128/192/256KW)</td>
+  <td>S5 — 3 files</td>
+  <td><span class="badge safe">QUANTUM-SAFE</span></td>
+  <td>None for symmetric step. ECDH key agreement step has PQC gap (GAP-4).</td>
+</tr>
+<tr>
+  <td>AES Key Storage Provider</td>
+  <td>S6 — 4 files</td>
+  <td><span class="badge safe">QUANTUM-SAFE</span></td>
+  <td>Consider defaulting new realms to AES-256 (not AES-128) as a hygiene measure.</td>
+</tr>
+<tr>
+  <td>HMAC Key Storage Provider</td>
+  <td>S7 — 4 files</td>
+  <td><span class="badge safe">QUANTUM-SAFE</span></td>
+  <td>None.</td>
+</tr>
+<tr>
+  <td>PBKDF2-HMAC-SHA256 (password hash)</td>
+  <td>S8 — 2 files</td>
+  <td><span class="badge safe">QUANTUM-SAFE</span></td>
+  <td>None.</td>
+</tr>
+<tr>
+  <td>PBKDF2-HMAC-SHA512 (password hash)</td>
+  <td>S9 — 2 files</td>
+  <td><span class="badge safe">QUANTUM-SAFE</span></td>
+  <td>None.</td>
+</tr>
+<tr>
+  <td><strong>PBKDF2-HMAC-SHA1 (deprecated)</strong></td>
+  <td>S10 — 1 file</td>
+  <td><span class="badge warn">WEAK / LEGACY</span></td>
+  <td>Classical SHA-1 weakness (not PQC). Force-rehash existing credentials. Do not enable for new deployments.</td>
+</tr>
+<tr>
+  <td>Argon2id/i/d (password hash)</td>
+  <td>S11 — 3 files</td>
+  <td><span class="badge safe">QUANTUM-SAFE</span></td>
+  <td>None. Best available option for non-FIPS deployments.</td>
+</tr>
+<tr>
+  <td><strong>HOTP/TOTP — HmacSHA1 default</strong></td>
+  <td>S12 — 4 files</td>
+  <td><span class="badge warn">WEAK / LEGACY (default)</span></td>
+  <td>Not a PQC concern. SHA-1 is NIST-deprecated. Consider migrating enrolled authenticators to HmacSHA256 where authenticator app compatibility permits. Default <code>OTPPolicy.DEFAULT_POLICY</code> should be updated to HmacSHA256.</td>
+</tr>
+<tr>
+  <td>Client Secret HMAC (HmacSHA256)</td>
+  <td>S13 — 4 files</td>
+  <td><span class="badge safe">QUANTUM-SAFE</span></td>
+  <td>None.</td>
+</tr>
+<tr>
+  <td>OCSP Nonce (SecureRandom)</td>
+  <td>S14 — 2 files</td>
+  <td><span class="badge safe">QUANTUM-SAFE</span></td>
+  <td>None.</td>
+</tr>
+</tbody>
+</table>
+
+</div>
+</body>
+</html>
