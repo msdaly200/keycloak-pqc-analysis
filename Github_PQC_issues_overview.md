@@ -92,7 +92,7 @@ These issues exist but are not tracked as sub-issues in the main tree. They may 
 
 ## Domains Missing GitHub Issues
 
-Based on the comprehensive analysis of 61 domains in `pqc_overview.html`, the following domains and gaps **require new GitHub issues**:
+Based on the comprehensive analysis of 61 domains in `pqc_overview.html`, the following domains and gaps **may require new GitHub issues**:
 
 ### CRITICAL Priority - New Issues Needed
 
@@ -135,7 +135,7 @@ Based on the comprehensive analysis of 61 domains in `pqc_overview.html`, the fo
 | **GAP-11** | Dynamic Client Registration: RS256 Special-Case Logic | RS256 omitted from DCR response, no ML-DSA equivalent | Domain 35 |
 | **Domain 52** | Docker Registry: Configurable Certificate Algorithm | Hardcoded RSA-2048 for test/dev path | Domain 52 |
 
-### EXTERNAL DEPENDENCIES - No Action Needed (Document Only)
+### EXTERNAL DEPENDENCIES
 
 | GAP/Domain | Title | Blocker | Affected Domains |
 |------------|-------|---------|------------------|
