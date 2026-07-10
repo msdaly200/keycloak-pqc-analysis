@@ -14,7 +14,7 @@ The entire Keycloak codebase (main branch) was searched for every location that 
 - **Client-side tooling** — SDK JWT credential providers, DPoP proof generation, admin CLI (`kcadm.sh` / `kcreg.sh`)
 - **Protocol-specific enforcement** — FAPI algorithm allowlists, CAEP/SET signing, WebAuthn/FIDO2
 
-Note: searches were conducted up to 3rd of July 2026. Any changes/improvements from that date will not be automatically updated in these files.
+Note: searches were conducted up to 10th of July 2026. Any changes/improvements from that date will not be automatically updated in these files.
 
 ## How It Was Conducted
 
@@ -54,26 +54,8 @@ This file tracks the relationship between the 28 identified gaps and existing Gi
 To update the `Github_PQC_issues_overview.md` file with the latest GitHub issue status, use the following prompt file:
 
 ```bash
-prompt_github_issues_overview.md
+ Please read and execute the instructions in Github_PQC_issues_overview_prompt.md
 ```
 
-## Status Distribution
-
-  - **PENDING PROVIDERS:** 20 domains (33%)
-  - **PARTIAL:** 10 domains (16%)
-  - **BLOCKED:** 24 domains (39%)
-  - **SAFE:** 4 domains (7%)
-  - **EXTERNAL DEPENDENCY:** 3 domains (5%)
-
-
-## Other Considerations for PQC Readiness
-
-### Storage Constraints and Database Schema
-
-**Realm Attribute Value Length (`REALM_ATTRIBUTE.VALUE`, `NVARCHAR(255)`)**
-The 255-character column limit is sufficient for current algorithm policy strings but may be tight if multiple PQC algorithm identifiers are concatenated alongside attestation or user-verification parameters. **Recommendation:** Add a Liquibase migration expanding to `NVARCHAR(1024)` or `TEXT/CLOB`. **Priority: Medium** — current configurations are unlikely to overflow, but this future-proofs the schema.
-
-**Credential Storage (Already PQC-Ready)**
-The `CREDENTIAL` table uses `CLOB` columns (`SECRET_DATA`, `CREDENTIAL_DATA`) with no size limit. ML-DSA-87 public keys (2,592 bytes) and signatures (4,595 bytes) fit comfortably, as do large Base64-encoded WebAuthn credentials. **No schema change required.**
-
+This prompt provides detailed instructions for using the GitHub CLI (`gh`) to fetch current issue statuses and update the local file. **Note:** This is READ-ONLY access to GitHub - it will not modify any issues, only read their status to update the local markdown file.
 

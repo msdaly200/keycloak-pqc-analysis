@@ -2,7 +2,7 @@
 
 **Parent Feature Issue:** [#43690 - Post-Quantum Cryptography (PQC) readiness](https://github.com/keycloak/keycloak/issues/43690)
 
-**Last Updated:** 2026-07-09
+**Last Updated:** 2026-07-10
 
 ---
 
@@ -18,7 +18,7 @@ Top-level feature issue tracking full PQC readiness for Keycloak.
 | Issue | Title | Status | Type | Progress | Sub-Issues | Gaps |
 |-------|-------|--------|------|----------|------------|------|
 | [#43691](https://github.com/keycloak/keycloak/issues/43691) | Hybrid key exchange in TLS 1.3 | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | milestone | N/A | 0 | |
-| [#45168](https://github.com/keycloak/keycloak/issues/45168) | Review what is needed for PQC readiness in Keycloak | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | spike | 4 of 12 | **12** | |
+| [#45168](https://github.com/keycloak/keycloak/issues/45168) | Review what is needed for PQC readiness in Keycloak | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | spike | 6 of 12 | **12** | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48819](https://github.com/keycloak/keycloak/issues/48819) | Create inventory of cryptography in Keycloak | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48820](https://github.com/keycloak/keycloak/issues/48820) | Investigate and plan what is required for TLS PQC support | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48822](https://github.com/keycloak/keycloak/issues/48822) | Investigate and plan what is required for truststore and keystores to support PQC | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
@@ -80,6 +80,7 @@ These issues exist but are not tracked as sub-issues in the main tree. They may 
 | [50680](https://github.com/keycloak/keycloak/issues/50680) | OPEN | Add test coverage for truststore loading with PQC certificates | Domain 34 (testing) |
 | [49968](https://github.com/keycloak/keycloak/issues/49968) | OPEN | Switch internal HTTP client from Apache to Vert.x/Netty | HTTP client |
 | [50355](https://github.com/keycloak/keycloak/issues/50355) | OPEN | Post-Quantum Keys choice for signing/encryption | UI/UX configuration |
+| *Need to create* | — | **Database Schema: Expand REALM_ATTRIBUTE.VALUE for PQC Algorithm Strings** | Database schema (should be under [#48823](https://github.com/keycloak/keycloak/issues/48823)) |
 
 ### OID4VCI Specific
 
@@ -124,6 +125,7 @@ Based on the comprehensive analysis of 61 domains in `pqc_overview.html`, the fo
 | **GAP-10** | IdP Broker: Configurable Outbound Assertion Algorithm | Hardcoded RS256 fallback for private_key_jwt | Domain 21 |
 | **GAP-13** | Admin CLI: Add --sigalg Parameter for Client Assertions | kcadm.sh/kcreg.sh hardcoded RS256 | Domain 38 |
 | **GAP-18** | OID4VC c_nonce JWT: Replace Hardcoded ES256/RS256 Selection | Bypasses realm default algorithm | Domain 27 |
+| **Database Schema** | Database Schema: Expand REALM_ATTRIBUTE.VALUE for PQC Algorithm Strings | 255-character column limit may be insufficient for concatenated PQC algorithm identifiers | Infrastructure |
 
 ### LOW Priority - New Issues Needed
 
