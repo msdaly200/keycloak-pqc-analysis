@@ -51,11 +51,10 @@ This file tracks PQC GitHub issues in the [Keycloak repository](https://github.c
 
 ### Keeping the GitHub Issues Overview Updated
 
-To update the `Github_PQC_issues_overview.md` file with the latest GitHub issue status, use the following prompt file:
+To update the `Github_PQC_issues_overview.md` file with the latest GitHub issue status, use the following prompt in a claude terminal:
 
 ```bash
- Please read and execute the instructions in Github_PQC_issues_overview_prompt.md
+Update the file Github_PQC_issues_overview.md with the latest status from GitHub for all Keycloak PQC-related issues
 ```
-
 This prompt provides detailed instructions for using the GitHub CLI (`gh`) to fetch current issue statuses and update the local file. **Note:** This is READ-ONLY access to GitHub - it will not modify any issues, only read their status to update the local markdown file.
 

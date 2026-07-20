@@ -2,7 +2,7 @@
 
 **Parent Feature Issue:** [#43690 - Post-Quantum Cryptography (PQC) readiness](https://github.com/keycloak/keycloak/issues/43690)
 
-**Last Updated:** 2026-07-10
+**Last Updated:** 2026-07-20
 
 ---
 
@@ -18,11 +18,11 @@ Top-level feature issue tracking full PQC readiness for Keycloak.
 | Issue | Title | Status | Type | Progress | Sub-Issues | Gaps |
 |-------|-------|--------|------|----------|------------|------|
 | [#43691](https://github.com/keycloak/keycloak/issues/43691) | Hybrid key exchange in TLS 1.3 | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | milestone | N/A | 0 | |
-| [#45168](https://github.com/keycloak/keycloak/issues/45168) | Review what is needed for PQC readiness in Keycloak | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | spike | 6 of 12 | **12** | |
+| [#45168](https://github.com/keycloak/keycloak/issues/45168) | Review what is needed for PQC readiness in Keycloak | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | spike | 7 of 12 | **12** | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48819](https://github.com/keycloak/keycloak/issues/48819) | Create inventory of cryptography in Keycloak | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48820](https://github.com/keycloak/keycloak/issues/48820) | Investigate and plan what is required for TLS PQC support | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48822](https://github.com/keycloak/keycloak/issues/48822) | Investigate and plan what is required for truststore and keystores to support PQC | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48823](https://github.com/keycloak/keycloak/issues/48823) | Investigate and plan what is needed for production readiness around PQC | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48823](https://github.com/keycloak/keycloak/issues/48823) | Investigate and plan what is needed for production readiness around PQC | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48824](https://github.com/keycloak/keycloak/issues/48824) | Investigate and plan what is needed for OpenID Connect and OAuth 2.0 to be PQC ready | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48825](https://github.com/keycloak/keycloak/issues/48825) | Investigate and plan what is needed for SAML 2.0 to be PQC ready | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48826](https://github.com/keycloak/keycloak/issues/48826) | Investigate what is required for WebAuthn/passkeys to be PQC ready | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
