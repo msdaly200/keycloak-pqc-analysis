@@ -438,7 +438,7 @@
   <td class="num">12</td>
   <td><strong>Attestation-Based Client Authentication</strong><br /><em>(draft-ietf-oauth-attestation-based-client-auth)</em></td>
   <td class="files">
-    <code>authenticators/client/AttestationBasedClientAuthenticator.java</code>
+    <code>authentication/authenticators/client/AttestationBasedClientAuthenticator.java</code>
   </td>
   <td>Two asymmetric verifications per request:<br />① Client Attestation JWT — attester's public key (RS*, PS*, ES*, EdDSA)<br />② Client Attestation PoP JWT — client instance key from <code>cnf.jwk</code></td>
   <td><span class="cat sign">SIGN</span></td>
@@ -674,10 +674,10 @@
   <td>Hardcoded RS256 key selection for SP metadata document signing and artifact resolve response signing</td>
   <td>
     <span class="pqc pqc-blocked">BLOCKED</span><br />
-    <code>SAMLIdentityProvider.java</code> line 506 hardcodes RS256 for SP metadata signing. ML-DSA keys excluded from exported IDP metadata descriptor entirely. Same two-level gap as row 18. <a class="gap-tag" href="#gap-9">GAP-9</a>
+    <code>SAMLIdentityProvider.java</code> line 507 hardcodes RS256 for SP metadata signing. ML-DSA keys excluded from exported IDP metadata descriptor entirely. Same two-level gap as row 18. <a class="gap-tag" href="#gap-9">GAP-9</a>
   </td>
   <td>
-    Fix hardcoded RS256 key-selection call site at line 506 and IDP metadata descriptor export to include ML-DSA keys. Part of <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a> / <a href="https://github.com/keycloak/keycloak/issues/50295">50295</a> sub-issue.<br />
+    Fix hardcoded RS256 key-selection call site at line 507 and IDP metadata descriptor export to include ML-DSA keys. Part of <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a> / <a href="https://github.com/keycloak/keycloak/issues/50295">50295</a> sub-issue.<br />
     <a href="Domain_20_SAML_IdP_Broker.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
@@ -736,7 +736,7 @@
     <code>protocol/saml/DefaultSamlArtifactResolver.java</code><br />
     <code>protocol/saml/DefaultSamlArtifactResolverFactory.java</code>
   </td>
-  <td>Resolves SAML artifacts by fetching the full SAML assertion over a SOAP backchannel (<code>ArtifactResolve</code> / <code>ArtifactResponse</code>); resolved assertions are then processed by the same SAML signing/verification chain as rows 18–20</td>
+  <td>Manages SAML artifact storage, lookup, and routing — maps a 44-byte artifact identifier to a client session and encodes/decodes the artifact byte format. Artifact-resolved assertions (fetched over the SOAP backchannel by <code>SAMLEndpoint.java</code>, already covered in row 20) are then processed by the same SAML signing/verification chain as rows 18–20</td>
   <td><span class="cat sign">SIGN</span></td>
   <td>Backchannel SAML assertion fetch — assertion signature verification uses same RSA/RSA-PSS XML signing chain</td>
   <td>
@@ -770,6 +770,52 @@
   </td>
 </tr>
 
+<tr class="section-row"><td colspan="8">OID4VP Identity Provider</td></tr>
+
+<tr>
+  <td class="num">62</td>
+  <td><strong>OID4VP Identity Provider — Request Signing &amp; Response Encryption</strong></td>
+  <td class="files">
+    <code>broker/oid4vp/OID4VPIdentityProvider.java</code><br />
+    <code>broker/oid4vp/OID4VPIdentityProviderEndpoint.java</code><br />
+    <code>broker/oid4vp/RequestObject.java</code><br />
+    <code>broker/oid4vp/EphemeralKey.java</code><br />
+    <code>broker/oid4vp/ResponseEncryption.java</code>
+  </td>
+  <td>Keycloak acting as an OID4VP <em>verifier</em>: (1) signs the request object sent to the wallet; (2) enforces accepted VP token signature algorithms; (3) uses ECDH-ES / secp256r1 to encrypt the <code>direct_post.jwt</code> response</td>
+  <td><span class="cat both">SIGN+ENC</span></td>
+  <td>Hardcoded ES256 for request object signing and VP token algorithm enforcement; ECDH-ES secp256r1 hardcoded for response encryption (HAIP spec-gated)</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    Signing: <code>OID4VPIdentityProvider.signingKey()</code> hardcodes <code>Algorithm.ES256</code> at lines 187–188 for both active-key lookup and kid-based lookup. <code>ACCEPTED_ALGORITHMS = List.of(Algorithm.ES256)</code> (line 79) is used by <code>OID4VPIdentityProviderEndpoint.requireAcceptedAlgorithm()</code> to actively reject all non-ES256 algorithms, including ML-DSA. Even after ML-DSA providers exist, VP tokens signed with ML-DSA will be rejected at runtime. Encryption: <code>EphemeralKey.generate()</code> hardcodes <code>secp256r1</code> (line: <code>CURVE_SEC = "secp256r1"</code>); <code>ResponseEncryption.KEY_MANAGEMENT_ALG = ECDH_ES</code> — spec-gated by HAIP which currently mandates ECDH-ES/P-256 for <code>direct_post.jwt</code>. Developer-acknowledged TODO at lines 77–79. <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a>
+  </td>
+  <td>
+    (1) Replace <code>ACCEPTED_ALGORITHMS</code> hardcoded list with a configurable/SPI-driven set; update <code>signingKey()</code> to select from configured algorithm. (2) Track HAIP spec evolution for ECDH-ES/ML-KEM response encryption once the spec gates lift. No GitHub issue yet — requires a new issue under the PQC tracking parent. <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a>
+  </td>
+</tr>
+
+<tr class="section-row"><td colspan="8">OID4VCI Credential Response Encryption</td></tr>
+
+<tr>
+  <td class="num">63</td>
+  <td><strong>OID4VCI Credential Response Encryption (OID4VCIssuerEndpoint)</strong></td>
+  <td class="files">
+    <code>protocol/oid4vc/issuance/OID4VCIssuerEndpoint.java</code><br />
+    <code>protocol/oid4vc/issuance/OID4VCIssuerWellKnownProvider.java</code><br />
+    <code>oid4vc/model/CredentialResponseEncryption.java</code>
+  </td>
+  <td>OID4VCI credential response encryption path — Keycloak encrypts the credential response to the client's key when <code>credential_response_encryption</code> is requested</td>
+  <td><span class="cat enc">ENC</span></td>
+  <td>Architecturally SPI-driven for key management algorithm selection; blocked by absence of ML-KEM <code>CekManagementProviderFactory</code>. Default fallback to RSA-OAEP/RSA-OAEP-256 when no ENC keys are registered</td>
+  <td>
+    <span class="pqc pqc-blocked">BLOCKED</span><br />
+    <code>OID4VCIssuerEndpoint.selectKeyManagementAlg()</code> (line ~1403) validates the client's requested <code>alg</code> against <code>getSupportedEncryptionAlgorithms(session)</code>. <code>OID4VCIssuerWellKnownProvider.getSupportedEncryptionAlgorithms()</code> (line ~384) delegates to <code>CryptoUtils.getSupportedAsymmetricEncryptionAlgorithms(session)</code>, which enumerates the realm's active ENC keys — this layer is SPI-driven and will advertise ML-KEM once providers exist. However, if no ENC keys are registered the method defaults to <code>{RSA-OAEP, RSA-OAEP-256}</code> (quantum-vulnerable). The blocking dependency is GAP-4: no ML-KEM <code>CekManagementProviderFactory</code> exists. <a class="gap-tag" href="#gap-4">GAP-4</a>
+  </td>
+  <td>
+    No independent Keycloak code changes are needed beyond GAP-4 (ML-KEM <code>CekManagementProviderFactory</code>). Once ML-KEM CEK management providers are registered, <code>getSupportedEncryptionAlgorithms()</code> will advertise them automatically and clients can request ML-KEM key wrap. The RSA-OAEP fallback default should also be revisited once ML-KEM providers are available. Track under the same GitHub issue as GAP-4. <a class="gap-tag" href="#gap-4">GAP-4</a>
+  </td>
+</tr>
+
 <tr class="section-row"><td colspan="8">OIDC / OAuth2 Identity Provider Broker</td></tr>
 
 <tr>
@@ -785,7 +831,7 @@
   <td>Client assertion signing when federating to external OAuth2/OIDC providers (outbound); RSA/ECDSA token verification (inbound)</td>
   <td>
     <span class="pqc pqc-partial">PARTIAL</span><br />
-    Inbound verification: SPI-driven, will inherit ML-DSA. Outbound: <code>AbstractOAuth2IdentityProvider.java</code> line 697 hardcodes <code>Algorithm.RS256</code> as fallback for <code>private_key_jwt</code> broker assertions. No path to select ML-DSA as outbound default. <a class="gap-tag" href="#gap-10">GAP-10</a>
+    Inbound verification: SPI-driven, will inherit ML-DSA. Outbound: <code>AbstractOAuth2IdentityProvider.java</code> line 745 hardcodes <code>Algorithm.RS256</code> as fallback for <code>private_key_jwt</code> broker assertions; line 737 hardcodes <code>Algorithm.HS256</code> as fallback for <code>client_secret_jwt</code>. No path to select ML-DSA as outbound default. <a class="gap-tag" href="#gap-10">GAP-10</a>
   </td>
   <td>
     Make outbound broker assertion algorithm configurable so ML-DSA can be selected once providers exist. Fallback should remain configurable rather than hardcoded to RS256.<br />
@@ -1610,16 +1656,16 @@
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-9</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>SAML Protocol — Hardcoded RS256 Key Lookup</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/saml/SAMLIdentityProvider.java</code> (lines 415, 506)<br /><code>protocol/saml/SamlProtocol.java</code> (line 544)<br /><code>protocol/saml/SamlService.java</code> (line 965)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Four hardcoded RS256 key-selection call sites in SAML code: SP metadata signing key export (line 415), SP metadata document signing (line 506), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 965). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. No GitHub sub-issue exists for this gap; requires a third sub-issue under <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a>.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/saml/SAMLIdentityProvider.java</code> (lines 414, 507)<br /><code>protocol/saml/SamlProtocol.java</code> (line 544)<br /><code>protocol/saml/SamlService.java</code> (line 965)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Four hardcoded RS256 key-selection call sites in SAML code: SP metadata signing key export (line 414), SP metadata document signing (line 507), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 965). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. No GitHub sub-issue exists for this gap; requires a third sub-issue under <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a>.</td>
 </tr>
 
 <tr id="gap-10" style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-10</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>IdP Broker — Hardcoded RS256 / HS256 Fallback</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/oidc/AbstractOAuth2IdentityProvider.java</code> (lines 689, 697)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Line 689 hardcodes <code>Algorithm.HS256</code> as the fallback when <code>client_secret_jwt</code> has no configured algorithm. Line 697 hardcodes <code>Algorithm.RS256</code> as the fallback for all other client assertion signing (e.g., <code>private_key_jwt</code>). An IdP broker configured for <code>private_key_jwt</code> will always fall back to RS256 unless the admin explicitly sets <code>clientAssertionSigningAlg</code>. No path to select ML-DSA as the outbound default even after providers exist.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/oidc/AbstractOAuth2IdentityProvider.java</code> (lines 737, 745)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Line 737 hardcodes <code>Algorithm.HS256</code> as the fallback when <code>client_secret_jwt</code> has no configured algorithm. Line 745 hardcodes <code>Algorithm.RS256</code> as the fallback for all other client assertion signing (e.g., <code>private_key_jwt</code>). An IdP broker configured for <code>private_key_jwt</code> will always fall back to RS256 unless the admin explicitly sets <code>clientAssertionSigningAlg</code>. No path to select ML-DSA as the outbound default even after providers exist.</td>
 </tr>
 
 <tr id="gap-11">
@@ -1634,7 +1680,7 @@
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-12</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Constants.DEFAULT_SIGNATURE_ALGORITHM — RS256 Fallback Propagation</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>server-spi-private/…/models/Constants.java</code><br /><code>jose/jws/DefaultTokenManager.java</code> (line 232)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>server-spi-private/…/models/Constants.java</code><br /><code>jose/jws/DefaultTokenManager.java</code> (line 233)</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>DEFAULT_SIGNATURE_ALGORITHM = Algorithm.RS256</code> is the ultimate fallback for all token signing when neither client nor realm has configured an algorithm. Any incomplete PQC migration (realm default updated but client attributes not set) will silently revert to classical RS256. Operators and documentation must explicitly flag this transition risk.</td>
 </tr>
 
@@ -1717,7 +1763,7 @@
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-22</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Attestation-Based Client Authentication — Algorithm Enforcement &amp; JWK Thumbprint</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>authenticators/client/AttestationBasedClientAuthenticator.java</code> (lines 418, 483–489)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>authentication/authenticators/client/AttestationBasedClientAuthenticator.java</code> (lines 418, 483–489)</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Two concerns: (1) An in-code <code>[TODO]</code> at line 418 notes that algorithm-type enforcement (must be a registered asymmetric algorithm) is not yet implemented — a security hardening gap independent of PQC, compounded by it. (2) If the <code>cnf.jwk</code> claim contains an ML-DSA (AKP) key, <code>JWKSUtils.computeThumbprint()</code> will throw <code>UnsupportedOperationException</code> (dependent on GAP-1). Not covered by the original domain analysis. Should be tracked under <a href="https://github.com/keycloak/keycloak/issues/48824">48824</a> or a dedicated sub-issue.</td>
 </tr>
 
@@ -1727,6 +1773,22 @@
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#57606a; font-weight:600;">LOW</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>protocol/oidc/OIDCWellKnownProvider.java</code> (line 85)</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED = list(Algorithm.RS256.toString())</code> is a static constant used to advertise supported CIBA backchannel authentication request signing algorithms. Unlike other discovery fields (which are dynamically populated from registered <code>SignatureProvider</code> instances), this one remains hardcoded to RS256 even after ML-DSA providers are registered. A conformant CIBA client relying on this field will never attempt ML-DSA-signed requests. Fix: replace with a dynamic lookup merging registered asymmetric <code>SignatureProvider</code> algorithm names — same pattern as <code>id_token_signing_alg_values_supported</code>.</td>
+</tr>
+
+<tr id="gap-24" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-24</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>OID4VP — Hardcoded ES256 Signing / <code>ACCEPTED_ALGORITHMS</code> List</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/oid4vp/OID4VPIdentityProvider.java</code> (lines 79, 187–188)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>ACCEPTED_ALGORITHMS = List.of(Algorithm.ES256)</code> (line 79) is used by <code>OID4VPIdentityProviderEndpoint.requireAcceptedAlgorithm()</code> to actively reject all non-ES256 VP token signatures at runtime, including ML-DSA. <code>signingKey()</code> (lines 187–188) hardcodes ES256 for both active-key lookup and kid-based lookup, preventing ML-DSA key selection. Even after ML-DSA providers exist, OID4VP will silently fail at the algorithm enforcement layer. The <code>SIGNING_KEY_ID</code> config attribute (in <code>OID4VPIdentityProviderConfig</code>) feeds into <code>signingKey()</code> — the config surface is present but the algorithm is still pinned. Fix: replace <code>ACCEPTED_ALGORITHMS</code> hardcoded list with a configurable/SPI-driven set; update <code>signingKey()</code> to select from configured algorithm.</td>
+</tr>
+
+<tr id="gap-25">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-25</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>OID4VP — Hardcoded ECDH-ES/secp256r1 Response Encryption (HAIP spec-gated)</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#57606a; font-weight:600;">LOW (EXTERNAL)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/oid4vp/EphemeralKey.java</code> (line 41); <code>broker/oid4vp/ResponseEncryption.java</code> (line 38)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>EphemeralKey.generate()</code> hardcodes <code>CURVE_SEC = "secp256r1"</code> (line 41); <code>ResponseEncryption.KEY_MANAGEMENT_ALG = ECDH_ES</code> (line 38). Both are spec-gated: the HAIP (High Assurance Interoperability Profile) currently mandates ECDH-ES/P-256 for <code>direct_post.jwt</code> response encryption. No Keycloak-side fix is appropriate until HAIP specifies ML-KEM support. Track HAIP spec evolution; update once the spec gates lift. No new GitHub issue required at this time — existing HAIP tracker is the dependency.</td>
 </tr>
 
 </tbody>
@@ -1980,6 +2042,18 @@
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>model/infinispan/…/jgroups/certificates/JGroupsCertificate.java</code><br /><code>model/infinispan/…/jgroups/certificates/ReloadingX509ExtendedKeyManager.java</code><br /><code>model/infinispan/…/jgroups/certificates/ReloadingX509ExtendedTrustManager.java</code><br /><code>model/infinispan/…/jgroups/certificates/Utils.java</code></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JGroups cluster mTLS certificate management — handles dynamic hot-reloading of X.509 certificates for the production cluster TLS path referenced in row 39. <code>ReloadingX509ExtendedKeyManager</code> and <code>ReloadingX509ExtendedTrustManager</code> wrap the JVM JSSE <code>X509ExtendedKeyManager</code>/<code>X509ExtendedTrustManager</code> with file-watch-based reload logic. Algorithm-agnostic at the application layer — PQC readiness tracks with the JVM TLS 1.3 stack and the CA issuing the cluster certificates (external dependency, same category as rows 11, 13, 39). No Keycloak code changes required.</td>
 </tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/crypto/EcdhEsCekManagementProviderFactory.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Classical direct-mode ECDH-ES (no key wrap) <code>CekManagementProviderFactory</code> implementation — distinct from the ECDH-ES+AxxxKW variants. Not an ML-KEM provider; fills the direct ECDH-ES algorithm slot in the CEK management SPI. PQC gap remains: no ML-KEM equivalent. Covered by rows 2, 8, 19 (GAP-4).</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/crypto/RsaesOaep256CekManagementProviderFactory.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Classical RSA-OAEP-256 (RSA-OAEP with SHA-256) <code>CekManagementProviderFactory</code> — not ML-KEM. Fills the RSA-OAEP-256 algorithm slot. PQC gap remains: no ML-KEM equivalent. Covered by rows 2, 8, 19 (GAP-4).</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/keybinding/TrustedAttestationKeyResolver.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Resolves trusted attestation keys from configured trust-material IdPs. Algorithm-agnostic at the key-loading layer — delegates to the JWKS/trust material SPI. Covered under row 26 (OID4VC Proof Validation / JwtProofValidator). No independent PQC gap.</td>
+</tr>
 </tbody>
 </table>
 
@@ -1988,9 +2062,9 @@
 <!-- FINAL SUMMARY                                              -->
 <!-- ═══════════════════════════════════════════════════════════ -->
 
-<h2 style="font-size:18px; margin: 48px 0 12px; color:#1f2328;">Analysis Complete — All 61 Domains</h2>
+<h2 style="font-size:18px; margin: 48px 0 12px; color:#1f2328;">Analysis Complete — All 63 Domains</h2>
 
-<h3 style="font-size:15px; margin: 24px 0 8px;">Status Distribution (All 61 Domains)</h3>
+<h3 style="font-size:15px; margin: 24px 0 8px;">Status Distribution (All 63 Domains)</h3>
 
 <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:24px;">
 <thead>
@@ -2008,22 +2082,22 @@
 </tr>
 <tr style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><span class="pqc pqc-partial">PARTIAL</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">10</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">14</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Mostly ready; specific gaps to fix (e.g., missing AKP cases, hardcoded fallbacks).</td>
 </tr>
 <tr>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><span class="pqc pqc-blocked">BLOCKED</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">24</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">29</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Require code changes before PQC can work (hardcoded algorithms, missing providers, bootstrap logic).</td>
 </tr>
 <tr style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><span class="pqc pqc-safe">SAFE</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">4</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">7</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Quantum-safe (symmetric algorithms, algorithm-agnostic cert validation) or CA-controlled.</td>
 </tr>
 <tr>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><span class="pqc pqc-external">EXTERNAL DEPENDENCY</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">3</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">5</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Blocked on external specs (FAPI 2.0, CAEP, FIDO Alliance) or libraries (BC-FIPS, WildFly Elytron).</td>
 </tr>
 </tbody>
@@ -2145,11 +2219,11 @@
 </ol>
 
 <p style="font-size:12px; margin:24px 0 12px 0; padding:12px; background:#f0f9ff; border-left:4px solid #3b82d4;">
-  <strong>Analysis Status:</strong> All 61 domains complete. Each domain has a dedicated implementation plan file (Domain_N_*.md) with detailed gap analysis and remediation steps. Ready for GitHub issue creation phase.
+  <strong>Analysis Status:</strong> All 63 domains complete. Each domain has a dedicated implementation plan file (Domain_N_*.md) with detailed gap analysis and remediation steps. Ready for GitHub issue creation phase.
 </p>
 
 <footer>
-  <p>09 July 2026</p>
+  <p>Last updated: 30 July 2026 (review findings applied: GAP-24, GAP-25 added; domain row 63 added; status counts corrected to 63 total; row 62 line number corrected; 3 new files added to Files Evaluated)</p>
 </footer>
 </div>
 </body>
