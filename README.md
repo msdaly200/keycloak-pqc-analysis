@@ -70,23 +70,27 @@ Each run of the reassessment prompt produces a structured findings file with up 
 
 ## GitHub Issues Tracking
 
-📋 **[View GitHub Issues Overview](Github_PQC_issues_overview.md)** - Complete hierarchy of all PQC-related GitHub issues
+📋 **[View GitHub Issues Overview](Github_PQC_issues_overview.md)** - Complete hierarchy of all PQC-related GitHub issues.
 
-This file tracks PQC GitHub issues in the [Keycloak repository](https://github.com/keycloak/keycloak). It provides:
+The issues overview tracks PQC-related GitHub issues in the [Keycloak repository](https://github.com/keycloak/keycloak) and provides:
 
 - **Issue Hierarchy** - Visual tree structure showing parent/child relationships between all PQC issues
 - **Gap Mapping** - Which gaps are covered by existing issues vs. which need new issues
 - **Status Tracking** - Current state (OPEN/CLOSED) and progress for each issue
 - **Domain Coverage** - Links between domains, gaps, and GitHub issues
 
+The interactive dashboard presents the same data visually, with charts and filters for exploring PQC gap coverage and issue status at a glance.
+📊 **[View Interactive Dashboard](pqc_dashboard.html)**
+
 ### Keeping the GitHub Issues Overview Updated
 
-To update the `Github_PQC_issues_overview.md` file with the latest GitHub issue status, use the following prompt in a claude terminal:
+To update `Github_PQC_issues_overview.md` with the latest issue status, run the following prompt in a Claude terminal:
 
 ```bash
 Update the file Github_PQC_issues_overview.md with the latest status from GitHub for all Keycloak PQC-related issues
 ```
-This prompt provides detailed instructions for using the GitHub CLI (`gh`) to fetch current issue statuses and update the local file. **Note:** This is READ-ONLY access to GitHub - it will not modify any issues, only read their status to update the local markdown file.
+
+This uses the GitHub CLI (`gh`) to fetch current issue statuses and update the local file. **Note:** This is read-only — it will not modify any GitHub issues.
 
 
 ## PQC Readiness Accuracy Reviews
