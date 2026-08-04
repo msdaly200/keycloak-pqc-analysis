@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Keycloak — PQC Issues Dashboard</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 12.5px;
+    line-height: 1.5;
+    color: #1f2328;
+    background: #ffffff;
+    margin: 0;
+    padding: 20px 16px 48px;
+  }
+  .wrap { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 18px; margin: 0 0 4px; }
+  h2 { font-size: 14px; font-weight: 700; margin: 28px 0 12px; color: #1f2328;
+       text-transform: uppercase; letter-spacing: 0.06em; }
+  .subtitle { color: #57606a; font-size: 12px; margin-bottom: 16px; }
+  .nav-links { font-size: 11px; color: #57606a; margin-bottom: 16px; }
+  .nav-links a { color: #3b82d4; text-decoration: none; margin-right: 10px; }
+  .nav-links a:hover { text-decoration: underline; }
+  hr { border: none; border-top: 1px solid #e5e7eb; margin: 20px 0; }
+
+  /* ── Stat cards ── */
+  .stats {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 32px;
+  }
+  .stat {
+    flex: 1;
+    min-width: 120px;
+    background: #f7f8fa;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 14px 16px;
+    text-align: center;
+  }
+  .stat-number { font-size: 32px; font-weight: 700; line-height: 1; }
+  .stat-label  { font-size: 11px; color: #57606a; margin-top: 5px;
+                 text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* ── Donuts ── */
+  .donuts {
+    display: flex;
+    gap: 48px;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    margin-bottom: 36px;
+  }
+  .donut-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+  }
+  .donut-title {
+    font-size: 11px;
+    font-weight: 700;
+    color: #57606a;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .donut-row {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+  }
+  .legend {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    font-size: 12px;
+    color: #1f2328;
+  }
+  .legend-item { display: flex; align-items: center; gap: 8px; }
+  .legend-dot  {
+    display: inline-block;
+    width: 11px; height: 11px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .legend-count { color: #57606a; font-size: 11px; }
+
+  /* ── PQC status badges (match pqc_overview.html) ── */
+  .pqc {
+    display: inline-block;
+    font-size: 10px; font-weight: 700;
+    padding: 2px 7px; border-radius: 10px;
+    white-space: nowrap; line-height: 1.6;
+  }
+  .pqc-safe     { background: #166534; color: #fff; }
+  .pqc-partial  { background: #d97706; color: #fff; }
+  .pqc-blocked  { background: #991b1b; color: #fff; }
+  .pqc-pending  { background: #1e40af; color: #fff; }
+  .pqc-external { background: #57606a; color: #fff; }
+
+  /* ── Gap summary table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 12px;
+    margin-bottom: 24px;
+  }
+  th {
+    background: #1f2328; color: #fff;
+    text-align: left; padding: 8px 9px;
+    border: 1px solid #1f2328;
+    font-weight: 600; white-space: nowrap;
+  }
+  td { padding: 6px 9px; border: 1px solid #e5e7eb; vertical-align: top; }
+  tr:nth-child(even) td { background: #f7f8fa; }
+  tr:hover td { background: #eff6ff; }
+
+  .priority-critical { color: #991b1b; font-weight: 700; }
+  .priority-high     { color: #c2410c; font-weight: 600; }
+  .priority-medium   { color: #92400e; }
+  .priority-low      { color: #57606a; }
+  .priority-external { color: #374151; font-style: italic; }
+
+  footer {
+    margin-top: 32px; padding-top: 10px;
+    border-top: 1px solid #e5e7eb;
+    text-align: center; font-size: 11px; color: #57606a;
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<h1>Keycloak — PQC Issues Dashboard</h1>
+<p class="subtitle">GitHub issue tracking status &amp; domain readiness summary · Last updated: 2026-07-30</p>
+<div class="nav-links">
+  <a href="pqc_overview.html">← PQC Readiness Overview</a>
+  <a href="Github_PQC_issues_overview.md">GitHub Issues Hierarchy (Markdown)</a>
+</div>
+
+<hr>
+
+<!-- ── Stat cards ── -->
+<div class="stats">
+  <div class="stat">
+    <div class="stat-number">43</div>
+    <div class="stat-label">Tracked Issues</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color:#059669;">33</div>
+    <div class="stat-label">Open</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color:#7c3aed;">10</div>
+    <div class="stat-label">Closed</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number">61</div>
+    <div class="stat-label">Domains Analysed</div>
+  </div>
+  <div class="stat">
+    <div class="stat-number" style="color:#991b1b;">23</div>
+    <div class="stat-label">New Issues Needed</div>
+  </div>
+</div>
+
+<!-- ── Donut charts ── -->
+<div class="donuts">
+
+  <!-- Left: GitHub Issue Status (total=43, C=251.33) -->
+  <!-- Draw order: smallest first, largest last (sits on top) -->
+  <div class="donut-block">
+    <div class="donut-title">GitHub Issue Status</div>
+    <div class="donut-row">
+      <svg width="150" height="150" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#7c3aed" stroke-width="18"
+          stroke-dasharray="58.4 251.33" stroke-dashoffset="-129.87"
+          transform="rotate(-90 50 50)"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#d97706" stroke-width="18"
+          stroke-dasharray="11.7 251.33" stroke-dashoffset="-118.17"
+          transform="rotate(-90 50 50)"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#059669" stroke-width="18"
+          stroke-dasharray="181.0 251.33" stroke-dashoffset="62.83"
+          transform="rotate(-90 50 50)"/>
+        <text x="50" y="47" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2328">43</text>
+        <text x="50" y="59" text-anchor="middle" font-size="7.5" fill="#57606a">issues</text>
+      </svg>
+      <div class="legend">
+        <div class="legend-item">
+          <span class="legend-dot" style="background:#059669;"></span>
+          <span>Open <span class="legend-count">(31)</span></span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background:#d97706;"></span>
+          <span>Open — In Progress <span class="legend-count">(2)</span></span>
+        </div>
+        <div class="legend-item">
+          <span class="legend-dot" style="background:#7c3aed;"></span>
+          <span>Closed <span class="legend-count">(10)</span></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right: Domain PQC Readiness (total=61, C=251.33) -->
+  <!-- Draw order: smallest first (grey), largest last (red, on top) -->
+  <div class="donut-block">
+    <div class="donut-title">Domain PQC Readiness</div>
+    <div class="donut-row">
+      <svg width="150" height="150" viewBox="0 0 100 100">
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#57606a" stroke-width="18"
+          stroke-dasharray="12.4 251.33" stroke-dashoffset="-176.17"
+          transform="rotate(-90 50 50)"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#166534" stroke-width="18"
+          stroke-dasharray="16.5 251.33" stroke-dashoffset="-159.67"
+          transform="rotate(-90 50 50)"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#d97706" stroke-width="18"
+          stroke-dasharray="41.2 251.33" stroke-dashoffset="-118.47"
+          transform="rotate(-90 50 50)"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#1e40af" stroke-width="18"
+          stroke-dasharray="82.4 251.33" stroke-dashoffset="-36.07"
+          transform="rotate(-90 50 50)"/>
+        <circle cx="50" cy="50" r="40" fill="none" stroke="#991b1b" stroke-width="18"
+          stroke-dasharray="98.9 251.33" stroke-dashoffset="62.83"
+          transform="rotate(-90 50 50)"/>
+        <text x="50" y="47" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2328">61</text>
+        <text x="50" y="59" text-anchor="middle" font-size="7.5" fill="#57606a">domains</text>
+      </svg>
+      <div class="legend">
+        <div class="legend-item">
+          <span class="pqc pqc-blocked">BLOCKED</span>
+          <span class="legend-count">24</span>
+        </div>
+        <div class="legend-item">
+          <span class="pqc pqc-pending">PENDING PROVIDERS</span>
+          <span class="legend-count">20</span>
+        </div>
+        <div class="legend-item">
+          <span class="pqc pqc-partial">PARTIAL</span>
+          <span class="legend-count">10</span>
+        </div>
+        <div class="legend-item">
+          <span class="pqc pqc-safe">SAFE</span>
+          <span class="legend-count">4</span>
+        </div>
+        <div class="legend-item">
+          <span class="pqc pqc-external">EXTERNAL</span>
+          <span class="legend-count">3</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ── New issues needed summary ── -->
+<h2>New Issues Needed — 23 Total</h2>
+<table>
+  <thead>
+    <tr>
+      <th>Priority</th>
+      <th>Count</th>
+      <th>Examples</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="priority-critical">CRITICAL</td>
+      <td>3</td>
+      <td>GAP-1 JWK Thumbprint for ML-DSA · GAP-4 ML-KEM CekManagementProvider · GAP-9 SAML hardcoded RS256</td>
+    </tr>
+    <tr>
+      <td class="priority-high">HIGH</td>
+      <td>3</td>
+      <td>Domain 48 JWKS endpoint · Domain 53 Client sig verifier · Domain 46 Realm bootstrap defaults</td>
+    </tr>
+    <tr>
+      <td class="priority-medium">MEDIUM</td>
+      <td>10</td>
+      <td>GAP-5/16 Keystore import · Domains 29/32 ML-KEM keygen · GAP-19 Maven enforcer · GAP-20 JAR decryption · and 6 more</td>
+    </tr>
+    <tr>
+      <td class="priority-low">LOW</td>
+      <td>3</td>
+      <td>Domains 50–51 Client SDK · GAP-11 DCR RS256 · Domain 52 Docker registry</td>
+    </tr>
+    <tr>
+      <td class="priority-external">EXTERNAL DEPENDENCY</td>
+      <td>4</td>
+      <td>GAP-6 BC-FIPS 2.1.2 · GAP-7 OID4VC Ed25519 · GAP-8 FAPI 2.0 · Domain 37 CAEP SET</td>
+    </tr>
+  </tbody>
+</table>
+
+<footer>
+  Keycloak PQC Analysis · <a href="pqc_overview.html">pqc_overview.html</a> · <a href="Github_PQC_issues_overview.md">Github_PQC_issues_overview.md</a>
+</footer>
+
+</div>
+</body>
+</html>

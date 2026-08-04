@@ -6,9 +6,19 @@
 
 ---
 
+## Status Dashboard
+
+📊 **[View interactive dashboard →](pqc_dashboard.html)** — issue status donuts, domain readiness breakdown, new issues summary.
+
+| Tracked Issues | 🟢 Open | 🟣 Closed | Domains Analysed | 🔴 New Issues Needed |
+|:-:|:-:|:-:|:-:|:-:|
+| **43** | **33** | **10** | **61** | **23** |
+
+---
+
 ## Complete Issue Hierarchy
 
-### **[#43690](https://github.com/keycloak/keycloak/issues/43690) - Post-Quantum Cryptography (PQC) readiness** 
+### **[#43690](https://github.com/keycloak/keycloak/issues/43690) - Post-Quantum Cryptography (PQC) readiness**
 **Status:** <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | **Type:** feature | **Progress:** 0 of 15
 
 Top-level feature issue tracking full PQC readiness for Keycloak.
@@ -200,18 +210,6 @@ The following domains are covered by issues in the hierarchy:
 - **MEDIUM (10):** GAP-5/16, Domains 29/32, GAP-19, GAP-20, GAP-21, GAP-22, GAP-23, Domain 49, GAP-10, GAP-13, GAP-18
 - **LOW (3):** Domains 50-51, GAP-11, Domain 52
 - **EXTERNAL (4):** GAP-6, GAP-7, GAP-8, Domain 37, Domain 44
-
----
-
-## Status Distribution (61 Domains)
-
-| Status | Count | Description |
-|--------|-------|-------------|
-| **PENDING PROVIDERS** | 20 | Will work automatically once ML-DSA/ML-KEM providers exist |
-| **PARTIAL** | 10 | Mostly ready; specific gaps to fix |
-| **BLOCKED** | 24 | Require code changes before PQC can work |
-| **SAFE** | 4 | Quantum-safe (symmetric algorithms, algorithm-agnostic cert validation) |
-| **EXTERNAL DEPENDENCY** | 3 | Blocked on external specs (FAPI 2.0, CAEP, FIDO Alliance, BC-FIPS) |
 
 ---
 
