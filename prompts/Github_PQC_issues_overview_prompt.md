@@ -12,14 +12,14 @@ This task is **READ-ONLY** access to GitHub. You will:
 - ❌ **NEVER CREATE** any GitHub issues
 - ❌ **NEVER COMMENT** on any GitHub issues
 
-All updates are made **ONLY** to the local file: `Github_PQC_issues_overview.md`
+All updates are made **ONLY** to the local file: `gh_issues/Github_PQC_issues_overview.md`
 
 **Note:** Simple expansion of this task that only involves reading GitHub issues and updating the local file does **NOT require user approval**. You may proceed directly with reading GitHub data and updating the markdown file.
 
 ---
 
 ## Task
-Update the file `Github_PQC_issues_overview.md` with the latest status from GitHub for all Keycloak PQC-related issues.
+Update the file `gh_issues/Github_PQC_issues_overview.md` with the latest status from GitHub for all Keycloak PQC-related issues.
 
 ## Document Structure
 
@@ -106,7 +106,7 @@ query {
 - #43690 - Post-Quantum Cryptography (PQC) readiness
 
 **⚠️ IMPORTANT:** The number of direct sub-issues under #43690 may change over time. You MUST:
-1. First read the current `Github_PQC_issues_overview.md` file to see the current list of sub-issues
+1. First read the current `gh_issues/Github_PQC_issues_overview.md` file to see the current list of sub-issues
 2. Check GitHub to see if any new sub-issues have been added or linked to #43690
 3. Update the document to reflect the current actual count and list of sub-issues
 4. Update the "Direct Sub-Issues: X" count in the document header for #43690

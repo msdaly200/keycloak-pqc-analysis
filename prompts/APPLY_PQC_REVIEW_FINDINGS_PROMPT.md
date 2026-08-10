@@ -2,14 +2,14 @@
 
 ## Purpose
 
-This prompt instructs an AI agent to apply the corrections and additions documented in a PQC accuracy review findings file (`pqc_overview_review_findings_YYYY-MM-DD.md`) to `pqc_overview.html` and `README.md`.
+This prompt instructs an AI agent to apply the corrections and additions documented in a PQC accuracy review findings file (`findings/pqc_overview_review_findings_YYYY-MM-DD.md`) to `pqc_overview.html` and `README.md`.
 
 ## How to Use
 
 Run this prompt with a specific findings file, e.g.:
 
 ```
-Apply the findings from pqc_overview_review_findings_2026-07-30.md to pqc_overview.html and README.md following the instructions in APPLY_PQC_REVIEW_FINDINGS_PROMPT.md
+Apply the findings from findings/pqc_overview_review_findings_2026-07-30.md to pqc_overview.html and README.md following the instructions in APPLY_PQC_REVIEW_FINDINGS_PROMPT.md
 ```
 
 ---
@@ -20,7 +20,7 @@ You are applying a set of reviewed, verified corrections to `pqc_overview.html`.
 
 ### Step 1 — Read the Inputs
 
-1. Read the findings file (`pqc_overview_review_findings_YYYY-MM-DD.md`) in full.
+1. Read the findings file (`findings/pqc_overview_review_findings_YYYY-MM-DD.md`) in full.
 2. Read `pqc_overview.html` in full (or in chunks if large — it is typically ~2200 lines).
 3. Read `README.md`.
 
@@ -133,7 +133,14 @@ Replace the `<footer>` content with:
 #### README.md
 
 1. Find the existing `**Last updated:**` line (if present) or insert one after the "Note: searches were conducted…" paragraph.
-2. Set it to: `**Last updated:** DD Month YYYY — Review findings from \`pqc_overview_review_findings_YYYY-MM-DD.md\` applied: [brief summary matching the footer].`
+2. Set it to: `**Last updated:** DD Month YYYY — Review findings from \`findings/pqc_overview_review_findings_YYYY-MM-DD.md\` applied: [brief summary matching the footer].`
+3. In the **PQC Readiness Accuracy Reviews** table, prepend a new row at the top (below the header) so the most recent review always appears first. The table has two columns — **Date** and **PQC Changes** — with no Keycloak HEAD column:
+
+```markdown
+| Date | PQC Changes |
+|------|-------------|
+| YYYY-MM-DD | [pqc_overview_review_findings_YYYY-MM-DD.md](findings/pqc_overview_review_findings_YYYY-MM-DD.md) |
+```
 
 ---
 

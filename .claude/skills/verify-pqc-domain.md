@@ -11,7 +11,7 @@ You are verifying the Post-Quantum Cryptography (PQC) readiness analysis for a s
 - Keycloak source: `~/projects/keycloak`
 - Overview file: `pqc_overview.html` (61 domains)
 - Domain files: `Domain_<n>_<name>.md`
-- GitHub issues: `Github_PQC_issues_overview.md`
+- GitHub issues: `gh_issues/Github_PQC_issues_overview.md`
 
 ## Your Task
 
@@ -23,7 +23,7 @@ The domain number to verify will be provided as an argument. You must:
    - Verify the asymmetric algorithms in use
    - Confirm the PQC state assessment is accurate
    - Validate the fix description is technically correct
-3. **Cross-reference GitHub issues** in `Github_PQC_issues_overview.md`:
+3. **Cross-reference GitHub issues** in `gh_issues/Github_PQC_issues_overview.md`:
    - Find existing issues that cover this domain
    - Determine if new issue is needed
 4. **Check domain file completeness**:
