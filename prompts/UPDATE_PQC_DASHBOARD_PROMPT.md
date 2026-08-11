@@ -17,7 +17,11 @@ Do not modify:
 
 1. Read `pqc_dashboard.html` fully.
 2. Read `gh_issues/Github_PQC_issues_overview.md` fully.
-3. Read the parts of `pqc_overview.html` needed to verify the current domain PQC readiness counts if those counts are shown in the dashboard.
+3. Read `pqc_overview.html` to derive domain counts:
+   - Extract the authoritative domain total from the heading matching `Analysis Complete — All <N> Domains` — that `<N>` is the domain count.
+   - Extract the per-status counts from the Status Distribution table.
+   - **Verify** that the five status counts (BLOCKED + PENDING PROVIDERS + PARTIAL + SAFE + EXTERNAL DEPENDENCY) sum exactly to `<N>`.
+   - If the sum does not equal `<N>`, do **not** update the dashboard — report the discrepancy and stop.
 
 ## Update rules
 
@@ -54,7 +58,7 @@ Make sure:
 - SVG donut segments match the displayed counts
 - issue status totals equal tracked issues
 - priority bucket totals equal “New Issues Needed”
-- domain readiness totals equal “Domains Analysed”
+- domain readiness status counts (BLOCKED + PENDING PROVIDERS + PARTIAL + SAFE + EXTERNAL) sum exactly to the "Domains Analysed" figure, and that figure matches the `Analysis Complete — All <N> Domains` heading in `pqc_overview.html`
 
 ## Constraints
 
@@ -69,6 +73,7 @@ Before finishing:
 1. Re-read the updated `pqc_dashboard.html`.
 2. Verify every displayed number against the markdown sources.
 3. Verify all totals and subtotals reconcile.
+3a. Confirm that the five domain status counts in the dashboard sum to the "Domains Analysed" stat card value, and that this value matches the `Analysis Complete — All <N> Domains` heading in `pqc_overview.html`. If there is any mismatch, report it as an error — do not silently accept mismatched counts.
 4. Confirm no other files were changed.
 
 ## Deliverable

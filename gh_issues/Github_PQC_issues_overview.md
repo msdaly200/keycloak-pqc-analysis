@@ -2,24 +2,24 @@
 
 **Parent Feature Issue:** [#43690 - Post-Quantum Cryptography (PQC) readiness](https://github.com/keycloak/keycloak/issues/43690)
 
-**Last Updated:** 2026-07-30
+**Last Updated:** 2026-08-11
 
 ---
 
 ## Status Dashboard
 
-📊 **[View interactive dashboard →](pqc_dashboard.html)** — issue status donuts, domain readiness breakdown, new issues summary.
+📊 **[View interactive dashboard →](../pqc_dashboard.html)** — issue status donuts, domain readiness breakdown, new issues summary.
 
 | Tracked Issues | 🟢 Open | 🟣 Closed | Domains Analysed | 🔴 New Issues Needed |
 |:-:|:-:|:-:|:-:|:-:|
-| **43** | **33** | **10** | **61** | **23** |
+| **54** | **42** | **12** | **63** | **25** |
 
 ---
 
 ## Complete Issue Hierarchy
 
 ### **[#43690](https://github.com/keycloak/keycloak/issues/43690) - Post-Quantum Cryptography (PQC) readiness**
-**Status:** <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | **Type:** feature | **Progress:** 0 of 15
+**Status:** <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | **Type:** feature | **Progress:** 1 of 15
 
 Top-level feature issue tracking full PQC readiness for Keycloak.
 
@@ -27,7 +27,13 @@ Top-level feature issue tracking full PQC readiness for Keycloak.
 
 | Issue | Title | Status | Type | Progress | Sub-Issues | Gaps |
 |-------|-------|--------|------|----------|------------|------|
-| [#43691](https://github.com/keycloak/keycloak/issues/43691) | Hybrid key exchange in TLS 1.3 | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | milestone | N/A | 0 | |
+| [#43691](https://github.com/keycloak/keycloak/issues/43691) | Hybrid key exchange in TLS 1.3 | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | milestone | N/A | **6** | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50674](https://github.com/keycloak/keycloak/issues/50674) | Adopt Quarkus PQC TLS support and adapt Keycloak configuration | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50677](https://github.com/keycloak/keycloak/issues/50677) | Add OpenSSL libraries to Keycloak container image | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50676](https://github.com/keycloak/keycloak/issues/50676) | Add database TLS test coverage and verify JDBC driver PQC compatibility | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50675](https://github.com/keycloak/keycloak/issues/50675) | Determine Infinispan PQC path for Hot Rod client and server transport | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#49968](https://github.com/keycloak/keycloak/issues/49968) | Switch internal HTTP client from Apache to Vert.x/Netty | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#51255](https://github.com/keycloak/keycloak/issues/51255) | PQC for OTLP exporter - support hybrid key exchange and enforcing of PQC modes | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | [#45168](https://github.com/keycloak/keycloak/issues/45168) | Review what is needed for PQC readiness in Keycloak | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | spike | 7 of 12 | **12** | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48819](https://github.com/keycloak/keycloak/issues/48819) | Create inventory of cryptography in Keycloak | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48820](https://github.com/keycloak/keycloak/issues/48820) | Investigate and plan what is required for TLS PQC support | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
@@ -36,9 +42,7 @@ Top-level feature issue tracking full PQC readiness for Keycloak.
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48824](https://github.com/keycloak/keycloak/issues/48824) | Investigate and plan what is needed for OpenID Connect and OAuth 2.0 to be PQC ready | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48825](https://github.com/keycloak/keycloak/issues/48825) | Investigate and plan what is needed for SAML 2.0 to be PQC ready | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48826](https://github.com/keycloak/keycloak/issues/48826) | Investigate what is required for WebAuthn/passkeys to be PQC ready | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48827](https://github.com/keycloak/keycloak/issues/48827) | Investigate what is required for cookies to be PQC ready | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | **(2)** | |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#49858](https://github.com/keycloak/keycloak/issues/49858) | Increase AES default from 128 to 256 in KC_RESTART cookie | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#49860](https://github.com/keycloak/keycloak/issues/49860) | Use SHA384 or SHA512 for hashing for AUTH_SESSION_ID_HASH and SESSION cookies | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48827](https://github.com/keycloak/keycloak/issues/48827) | Investigate what is required for cookies to be PQC ready | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48828](https://github.com/keycloak/keycloak/issues/48828) | Investigate and plan what is needed for password hashing to be PQC ready | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48829](https://github.com/keycloak/keycloak/issues/48829) | Review if there are any areas not identified around PQC readiness | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48830](https://github.com/keycloak/keycloak/issues/48830) | Create a plan for documentation around PQC readiness | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
@@ -56,14 +60,16 @@ Top-level feature issue tracking full PQC readiness for Keycloak.
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#44144](https://github.com/keycloak/keycloak/issues/44144) | Support verifying tokens issued by clients signed with ML-DSA | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50299](https://github.com/keycloak/keycloak/issues/50299) | Support HPKE (Hybrid Public Key Encryption) algorithms for JWE | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | feature | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50304](https://github.com/keycloak/keycloak/issues/50304) | Support PQ/T Hybrid Composite Signatures for JOSE and COSE | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | feature | N/A | 0 | |
-| [#49865](https://github.com/keycloak/keycloak/issues/49865) | Milestone for cookies to be PQC ready | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | milestone | 2 of 2 | **(2)** | |
+| [#49865](https://github.com/keycloak/keycloak/issues/49865) | Milestone for cookies to be PQC ready | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | milestone | 2 of 2 | **(2)** | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#49858](https://github.com/keycloak/keycloak/issues/49858) | Increase AES default from 128 to 256 in KC_RESTART cookie | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#49860](https://github.com/keycloak/keycloak/issues/49860) | Use SHA384 or SHA512 for hashing for AUTH_SESSION_ID_HASH and SESSION cookies | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | [#50084](https://github.com/keycloak/keycloak/issues/50084) | PQC support for WebAuthn/Passkeys | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | milestone | 0 of 2 | **(2)** | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50085](https://github.com/keycloak/keycloak/issues/50085) | Upgrade webauthn4j to a version with ML-DSA support | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50086](https://github.com/keycloak/keycloak/issues/50086) | Add ML-DSA COSE algorithm IDs to WebAuthn policies | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | [#50292](https://github.com/keycloak/keycloak/issues/50292) | PQC support for SAML 2.0 | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | milestone | 0 of 2 | **(2)** | |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50294](https://github.com/keycloak/keycloak/issues/50294) | Add ML-DSA algorithm support for XMLSignatureUtil and XMLEncryptionUtil | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | feature | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50294](https://github.com/keycloak/keycloak/issues/50294) | Add ML-DSA algorithm support for XMLSignatureUtil and XMLEncryptionUtil | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | feature | N/A | **(2)** | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#51421](https://github.com/keycloak/keycloak/issues/51421) | Add generated keys provider for ML-DSA | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#51422](https://github.com/keycloak/keycloak/issues/51422) | Final review of ML-DSA in SAML 2.0 protocol | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50295](https://github.com/keycloak/keycloak/issues/50295) | Dual hybrid support for SAML assertions and their validations | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | feature | N/A | 0 | |
 | [#50678](https://github.com/keycloak/keycloak/issues/50678) | Add ML-DSA JCE algorithm mapping to JavaAlgorithm | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | [#50679](https://github.com/keycloak/keycloak/issues/50679) | Support loading ML-DSA keys from Java keystores | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
@@ -87,21 +93,7 @@ These issues exist but are not tracked as sub-issues in the main tree. They may 
 
 | Issue # | Status | Title | Domains |
 |---------|--------|-------|---------|
-| [50674](https://github.com/keycloak/keycloak/issues/50674) | OPEN | Adopt Quarkus PQC TLS support and adapt Keycloak configuration | TLS integration |
-| [50675](https://github.com/keycloak/keycloak/issues/50675) | OPEN | Determine Infinispan PQC path for Hot Rod client and server transport | Infinispan cluster |
-| [50676](https://github.com/keycloak/keycloak/issues/50676) | OPEN | Add database TLS test coverage and verify JDBC driver PQC compatibility | Database TLS |
-| [50677](https://github.com/keycloak/keycloak/issues/50677) | OPEN | Add OpenSSL libraries to Keycloak container image | Container dependencies |
-| [50678](https://github.com/keycloak/keycloak/issues/50678) | OPEN *(now in main hierarchy)* | Add ML-DSA JCE algorithm mapping to JavaAlgorithm | Domain 1 (algorithm mapping) |
-| [50679](https://github.com/keycloak/keycloak/issues/50679) | OPEN *(now in main hierarchy)* | Support loading ML-DSA keys from Java keystores | Domains 33-34 (GAP-5, GAP-16) |
-| [50680](https://github.com/keycloak/keycloak/issues/50680) | OPEN *(now in main hierarchy)* | Add test coverage for truststore loading with PQC certificates | Domain 34 (testing) |
-| [50789](https://github.com/keycloak/keycloak/issues/50789) | OPEN *(now in main hierarchy)* | Verify LDAP federation compatibility on PQC-capable JDK | LDAP/federation |
-| [50868](https://github.com/keycloak/keycloak/issues/50868) | OPEN *(now in main hierarchy)* | Make embedded Infinispan support PQC | Infinispan (embedded) |
-| [50938](https://github.com/keycloak/keycloak/issues/50938) | OPEN *(now in main hierarchy)* | Loadtesting with PQC enabled | Performance/sizing |
-| [50940](https://github.com/keycloak/keycloak/issues/50940) | OPEN *(now in main hierarchy)* | Test CloudNativePG database connection for PQC readiness | Database TLS |
-| [50941](https://github.com/keycloak/keycloak/issues/50941) | OPEN *(now in main hierarchy)* | Update the proxy quickstarts to use PQC | Proxy/TLS |
-| [49968](https://github.com/keycloak/keycloak/issues/49968) | OPEN | Switch internal HTTP client from Apache to Vert.x/Netty | HTTP client |
 | [50355](https://github.com/keycloak/keycloak/issues/50355) | OPEN | Post-Quantum Keys choice for signing/encryption | UI/UX configuration |
-| [51255](https://github.com/keycloak/keycloak/issues/51255) | OPEN | PQC for OTLP exporter - support hybrid key exchange and enforcing of PQC modes | Observability/OTLP |
 | *Need to create* | — | **Database Schema: Expand REALM_ATTRIBUTE.VALUE for PQC Algorithm Strings** | Database schema (should be under [#48823](https://github.com/keycloak/keycloak/issues/48823)) |
 
 ### OID4VCI Specific
@@ -114,7 +106,7 @@ These issues exist but are not tracked as sub-issues in the main tree. They may 
 
 ## Domains Missing GitHub Issues
 
-Based on the comprehensive analysis of 61 domains in `pqc_overview.html`, the following domains and gaps **may require new GitHub issues**:
+Based on the comprehensive analysis of 63 domains in `pqc_overview.html`, the following domains and gaps **may require new GitHub issues**:
 
 ### CRITICAL Priority - New Issues Needed
 
@@ -198,24 +190,28 @@ The following domains are covered by issues in the hierarchy:
 - Domain 39: Cluster/Infinispan
 - Domains 42-44: Crypto provider backends
 
+**TLS / Network (#43691, #50674, #50675, #50676, #50677, #49968, #51255):**
+- Domain 40: TLS 1.3 hybrid key exchange
+- HTTP client, database TLS, OTLP exporter, container dependencies, Infinispan transport
+
 **Other:**
 - Domain 40: Organizations
 - Domain 41: FAPI policy enforcement
 - Domain 47: Client public key loader
 
-### Domains NOT Covered (23 New Issues Needed)
+### Domains NOT Covered (25 New Issues Needed)
 
 - **CRITICAL (3):** GAP-1, GAP-4, GAP-9
 - **HIGH (3):** Domain 48, Domain 53, Domain 46
-- **MEDIUM (10):** GAP-5/16, Domains 29/32, GAP-19, GAP-20, GAP-21, GAP-22, GAP-23, Domain 49, GAP-10, GAP-13, GAP-18
+- **MEDIUM (12):** GAP-5/16, Domains 29/32, GAP-19, GAP-20, GAP-21, GAP-22, GAP-23, Domain 49, GAP-10, GAP-13, GAP-18, Database Schema
 - **LOW (3):** Domains 50-51, GAP-11, Domain 52
-- **EXTERNAL (4):** GAP-6, GAP-7, GAP-8, Domain 37, Domain 44
+- **EXTERNAL (5):** GAP-6, GAP-7, GAP-8, Domain 37, Domain 44
 
 ---
 
 ## Next Steps
 
-1. **Review the 23 new issues** listed in "Domains Missing GitHub Issues" section
+1. **Review the 25 new issues** listed in "Domains Missing GitHub Issues" section
 2. **Create new GitHub issues** for CRITICAL and HIGH priority gaps first
 3. **Link new issues** to appropriate parent issues in the hierarchy:
    - ML-DSA signing issues → under #43692
@@ -227,5 +223,5 @@ The following domains are covered by issues in the hierarchy:
 
 ---
 
-**Analysis Source:** `pqc_overview.html` (61 domains analyzed)  
-**GitHub Issue Hierarchy:** Verified from GitHub API (2026-07-30)
+**Analysis Source:** `pqc_overview.html` (63 domains analyzed)  
+**GitHub Issue Hierarchy:** Verified from GitHub API (2026-08-11)

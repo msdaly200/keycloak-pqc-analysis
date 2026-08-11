@@ -25,10 +25,11 @@ Update the file `gh_issues/Github_PQC_issues_overview.md` with the latest status
 
 The document uses a **table-based hierarchy** format:
 - Top-level issue #43690 is shown with heading and metadata (Status, Type, Progress)
-- All direct sub-issues (10 total) and their nested sub-issues are shown in a **single table**
+- All direct sub-issues and their nested sub-issues are shown in a **single table**
 - Table columns: Issue | Title | Status | Type | Progress | Sub-Issues
 - Sub-issues are indented using `↳` arrows
-- Third-level sub-issues are indented with `&nbsp;&nbsp;&nbsp;&nbsp;↳` (4 non-breaking spaces)
+- Level-2 sub-issues use `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳` (6 non-breaking spaces)
+- Level-3 sub-issues use `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳` (12 non-breaking spaces)
 - Sub-issue counts shown in **bold** (e.g., **12**) for parent issues with children
 - Nested sub-issue counts shown in parentheses (e.g., (2), (5)) for third-level nesting
 
@@ -56,7 +57,7 @@ The document uses a **table-based hierarchy** format:
    - **Direct Sub-Issues count** in the header if new issues were added
 
 5. **Preserve the table structure**:
-   - Keep the exact table format with proper indentation (`↳` for level 2, `&nbsp;&nbsp;&nbsp;&nbsp;↳` for level 3)
+   - Keep the exact table format with proper indentation (`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳` for level 2, `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳` for level 3)
    - Keep all sub-issue counts in the Sub-Issues column (**bold** for parents, (parentheses) for nested)
    - Keep all issue titles, links, and hierarchy unchanged
    - Only update status badges, progress counts, sub-issue counts, and the Last Updated date
@@ -67,7 +68,26 @@ The document uses a **table-based hierarchy** format:
    - OPEN (ready/available): `<span style="color: #059669; font-weight: bold;">🟢 OPEN</span>`
    - CLOSED: `<span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span>`
 
-7. **Output the updated file** using the Edit tool to update only the changed status/progress values and add any new issues
+7. **Update the Additional Issues section**:
+   - For every issue listed in the "Additional Issues" tables in the document, fetch its current state from GitHub
+   - Update the **Status** column value (e.g. `OPEN` → `CLOSED`) for any issue whose state has changed
+   - Use plain text `OPEN` / `CLOSED` in that table (no coloured spans — the Additional Issues table uses plain text status, not badge format)
+   - **Remove any row from the Additional Issues tables whose issue number already appears anywhere in the main hierarchy table** (direct sub-issues or nested sub-issues). An issue must not appear in both sections. If a row has *(now in main hierarchy)* or similar text, or if its issue number is present in the main table, delete that row entirely.
+   - Apart from the removals above, do not add or remove other rows — only update the Status column values
+
+8. **Recalculate the Status Dashboard summary table**:
+   - Count all issues across the main hierarchy table and Additional Issues tables
+   - Update **Tracked Issues** = total count of all distinct issue numbers in the document
+   - Update **🟢 Open** = count of issues currently with an OPEN status
+   - Update **🟣 Closed** = count of issues currently with a CLOSED status
+   - Update **Domains Analysed** by reading `pqc_overview.html`:
+     - Search for the heading matching the pattern `Analysis Complete — All <N> Domains` — the number `<N>` is the current domain count
+   - Update **🔴 New Issues Needed** by reading `pqc_overview.html`:
+     - Count the number of `<tr id="gap-N">` rows in the PQC Gap Reference table — each row is one identified gap that requires a new GitHub issue
+
+9. **Output the updated file** using the Edit tool to update only the changed status/progress values and add any new issues
+
+10. **Sync the dashboard** — after the markdown file has been fully updated, run `prompts/UPDATE_PQC_DASHBOARD_PROMPT.md` to sync `pqc_dashboard.html` to match.
 
 ## Example Commands
 
@@ -105,48 +125,83 @@ query {
 ### Top-Level Parent Issue
 - #43690 - Post-Quantum Cryptography (PQC) readiness
 
-**⚠️ IMPORTANT:** The number of direct sub-issues under #43690 may change over time. You MUST:
-1. First read the current `gh_issues/Github_PQC_issues_overview.md` file to see the current list of sub-issues
-2. Check GitHub to see if any new sub-issues have been added or linked to #43690
-3. Update the document to reflect the current actual count and list of sub-issues
-4. Update the "Direct Sub-Issues: X" count in the document header for #43690
-5. If new sub-issues are found, add them to the table in the appropriate location
+**⚠️ IMPORTANT:** Do NOT rely on any hardcoded list of sub-issues. The hierarchy MUST be
+discovered fresh from GitHub every time this prompt runs. Use the GraphQL queries below to
+fetch the live list of direct and nested sub-issues under #43690, then reconcile against the
+current document.
 
-### Direct Sub-Issues (Current known list - verify against GitHub)
-- #43691 - Hybrid key exchange in TLS 1.3 (0 sub-issues)
-- #45168 - Review what is needed for PQC readiness (has 12 sub-issues)
-- #46333 - Audit and Upgrade Cryptographic Defaults (has 1 sub-issue)
-- #48821 - PQC support for OAuth 2.0 and OpenID Connect (has 4 sub-issues)
-- #49865 - Milestone for cookies to be PQC ready (has 2 sub-issues)
-- #50084 - PQC support for WebAuthn/Passkeys (has 2 sub-issues)
-- #50292 - PQC support for SAML 2.0 (has 2 sub-issues)
-- #50680 - Add test coverage for truststore loading with PQC certificates (0 sub-issues)
-- #50679 - Support loading ML-DSA keys from Java keystores (0 sub-issues)
-- #50678 - Add ML-DSA JCE algorithm mapping to JavaAlgorithm (0 sub-issues)
+### Step A — Discover all direct sub-issues of #43690 from GitHub
 
-### Under #45168 (12 sub-issues)
-- #48819, #48820, #48822, #48823, #48824, #48825, #48826, #48827, #48828, #48829, #48830, #49851
+```bash
+gh api graphql -f query='
+query {
+  repository(owner: "keycloak", name: "keycloak") {
+    issue(number: 43690) {
+      trackedIssues(first: 100) {
+        totalCount
+        nodes {
+          number
+          title
+          state
+        }
+      }
+    }
+  }
+}'
+```
 
-### Under #46333 (1 sub-issue)
-- #46336
+Use `totalCount` to update the **Direct Sub-Issues: N** header in the document.
+Use the `nodes` list as the authoritative set of direct sub-issues — do not assume any
+specific numbers or count. Any issue in the document but not in this response has been
+de-linked; any issue in this response but not in the document is newly added.
 
-### Under #48821 (4 sub-issues)
-- #43693, #43692 (has 5 nested sub-issues), #50299, #50304
+### Step B — Discover nested sub-issues for any direct sub-issue that has children
 
-### Under #43692 (5 nested sub-issues)
-- #44141, #44142, #43684, #44143, #44144
+For each direct sub-issue returned in Step A, check whether it has its own tracked issues:
 
-### Under #49865 (2 sub-issues)
-- #49858, #49860
+```bash
+gh api graphql -f query='
+query {
+  repository(owner: "keycloak", name: "keycloak") {
+    issue(number: ISSUE_NUMBER) {
+      number
+      title
+      state
+      trackedIssues(first: 100) {
+        totalCount
+        nodes {
+          number
+          title
+          state
+          trackedIssues(first: 100) {
+            totalCount
+            nodes {
+              number
+              title
+              state
+            }
+          }
+        }
+      }
+    }
+  }
+}'
+```
 
-### Under #50084 (2 sub-issues)
-- #50085, #50086
-
-### Under #50292 (2 sub-issues)
-- #50294, #50295
+Replace `ISSUE_NUMBER` with each direct sub-issue number. This gives you the full three-level
+hierarchy in one query per direct sub-issue (or combine into a single query using aliases).
 
 ### Additional Issues (not in main hierarchy)
-- #50674, #50675, #50676, #50677, #50678, #50679, #50680, #49968, #50355, #48415
+
+Fetch the current document to identify any issues listed in the "Additional Issues" section,
+then check their status with:
+
+```bash
+gh issue view ISSUE_NUMBER --repo keycloak/keycloak --json number,title,state,closedAt
+```
+
+Do not maintain a hardcoded list of additional issues in this prompt — the document itself
+is the source of truth for which additional issues exist.
 
 ## Update Format
 
@@ -215,11 +270,14 @@ The document uses a **table format** for the issue hierarchy. Update values with
 
 The updated **LOCAL FILE** should:
 1. Have today's date in the "Last Updated" field
-2. Have current OPEN/CLOSED status for all issues (read from GitHub)
-3. Have current progress counts where applicable
-4. Include any newly discovered sub-issues in the appropriate table location
-5. Have updated sub-issue counts if new issues were added (e.g., "Direct Sub-Issues: 11" instead of "10")
-6. Maintain all other content unchanged
+2. Have current OPEN/CLOSED status for all issues in the main hierarchy table (read from GitHub)
+3. Have current OPEN/CLOSED status for all issues in the Additional Issues tables (read from GitHub)
+4. Have current progress counts where applicable
+5. Include any newly discovered sub-issues in the appropriate table location
+6. Have updated sub-issue counts if new issues were added (e.g., "Direct Sub-Issues: 11" instead of "10")
+7. Have recalculated Tracked Issues / Open / Closed counts in the Status Dashboard table
+8. Have no issue appearing in both the main hierarchy table and the Additional Issues tables — any such duplicate rows must have been removed from the Additional Issues section
+9. Maintain all other content unchanged
 
 ## Final Reminder
 

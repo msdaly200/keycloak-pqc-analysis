@@ -397,7 +397,32 @@ Your output file (`findings/pqc_overview_review_findings_YYYY-MM-DD.md`) must fo
 <confirm each file in the exclusion list still exists and reason is still valid>
 
 ## Part 5 — Status Distribution Table Verification
-<recount PENDING/PARTIAL/BLOCKED/SAFE/EXTERNAL and compare to HTML counts>
+
+Recount the per-status totals by counting **primary badges from domain rows only**:
+
+1. For each `<tr>` in the main domain table that contains `class="num"`, find the **first** `class="pqc pqc-*"` badge in that row — that is its primary status. Ignore any secondary badges on the same row (e.g. a row showing `BLOCKED (RSA path) / PENDING PROVIDERS (ECDSA/EdDSA paths)` counts only as BLOCKED).
+2. Exclude all badge occurrences in: the legend bar, the Status Distribution summary table itself, and the GAP reference table.
+3. Tally: BLOCKED · PENDING PROVIDERS · PARTIAL · SAFE · EXTERNAL DEPENDENCY.
+4. **Verify the five counts sum exactly to DOMAIN_COUNT** (from Pre-Flight Step 0a). If they do not, the discrepancy is an error and must be listed in Part 1.
+5. Compare your recount against the current counts in the Status Distribution table in `pqc_overview.html`. Record each discrepancy as a required correction in Part 7A.
+
+The expected recount output format:
+
+```
+Recount from domain rows (primary badge only):
+  BLOCKED:              N
+  PENDING PROVIDERS:    N
+  PARTIAL:              N
+  SAFE:                 N
+  EXTERNAL DEPENDENCY:  N
+  ──────────────────────
+  TOTAL:                N  ← must equal DOMAIN_COUNT
+
+Current HTML Status Distribution table:
+  BLOCKED:              N  (correct / WRONG — should be N)
+  PENDING PROVIDERS:    N  (correct / WRONG — should be N)
+  ...
+```
 
 ## Part 6 — New Content Not in Current HTML
 <new domains, new files, or resolved gaps that should update the PQC state>
@@ -454,6 +479,7 @@ Before reporting back to the user, confirm:
 - [ ] All Section B2 line-number checks completed
 - [ ] All Section B3 algorithm/PQC-state checks completed
 - [ ] All Section B4 new-domain discovery checks completed
+- [ ] Part 5 status distribution recount completed; five counts sum exactly to DOMAIN_COUNT
 - [ ] Output file `findings/pqc_overview_review_findings_YYYY-MM-DD.md` written
 - [ ] `README.md` updated with date and link to findings file
 - [ ] No changes made to `pqc_overview.html` or domain/gap markdown files
