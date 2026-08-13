@@ -71,23 +71,32 @@ For each addition item:
    - Col 7: PQC state badge + detailed description + GAP tag links
    - Col 8: Action / implementation plan
 
-#### B — Adding a new GAP table entry
+#### B — Adding a new GAP table entry (slim format)
 
-Find the last `<tr id="gap-N">` row in the GAP reference table (search for `id="gap-` to locate it). Insert the new entry after it, following this template:
+Find the last `<tr id="gap-N">` row in the GAP reference table (search for `id="gap-` to locate it). Insert the new entry after it, following this template (5 columns: Gap ID, Title, Severity, Domains, Detail):
 
 ```html
-<tr id="gap-N" [style="background:#f7f8fa;" for odd-positioned rows]>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-N</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
+<tr id="gap-N" [style="background:#f7f8fa;" for alternating rows]>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-N</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>TITLE</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:SEVERITY_COLOR; font-weight:600;">SEVERITY</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>FILE.java</code> (line N)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">DESCRIPTION</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Rows: N, N</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-N" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 ```
 
-Severity colours: CRITICAL = `#991b1b`, HIGH = `#d97706`, MEDIUM = `#57606a`, LOW = `#57606a`.
+Severity colours: HIGH = `#991b1b`, MEDIUM = `#d97706`, LOW = `#57606a`.
 
 Alternate `style="background:#f7f8fa;"` on even-positioned new rows for visual striping consistency.
+
+#### B2 — Adding the full detail to the gaps doc
+
+When a new GAP entry is added to the HTML summary table, a corresponding
+section must also be added to `gaps/Github_issue_requirements_for_gaps.md`.
+Insert it after the last existing `## GAP-N` section, following the per-gap
+template (metadata table + Description & Impact + Resolution Criteria).
+Update the total gap count in the file header and the severity summary
+tables at the end of the file.
 
 #### C — Adding entries to the "Files Evaluated" section
 

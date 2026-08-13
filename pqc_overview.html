@@ -268,7 +268,7 @@
   <td>RSA-OAEP / ECDH-ES asymmetric key encryption of UserInfo responses; RSA/ECDSA signing of signed UserInfo JWTs</td>
   <td>
     <span class="pqc pqc-blocked">BLOCKED</span><br />
-    Signing: uses a dedicated per-client attribute (<code>userinfo.response.signature.alg</code>) that does not automatically follow the realm default — explicit per-client update required on migration. Encryption: <code>jweFromContent()</code> uses <code>CekManagementProvider</code> SPI — no ML-KEM provider exists. <a class="gap-tag" href="#gap-21">GAP-4</a> <a class="gap-tag" href="#gap-21">GAP-21</a>
+    Signing: uses a dedicated per-client attribute (<code>userinfo.response.signature.alg</code>) that does not automatically follow the realm default — explicit per-client update required on migration. Encryption: <code>jweFromContent()</code> uses <code>CekManagementProvider</code> SPI — no ML-KEM provider exists. <a class="gap-tag" href="#gap-4">GAP-4</a> <a class="gap-tag" href="#gap-21">GAP-21</a>
   </td>
   <td>
     Encryption fix: contingent on ML-KEM <code>CekManagementProvider</code> (same as row 2). Signing fix: operator migration must explicitly update per-client <code>USER_INFO_RESPONSE_SIGNATURE_ALG</code> attributes. Document in <a href="https://github.com/keycloak/keycloak/issues/48823">48823</a>.<br />
@@ -778,16 +778,23 @@
   <td class="files">
     <code>broker/oid4vp/OID4VPIdentityProvider.java</code><br />
     <code>broker/oid4vp/OID4VPIdentityProviderEndpoint.java</code><br />
+    <code>broker/oid4vp/OID4VPIdentityProviderConfig.java</code><br />
+    <code>broker/oid4vp/OID4VPIdentityProviderFactory.java</code><br />
     <code>broker/oid4vp/RequestObject.java</code><br />
     <code>broker/oid4vp/EphemeralKey.java</code><br />
-    <code>broker/oid4vp/ResponseEncryption.java</code>
+    <code>broker/oid4vp/ResponseEncryption.java</code><br />
+    <code>broker/oid4vp/ClientIdentifier.java</code><br />
+    <code>broker/oid4vp/DecryptedResponse.java</code><br />
+    <code>broker/oid4vp/ParsedResponse.java</code><br />
+    <code>broker/oid4vp/RequestContext.java</code><br />
+    <code>broker/oid4vp/ResponseMode.java</code>
   </td>
   <td>Keycloak acting as an OID4VP <em>verifier</em>: (1) signs the request object sent to the wallet; (2) enforces accepted VP token signature algorithms; (3) uses ECDH-ES / secp256r1 to encrypt the <code>direct_post.jwt</code> response</td>
   <td><span class="cat both">SIGN+ENC</span></td>
   <td>Hardcoded ES256 for request object signing and VP token algorithm enforcement; ECDH-ES secp256r1 hardcoded for response encryption (HAIP spec-gated)</td>
   <td>
     <span class="pqc pqc-blocked">BLOCKED</span><br />
-    Signing: <code>OID4VPIdentityProvider.signingKey()</code> hardcodes <code>Algorithm.ES256</code> at lines 187–188 for both active-key lookup and kid-based lookup. <code>ACCEPTED_ALGORITHMS = List.of(Algorithm.ES256)</code> (line 79) is used by <code>OID4VPIdentityProviderEndpoint.requireAcceptedAlgorithm()</code> to actively reject all non-ES256 algorithms, including ML-DSA. Even after ML-DSA providers exist, VP tokens signed with ML-DSA will be rejected at runtime. Encryption: <code>EphemeralKey.generate()</code> hardcodes <code>secp256r1</code> (line: <code>CURVE_SEC = "secp256r1"</code>); <code>ResponseEncryption.KEY_MANAGEMENT_ALG = ECDH_ES</code> — spec-gated by HAIP which currently mandates ECDH-ES/P-256 for <code>direct_post.jwt</code>. Developer-acknowledged TODO at lines 77–79. <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a>
+    Signing: <code>OID4VPIdentityProvider.signingKey()</code> hardcodes <code>Algorithm.ES256</code> at lines 196–197 for both active-key lookup and kid-based lookup. <code>ACCEPTED_ALGORITHMS = List.of(Algorithm.ES256)</code> (line 83) is used by <code>OID4VPIdentityProviderEndpoint.requireAcceptedAlgorithm()</code> to actively reject all non-ES256 algorithms, including ML-DSA. Even after ML-DSA providers exist, VP tokens signed with ML-DSA will be rejected at runtime. Encryption: <code>EphemeralKey.generate()</code> hardcodes <code>secp256r1</code> (line: <code>CURVE_SEC = "secp256r1"</code>); <code>ResponseEncryption.KEY_MANAGEMENT_ALG = ECDH_ES</code> — spec-gated by HAIP which currently mandates ECDH-ES/P-256 for <code>direct_post.jwt</code>. Developer-acknowledged TODO at line 81. <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a>
   </td>
   <td>
     (1) Replace <code>ACCEPTED_ALGORITHMS</code> hardcoded list with a configurable/SPI-driven set; update <code>signingKey()</code> to select from configured algorithm. (2) Track HAIP spec evolution for ECDH-ES/ML-KEM response encryption once the spec gates lift. No GitHub issue yet — requires a new issue under the PQC tracking parent. <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a>
@@ -1435,7 +1442,7 @@
   <td>Exposes realm public keys as JWKs — algorithm-agnostic at the serialisation layer</td>
   <td>
     <span class="pqc pqc-blocked">BLOCKED</span><br />
-    <code>JWKSServerUtils.toJwk()</code> has explicit <code>if/else if</code> branches for <code>KeyType.RSA</code>, <code>KeyType.EC</code>, and <code>KeyType.OKP</code> only. An AKP (ML-DSA) key falls through all branches and returns <code>null</code>, meaning ML-DSA realm keys will be silently omitted from the public JWKS endpoint. Clients will never discover the realm's ML-DSA keys.
+    <code>JWKSServerUtils.toJwk()</code> has explicit <code>if/else if</code> branches for <code>KeyType.RSA</code>, <code>KeyType.EC</code>, and <code>KeyType.OKP</code> only. An AKP (ML-DSA) key falls through all branches and returns <code>null</code>, meaning ML-DSA realm keys will be silently omitted from the public JWKS endpoint. Clients will never discover the realm's ML-DSA keys. <a class="gap-tag" href="#gap-26">GAP-26</a>
   </td>
   <td>
     Add an <code>AKP</code> branch in <code>toJwk()</code> calling <code>JWKBuilder.akp()</code>. Straightforward one-branch addition; <code>JWKBuilder.akp()</code> already exists.
@@ -1458,7 +1465,7 @@
   <td>RSA key pair and self-signed certificate generation via <code>KeycloakModelUtils.generateKeyPairCertificate()</code></td>
   <td>
     <span class="pqc pqc-blocked">BLOCKED</span><br />
-    Both <code>generate()</code> and <code>generateAndGetKeystore()</code> call <code>KeycloakModelUtils.generateKeyPairCertificate()</code>, which hardcodes RSA key generation (<code>KeyUtils.generateRsaKeyPair(keysize)</code>). No algorithm selection is exposed in the API or UI. Admin-generated client keypairs will always be RSA regardless of realm PQC configuration.
+    Both <code>generate()</code> and <code>generateAndGetKeystore()</code> call <code>KeycloakModelUtils.generateKeyPairCertificate()</code>, which hardcodes RSA key generation (<code>KeyUtils.generateRsaKeyPair(keysize)</code>). No algorithm selection is exposed in the API or UI. Admin-generated client keypairs will always be RSA regardless of realm PQC configuration. <a class="gap-tag" href="#gap-27">GAP-27</a>
   </td>
   <td>
     Expose an algorithm parameter in the <code>generateAndGetKeystore</code> endpoint and update <code>KeycloakModelUtils.generateKeyPairCertificate()</code> to support ML-DSA key generation once providers exist.
@@ -1481,7 +1488,7 @@
   <td>RSA/ECDSA/EdDSA JWT signing of client assertions from the adapter/SDK side</td>
   <td>
     <span class="pqc pqc-partial">PARTIAL</span><br />
-    <code>setupKeyPair()</code> defaults to <code>Algorithm.RS256</code>. The algorithm-aware overload routes RSA, EC, and OKP (EdDSA) key types to the correct signer context. However the <code>switch</code> on <code>JavaAlgorithm.getKeyType()</code> has no <code>AKP</code> case — passing an ML-DSA key pair will throw <code>RuntimeException("Invalid KeyPair algorithm")</code>. Distinct from the server-side verifier (row 10) and the admin CLI path (row 38).
+    <code>setupKeyPair()</code> defaults to <code>Algorithm.RS256</code>. The algorithm-aware overload routes RSA, EC, and OKP (EdDSA) key types to the correct signer context. However the <code>switch</code> on <code>JavaAlgorithm.getKeyType()</code> has no <code>AKP</code> case — passing an ML-DSA key pair will throw <code>RuntimeException("Invalid KeyPair algorithm")</code>. Distinct from the server-side verifier (row 10) and the admin CLI path (row 38). <a class="gap-tag" href="#gap-28">GAP-28</a>
   </td>
   <td>
     Add an <code>AKP</code> case to <code>setupKeyPair()</code> wiring an <code>AsymmetricSignatureSignerContext</code> for ML-DSA, once ML-DSA providers exist.
@@ -1504,7 +1511,7 @@
   <td>RSA/ECDSA/EdDSA signing of client-side DPoP proof JWTs</td>
   <td>
     <span class="pqc pqc-partial">PARTIAL</span><br />
-    The generic <code>generateSignedDPoPProof(…, KeyWrapper, …)</code> method is algorithm-agnostic and will support ML-DSA once providers exist. However, the convenience method <code>generateRsaSignedDPoPProof()</code> is hardcoded to RSA and includes an explicit <code>TODO</code> noting EC and EdDSA equivalents are missing. No ML-DSA convenience path exists. Distinct from server-side DPoP verification (row 15).
+    The generic <code>generateSignedDPoPProof(…, KeyWrapper, …)</code> method is algorithm-agnostic and will support ML-DSA once providers exist. However, the convenience method <code>generateRsaSignedDPoPProof()</code> is hardcoded to RSA and includes an explicit <code>TODO</code> noting EC and EdDSA equivalents are missing. No ML-DSA convenience path exists. Distinct from server-side DPoP verification (row 15). <a class="gap-tag" href="#gap-29">GAP-29</a>
   </td>
   <td>
     Add ML-DSA convenience method or update callers to use the generic <code>KeyWrapper</code> path. Low priority if callers already use the generic path.
@@ -1556,7 +1563,7 @@
   <td>RSA path: hardcoded <code>KeyType.RSA</code> guard rejects non-RSA keys. ECDSA/EdDSA paths: SPI-driven, will support ML-DSA once providers exist.</td>
   <td>
     <span class="pqc pqc-blocked">BLOCKED</span> (RSA path) / <span class="pqc pqc-pending">PENDING PROVIDERS</span> (ECDSA/EdDSA paths)<br />
-    <code>ClientAsymmetricSignatureVerifierContext.getKey()</code> at line 36 explicitly throws <code>VerificationException("Key Type is not RSA")</code> for any non-RSA key — ECDSA, EdDSA, and ML-DSA (AKP) client keys are all unconditionally rejected through the RSA path. The ECDSA and EdDSA paths route through their own contexts and are SPI-driven — they will support ML-DSA automatically once providers exist. ML-DSA (AKP) client assertions currently have no routed path at all: the RSA context rejects them, and there is no AKP-specific client verifier context or provider factory yet.
+    <code>ClientAsymmetricSignatureVerifierContext.getKey()</code> at line 36 explicitly throws <code>VerificationException("Key Type is not RSA")</code> for any non-RSA key — ECDSA, EdDSA, and ML-DSA (AKP) client keys are all unconditionally rejected through the RSA path. The ECDSA and EdDSA paths route through their own contexts and are SPI-driven — they will support ML-DSA automatically once providers exist. ML-DSA (AKP) client assertions currently have no routed path at all: the RSA context rejects them, and there is no AKP-specific client verifier context or provider factory yet. <a class="gap-tag" href="#gap-30">GAP-30</a>
   </td>
   <td>
     Remove or generalise the <code>KeyType.RSA</code> guard in <code>ClientAsymmetricSignatureVerifierContext</code> to accept any asymmetric key type, or add a dedicated AKP client verifier context + provider factory following the same pattern as the ECDSA/EdDSA paths. The ECDSA and EdDSA provider factories will automatically surface ML-DSA once core providers exist.
@@ -1574,16 +1581,21 @@
 <!-- ═══════════════════════════════════════════════════════════ -->
 
 <h2 style="font-size:15px; margin: 40px 0 6px;">PQC Gap Reference</h2>
-<p class="subtitle">Concrete gaps identified against GitHub issue <a href="https://github.com/keycloak/keycloak/issues/45168" style="color:#3b82d4;">45168</a> and its sub-issues. Each gap represents a specific missing implementation or hardcoded assumption that blocks full PQC readiness. Gaps are referenced by the <span class="gap-tag" style="display:inline-block;">GAP-N</span> tags in the table above.</p>
+<p class="subtitle">Summary index of all PQC gaps. Full descriptions, affected
+files, and resolution criteria are maintained in
+<a href="gaps/Github_issue_requirements_for_gaps.md" style="color:#3b82d4;">the
+canonical gap reference</a>. Gaps are referenced by the
+<span class="gap-tag" style="display:inline-block;">GAP-N</span> tags in the
+domain table above.</p>
 
 <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:8px;">
 <thead>
 <tr>
   <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:90px;">Gap ID</th>
-  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:210px;">Title</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328;">Title</th>
   <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:80px;">Severity</th>
-  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:220px;">Affected File(s)</th>
-  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328;">Description &amp; Impact</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:120px;">Domains</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:100px;">Detail</th>
 </tr>
 </thead>
 <tbody>
@@ -1592,208 +1604,244 @@
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-1</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JWK Thumbprint — AKP (ML-DSA) Keys</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/…/util/JWKSUtils.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>AKP</code> is absent from <code>JWK_THUMBPRINT_REQUIRED_MEMBERS</code>. Calling <code>computeThumbprint()</code> on an ML-DSA JWK throws <code>UnsupportedOperationException</code>. Directly breaks DPoP <code>dpop_jkt</code> binding (row 15) and attestation-based client auth (row 12) for ML-DSA keys. Fix: add AKP member set and implement thumbprint computation for AKP JWKs.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">12, 15, 45</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-1" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-2" style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-2</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>SAML Signing — No PQC Algorithm Entries</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>saml-core/…/saml/SignatureAlgorithm.java</code><br /><code>saml-core/…/util/XMLSignatureUtil.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>SignatureAlgorithm</code> enum contains only RSA and DSA variants; no PQC XML Digital Signature URIs are registered. <code>XMLSignatureUtil</code> uses <code>javax.xml.crypto.dsig</code> with standard algorithms only. SAML assertion signing cannot use ML-DSA at the algorithm layer. Tracked under <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a> / <a href="https://github.com/keycloak/keycloak/issues/50294">50294</a> (partial).</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">18, 20, 59, 60, 61</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-2" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-3">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-3</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>SAML Encryption — No ML-KEM Key Wrapping</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>saml-core/…/util/XMLEncryptionUtil.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>XMLEncryptionUtil</code> supports only RSA-OAEP and RSA1_5 for key transport. No ML-KEM key-encapsulation path exists. SAML assertion encryption cannot use quantum-safe key wrapping. Tracked under <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a> / <a href="https://github.com/keycloak/keycloak/issues/50295">50295</a> (partial).</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">19</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-3" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-4" style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-4</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JWE Key Management — No ML-KEM CEK Provider</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>crypto/RsaCekManagementProvider.java</code><br /><code>crypto/EcdhEsCekManagementProvider.java</code><br /><code>jose/jws/DefaultTokenManager.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">All <code>CekManagementProviderFactory</code> implementations use RSA-OAEP or ECDH-ES. No ML-KEM provider exists. Clients requesting encrypted ID tokens, encrypted UserInfo responses, or encrypted authorisation responses have no quantum-safe key encapsulation option. Blocks rows 2, 4, 8, 19. Must be implemented before any outbound token encryption can be quantum-safe.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">2, 4, 8, 63</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-4" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-5">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-5</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JavaKeystoreKeyProvider — ML-DSA Key Import</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>keys/JavaKeystoreKeyProviderFactory.java</code><br /><code>keys/JavaKeystoreKeyProvider.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>JavaKeystoreKeyProviderFactory</code> supports RSA, EC, and OKP/EdDSA import paths only. BCFKS and PKCS12 keystores can physically store ML-DSA keys, but the provider's import logic has no AKP branch. Operators cannot import ML-DSA keys from a keystore file. See also GAP-16.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">33, 34</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-5" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-6" style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-6</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>FIPS 140-2 Backend — ML-DSA Availability Blocked</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>crypto/fips1402/…/FIPS1402Provider.java</code><br /><code>crypto/fips1402/…/BCFIPSCertificateUtilsProvider.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">BC-FIPS 2.1.2 (pinned in root <code>pom.xml</code>) confirmed by JAR inspection to contain only LMS under <code>org.bouncycastle.crypto.internal.pqc</code>. No ML-DSA and no ML-KEM classes are present. FIPS-mode Keycloak deployments cannot use ML-DSA or ML-KEM. Confirmed hard blocker for regulated environments targeting FIPS 140-2/3 compliance. Unblocked only when BC-FIPS 2.x achieves NIST FIPS 140-3 validation for ML-DSA/ML-KEM. Affects X.509 cert validation with PQC certificates in FIPS mode (rows 11, 13, 43).</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">11, 13, 43</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-6" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-7">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-7</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>OID4VC Linked Data Proof Suite — Hardcoded Ed25519</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/signing/LDCredentialSigner.java</code><br /><code>oid4vc/issuance/signing/vcdm/Ed255192018Suite.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">LD-Proof credential signing is hardcoded to <code>Ed25519Signature2018</code>. It does not use the <code>SignatureProvider</code> SPI path and will not inherit ML-DSA support automatically. A new ML-DSA LD cryptographic suite would need to be implemented separately if LD-Proofs are required with PQC. No existing tracking issue covers this.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">25</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-7" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-8" style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-8</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>FAPI / Client Policy Allowlist — ML-DSA Actively Blocked</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>clientpolicy/executor/FapiConstant.java</code><br /><code>clientpolicy/executor/SecureSigningAlgorithmExecutor.java</code><br /><code>clientpolicy/executor/SecureSigningAlgorithmForSignedJwtExecutor.java</code><br /><code>ciba/clientpolicy/executor/SecureCibaAuthenticationRequestSigningAlgorithmExecutor.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>FapiConstant.ALLOWED_ALGORITHMS</code> is hardcoded to <code>{PS256, PS384, PS512, ES256, ES384, ES512}</code>. <code>SecureSigningAlgorithmExecutor.isSecureAlgorithm()</code> and the equivalent CIBA executor call <code>ALLOWED_ALGORITHMS.contains(sigAlg)</code> — ML-DSA will be <em>actively rejected</em> even after providers exist. When a FAPI client policy is applied, PQC algorithms are blocked at runtime and in the admin UI. Blocked on FAPI 2.0 / FAPI profiles including PQC algorithms.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">16, 41</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-8" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-9">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-9</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>SAML Protocol — Hardcoded RS256 Key Lookup</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/saml/SAMLIdentityProvider.java</code> (lines 414, 507)<br /><code>protocol/saml/SamlProtocol.java</code> (line 544)<br /><code>protocol/saml/SamlService.java</code> (line 965)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Four hardcoded RS256 key-selection call sites in SAML code: SP metadata signing key export (line 414), SP metadata document signing (line 507), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 965). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. No GitHub sub-issue exists for this gap; requires a third sub-issue under <a href="https://github.com/keycloak/keycloak/issues/50292">50292</a>.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">18, 20, 59, 60, 61</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-9" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-10" style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-10</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>IdP Broker — Hardcoded RS256 / HS256 Fallback</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/oidc/AbstractOAuth2IdentityProvider.java</code> (lines 737, 745)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Line 737 hardcodes <code>Algorithm.HS256</code> as the fallback when <code>client_secret_jwt</code> has no configured algorithm. Line 745 hardcodes <code>Algorithm.RS256</code> as the fallback for all other client assertion signing (e.g., <code>private_key_jwt</code>). An IdP broker configured for <code>private_key_jwt</code> will always fall back to RS256 unless the admin explicitly sets <code>clientAssertionSigningAlg</code>. No path to select ML-DSA as the outbound default even after providers exist.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">21</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-10" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-11">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-11</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Dynamic Client Registration — RS256 Special-Case Logic</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#57606a; font-weight:600;">LOW</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>clientregistration/oidc/DescriptionConverter.java</code> (line 416)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>if (Algorithm.RS256.equals(defaultSignatureAlgorithm) || StringUtil.isBlank(defaultSignatureAlgorithm))</code> — RS256 is explicitly special-cased so that <code>id_token_signed_response_alg</code> is omitted from the DCR response when the realm default is RS256. No equivalent treatment is defined for ML-DSA. Minor inconsistency; will need updating when ML-DSA becomes a valid realm default.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">35</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-11" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-12" style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-12</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Constants.DEFAULT_SIGNATURE_ALGORITHM — RS256 Fallback Propagation</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Constants.DEFAULT_SIGNATURE_ALGORITHM — RS256 Fallback</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>server-spi-private/…/models/Constants.java</code><br /><code>jose/jws/DefaultTokenManager.java</code> (line 233)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>DEFAULT_SIGNATURE_ALGORITHM = Algorithm.RS256</code> is the ultimate fallback for all token signing when neither client nor realm has configured an algorithm. Any incomplete PQC migration (realm default updated but client attributes not set) will silently revert to classical RS256. Operators and documentation must explicitly flag this transition risk.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">35</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-12" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-13">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-13</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Admin CLI &amp; Authz Client — Hardcoded RS256 Client Assertion Signing</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Admin CLI &amp; Authz Client — Hardcoded RS256</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>client-cli/admin-cli/…/util/AuthUtil.java</code> (line 213)<br /><code>core/…/jose/jws/JWSBuilder.java</code><br /><code>core/…/client/authentication/JWTClientCredentialsProvider.java</code> (lines 62, 96)<br /><code>authz/client/…/util/HttpMethodAuthenticator.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">
-    <strong>Admin CLI (<code>kcadm.sh</code> / <code>kcreg.sh</code>):</strong> <code>getSignedRequestToken()</code> calls <code>new JWSBuilder().jsonContent(reqToken).rsa256(keypair.getPrivate())</code>, hardcoding RS256. No <code>--sigalg</code> parameter exists in the CLI. Both tools share this code path. If a realm requires ML-DSA for client assertions (e.g., via a FAPI policy), both CLI tools will be unable to authenticate via the keystore-based <code>private_key_jwt</code> flow. Fix: add an algorithm parameter to <code>getSignedRequestToken()</code> and plumb a <code>--sigalg</code> option through the credential configuration command chain.<br /><br />
-    <strong>Authz Client (<code>keycloak-authz-client</code> library):</strong> <code>HttpMethodAuthenticator</code> delegates to <code>ClientCredentialsProviderUtils.setClientCredentials()</code>, which uses <code>JWTClientCredentialsProvider</code>. The no-arg <code>setupKeyPair(KeyPair)</code> overload (line 62) hardcodes <code>Algorithm.RS256</code> as the default. The <code>switch</code> on key type (lines 77–96) has no <code>AKP</code> case — passing an ML-DSA key pair throws <code>RuntimeException("Invalid KeyPair algorithm")</code>. Although a configurable <code>algorithm</code> parameter is read from adapter config at line 145, the underlying <code>switch</code> would still reject an AKP key. This is the same gap as row 50 (Client SDK) manifested in the separate <code>keycloak-authz-client</code> library, which ships independently and is used by UMA/resource-server clients. Both the CLI fix and the <code>JWTClientCredentialsProvider</code> AKP case (row 50) must be resolved together to fully address this gap.
-  </td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">38</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-13" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-14" style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-14</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JGroups ASYM_ENCRYPT — RSA Cluster Key Exchange (Operator Guidance)</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JGroups ASYM_ENCRYPT — RSA Cluster Key Exchange</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#57606a; font-weight:600;">LOW</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>quarkus/tests/integration/…/cache-ispn-asym-enc.xml</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JGroups' <code>ASYM_ENCRYPT</code> protocol uses RSA-2048 for AES group-key distribution to joining cluster nodes — quantum-vulnerable under a Harvest Now, Decrypt Later attack. Risk is confined to operators who manually copy the example <code>ASYM_ENCRYPT</code> config; production Keycloak uses mTLS (<code>JGroupsCertificateProvider</code>) which will inherit quantum-safety from PQC-capable TLS (<a href="https://github.com/keycloak/keycloak/issues/48820">48820</a>). No code change needed — deployment/operator guidance only; document under <a href="https://github.com/keycloak/keycloak/issues/48823">48823</a>.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">39</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-14" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-15">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-15</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Realm Key Management — No ML-DSA Key Generation or Rotation</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Realm Key Management — No ML-DSA Key Generation</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>keys/GeneratedRsaKeyProviderFactory.java</code><br /><code>keys/GeneratedEcdsaKeyProviderFactory.java</code><br /><code>keys/GeneratedEddsaKeyProviderFactory.java</code><br /><code>keys/DefaultKeyManager.java</code><br /><code>common/…/crypto/CryptoProvider.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">No <code>GeneratedAKPKeyProviderFactory</code> (or equivalent) exists for ML-DSA key generation. <code>DefaultKeyManager.createFallbackKeys()</code> does not know about ML-DSA. <code>CryptoProvider.getKeyPairGen(String algorithm)</code> would need to support ML-DSA algorithm names. This is the foundational gap — until ML-DSA key providers exist, no other ML-DSA signing work can be completed end-to-end. Tracked under <a href="https://github.com/keycloak/keycloak/issues/48824">48824</a>.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">1, 28, 29, 30, 31, 46</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-15" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-16" style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-16</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JavaKeystoreKeyProviderFactory — ML-DSA Excluded from Admin UI</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>keys/JavaKeystoreKeyProviderFactory.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>mergedAlgorithmProperties()</code> builds the selectable algorithm list shown in the admin UI. ML-DSA algorithm names are absent from this list. Even if GAP-5 (import logic) is fixed, the admin cannot select an ML-DSA algorithm for a keystore-based key provider in the UI. Both the provider logic (GAP-5) and the configuration surface (GAP-16) must be fixed together.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">33, 34</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-16" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-17">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-17</span></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>FAPI / CIBA Executor Factories — Admin UI Algorithm Lists</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>clientpolicy/executor/SecureSigningAlgorithmExecutorFactory.java</code><br /><code>ciba/clientpolicy/executor/SecureCibaAuthenticationRequestSigningAlgorithmExecutorFactory.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Both executor factories build their selectable option lists directly from <code>FapiConstant.ALLOWED_ALGORITHMS</code>. ML-DSA is blocked both at runtime (GAP-8) and in the admin configuration UI. The UI-level block means an administrator cannot even configure a FAPI realm to accept ML-DSA before the algorithm constant is updated. Depends on GAP-8 being resolved first.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">16, 41</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-17" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-18" style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-18</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JwtCNonceHandler — OID4VC c_nonce JWT Signing Hardcoded to ES256 / RS256</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JwtCNonceHandler — c_nonce Signing Hardcoded ES256/RS256</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/keybinding/JwtCNonceHandler.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>selectSigningKey()</code> first attempts ES256, then falls back to RS256. This is independent of <code>Constants.DEFAULT_SIGNATURE_ALGORITHM</code> and completely bypasses the realm default algorithm. c_nonce JWTs will not use an active ML-DSA key even after ML-DSA providers and realm keys exist. Fix: replace the hardcoded lookup with a configurable or SPI-driven selection.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">27</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-18" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-19">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-19</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>No Minimum-Version Constraint on bcprov-jdk18on — Silent ML-DSA Regression Risk</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>No Minimum-Version Constraint on bcprov-jdk18on</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>pom.xml</code> (root)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>bcprov-jdk18on</code> 1.84 (inherited via Quarkus BOM) is confirmed to contain ML-DSA and ML-KEM support (<code>org.bouncycastle.pqc.crypto.mldsa.*</code>, <code>org.bouncycastle.jcajce.provider.asymmetric.mlkem.*</code>). ML-DSA classes first appeared in version 1.78. However, no Maven Enforcer minimum-version rule exists. A downstream build with an older BOM version could silently drop ML-DSA support without a build-time failure. Fix: add an Enforcer rule pinning <code>bcprov-jdk18on ≥ 1.78</code>.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">42</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-19" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-20" style="background:#f7f8fa;">
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-20</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JAR Encrypted Request Object Decryption — No ML-KEM Inbound Path</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-20</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JAR Encrypted Request Object — No ML-KEM Inbound Path</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>jose/jws/DefaultTokenManager.java</code> (line 123)<br /><code>endpoints/request/AuthzEndpointRequestObjectParser.java</code><br /><code>par/endpoints/request/ParEndpointRequestObjectParser.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>decodeClientJWT()</code> selects a realm private key by <code>KeyUse.ENC</code> and passes it directly to the JWE engine. No ML-KEM <code>CekManagementProviderFactory</code> exists and the realm cannot hold an ML-KEM ENC key. A client wishing to send an encrypted JAR using ML-KEM key encapsulation cannot do so. Distinct from GAP-4 (outbound) — this is <em>inbound</em> decryption. No existing sub-issue covers this direction. Fix: extend <code>decodeClientJWT()</code> to support ML-KEM key decapsulation, contingent on GAP-4.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">8</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-20" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-21">
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-21</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>UserInfo Endpoint — Per-Client Signing Attribute &amp; Encryption Gap</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-21</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>UserInfo Endpoint — Per-Client Signing &amp; Encryption Gap</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>protocol/oidc/endpoints/UserInfoEndpoint.java</code> (lines 341, 379–398)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Signing: <code>signatureAlgorithm(TokenCategory.USERINFO)</code> resolves only the per-client <code>userinfo.response.signature.alg</code> attribute, then falls back to the realm default (<code>RS256</code>). Unlike ID tokens, there is no automatic inheritance — each client's explicit attribute must be updated independently during migration. Encryption: <code>jweFromContent()</code> uses <code>CekManagementProvider</code> SPI (no ML-KEM provider, same as GAP-4) but in a separate class and code path. UserInfo encryption is a confirmed hard gap requiring explicit testing once GAP-4 is resolved.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">4</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-21" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-22" style="background:#f7f8fa;">
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-22</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Attestation-Based Client Authentication — Algorithm Enforcement &amp; JWK Thumbprint</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-22</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Attestation-Based Client Auth — Algorithm Enforcement</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>authentication/authenticators/client/AttestationBasedClientAuthenticator.java</code> (lines 418, 483–489)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Two concerns: (1) An in-code <code>[TODO]</code> at line 418 notes that algorithm-type enforcement (must be a registered asymmetric algorithm) is not yet implemented — a security hardening gap independent of PQC, compounded by it. (2) If the <code>cnf.jwk</code> claim contains an ML-DSA (AKP) key, <code>JWKSUtils.computeThumbprint()</code> will throw <code>UnsupportedOperationException</code> (dependent on GAP-1). Not covered by the original domain analysis. Should be tracked under <a href="https://github.com/keycloak/keycloak/issues/48824">48824</a> or a dedicated sub-issue.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">12</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-22" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-23">
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-23</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>OIDC Discovery — Hardcoded RS256 for backchannel_authentication_request_signing_alg_values_supported</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-23</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>OIDC Discovery — Hardcoded RS256 CIBA Constant</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#57606a; font-weight:600;">LOW</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>protocol/oidc/OIDCWellKnownProvider.java</code> (line 85)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED = list(Algorithm.RS256.toString())</code> is a static constant used to advertise supported CIBA backchannel authentication request signing algorithms. Unlike other discovery fields (which are dynamically populated from registered <code>SignatureProvider</code> instances), this one remains hardcoded to RS256 even after ML-DSA providers are registered. A conformant CIBA client relying on this field will never attempt ML-DSA-signed requests. Fix: replace with a dynamic lookup merging registered asymmetric <code>SignatureProvider</code> algorithm names — same pattern as <code>id_token_signing_alg_values_supported</code>.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">36</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-23" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-24" style="background:#f7f8fa;">
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-24</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>OID4VP — Hardcoded ES256 Signing / <code>ACCEPTED_ALGORITHMS</code> List</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-24</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>OID4VP — Hardcoded ES256 Signing / ACCEPTED_ALGORITHMS</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/oid4vp/OID4VPIdentityProvider.java</code> (lines 79, 187–188)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>ACCEPTED_ALGORITHMS = List.of(Algorithm.ES256)</code> (line 79) is used by <code>OID4VPIdentityProviderEndpoint.requireAcceptedAlgorithm()</code> to actively reject all non-ES256 VP token signatures at runtime, including ML-DSA. <code>signingKey()</code> (lines 187–188) hardcodes ES256 for both active-key lookup and kid-based lookup, preventing ML-DSA key selection. Even after ML-DSA providers exist, OID4VP will silently fail at the algorithm enforcement layer. The <code>SIGNING_KEY_ID</code> config attribute (in <code>OID4VPIdentityProviderConfig</code>) feeds into <code>signingKey()</code> — the config surface is present but the algorithm is still pinned. Fix: replace <code>ACCEPTED_ALGORITHMS</code> hardcoded list with a configurable/SPI-driven set; update <code>signingKey()</code> to select from configured algorithm.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">62</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-24" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 <tr id="gap-25">
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-25</span> <span style="font-size:10px; color:#57606a;">(new)</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>OID4VP — Hardcoded ECDH-ES/secp256r1 Response Encryption (HAIP spec-gated)</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-25</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>OID4VP — ECDH-ES/secp256r1 Response Encryption (HAIP spec-gated)</strong></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#57606a; font-weight:600;">LOW (EXTERNAL)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>broker/oid4vp/EphemeralKey.java</code> (line 41); <code>broker/oid4vp/ResponseEncryption.java</code> (line 38)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>EphemeralKey.generate()</code> hardcodes <code>CURVE_SEC = "secp256r1"</code> (line 41); <code>ResponseEncryption.KEY_MANAGEMENT_ALG = ECDH_ES</code> (line 38). Both are spec-gated: the HAIP (High Assurance Interoperability Profile) currently mandates ECDH-ES/P-256 for <code>direct_post.jwt</code> response encryption. No Keycloak-side fix is appropriate until HAIP specifies ML-KEM support. Track HAIP spec evolution; update once the spec gates lift. No new GitHub issue required at this time — existing HAIP tracker is the dependency.</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">62</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-25" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
+</tr>
+
+<tr id="gap-26" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-26</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>JWKS Endpoint — AKP Branch in JWKSServerUtils.toJwk()</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">48</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-26" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
+</tr>
+
+<tr id="gap-27">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-27</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Admin API — Client Keypair Generation Hardcodes RSA</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">49</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-27" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
+</tr>
+
+<tr id="gap-28" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-28</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Client SDK — JWTClientCredentialsProvider Missing AKP</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">50</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-28" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
+</tr>
+
+<tr id="gap-29">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-29</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Client SDK — DPoPGenerator No ML-DSA Convenience Path</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">51</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-29" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
+</tr>
+
+<tr id="gap-30" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-30</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Client Signature Verifier — RSA Guard Blocks AKP Keys</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">53</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-30" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
 </tbody>
 </table>
-
 
 <!-- ═══════════════════════════════════════════════════════════ -->
 <!-- FILES EVALUATED BUT NOT ADDED AS NEW ROWS                  -->
@@ -2074,6 +2122,18 @@
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/credentialbuilder/SdJwtCredentialBody.java</code></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">SD-JWT credential body builder for OID4VC issuance. Constructs the selective-disclosure payload; algorithm selection is delegated to the parent <code>SdJwtCredentialSigner</code> (row 56). No independent PQC gap.</td>
 </tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>crypto/ES256SignatureProviderFactory.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Individual <code>SignatureProviderFactory</code> for ES256 (P-256 / SHA-256). Delegates signing to <code>ECDSASignatureProvider</code>. This file was recently refactored from the shared ECDSA factory in row 3 — it is an architectural split, not a new PQC gap. No independent PQC gap beyond row 3 (ECDSA Signature Providers).</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>crypto/ES384SignatureProviderFactory.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Individual <code>SignatureProviderFactory</code> for ES384 (P-384 / SHA-384). Same architectural split as <code>ES256SignatureProviderFactory</code>; delegates to <code>ECDSASignatureProvider</code>. No independent PQC gap beyond row 3.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>crypto/ES512SignatureProviderFactory.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Individual <code>SignatureProviderFactory</code> for ES512 (P-521 / SHA-512). Same architectural split as <code>ES256SignatureProviderFactory</code>; delegates to <code>ECDSASignatureProvider</code>. No independent PQC gap beyond row 3.</td>
+</tr>
 </tbody>
 </table>
 
@@ -2138,8 +2198,8 @@
   <li><strong>GAP-6</strong> (Domains 11, 13, 43): BC-FIPS 2.1.2 lacks ML-DSA — external blocker for FIPS deployments</li>
   <li><strong>GAP-8</strong> (Domains 16, 41): FAPI allowlist actively blocks ML-DSA — spec-gated on FAPI 2.0</li>
   <li><strong>GAP-15</strong> (Domains 28, 30-31, 46): No ML-DSA key generation — covered by <a href="https://github.com/keycloak/keycloak/issues/48824">#48824</a></li>
-  <li><strong>Domain 48</strong>: JWKS endpoint omits AKP keys (returns null)</li>
-  <li><strong>Domain 53</strong>: Client signature verifier RSA guard blocks ML-DSA assertions</li>
+  <li><strong>GAP-26</strong> (Domain 48): JWKS endpoint omits AKP keys (returns null)</li>
+  <li><strong>GAP-30</strong> (Domain 53): Client signature verifier RSA guard blocks ML-DSA assertions</li>
 </ul>
 
 <h4 style="font-size:13px; margin: 16px 0 6px; color:#57606a; font-weight:600;">MEDIUM Priority</h4>
@@ -2151,7 +2211,7 @@
   <li><strong>GAP-21</strong> (Domain 4): UserInfo per-client signature attribute doesn't follow realm default</li>
   <li><strong>GAP-22</strong> (Domain 12): Attestation algorithm enforcement TODO not implemented</li>
   <li><strong>GAP-23</strong> (Domain 36): OIDC discovery hardcoded constant for CIBA signing algorithms</li>
-  <li><strong>Domains 49-51</strong>: Admin API and Client SDK missing AKP support</li>
+  <li><strong>GAP-27, GAP-28, GAP-29</strong> (Domains 49-51): Admin API and Client SDK missing AKP support</li>
 </ul>
 
 <h3 style="font-size:15px; margin: 24px 0 8px;">New GitHub Issues Needed</h3>
@@ -2183,12 +2243,12 @@
 </tr>
 <tr style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#d97706; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Domain 48</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-26</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JWKS Endpoint: Add AKP Branch to JWKSServerUtils.toJwk()</td>
 </tr>
 <tr>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#d97706; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Domain 53</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-30</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Client Signature Verifier: Add AKP Support / Remove RSA-Only Guard</td>
 </tr>
 <tr style="background:#f7f8fa;">
@@ -2218,12 +2278,12 @@
 </tr>
 <tr>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Domain 49</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-27</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Admin API: Client Keypair Generation Algorithm Parameter</td>
 </tr>
 <tr style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">LOW</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Domains 50-51</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-28, GAP-29</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Client SDK: Add AKP Support to JWTClientCredentialsProvider & DPoPGenerator</td>
 </tr>
 </tbody>
@@ -2243,7 +2303,7 @@
 </p>
 
 <footer>
-  <p>Last updated: 10 August 2026 (review findings applied: 5 new OID4VC keybinding/credentialbuilder files added to Files Evaluated section; no PQC state changes)</p>
+  <p>Last updated: 11 August 2026 (gap reconciliation: GAP reference table slimmed to summary index; full detail moved to gaps doc; GAP-26 through GAP-30 added; anchor link fixed; gap-tags added to domain rows 48-51, 53)</p>
 </footer>
 </div>
 </body>

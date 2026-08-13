@@ -71,8 +71,11 @@ values drive every subsequent step and must not be assumed from memory.
 ```bash
 # --- Run from the pqc_analysis workspace root ---
 
-# 0a. Count domain rows (unique domain .md links = one per domain row)
-grep -o 'domains/Domain_[0-9]*_[^"]*\.md' pqc_overview.html | sort -u | wc -l
+# 0a. Count domain rows — count <td class="num"> cells in the main audit table.
+#     This is the authoritative domain count regardless of whether a domain .md
+#     file exists for the row. Do NOT count .md file links (some rows may not have
+#     a .md file yet and would be undercounted).
+grep -c 'class="num"' pqc_overview.html
 
 # 0b. List all GAP identifiers referenced
 grep -o 'GAP-[0-9]*' pqc_overview.html | sort -u
@@ -82,7 +85,9 @@ grep -o '[A-Z][A-Za-z0-9]*\.java' pqc_overview.html | sort -u
 ```
 
 Record the outputs as:
-- **DOMAIN_COUNT** — the number from 0a; use this wherever the prompt says "all N domains"
+- **DOMAIN_COUNT** — the number from 0a; use this wherever the prompt says "all N domains".
+  The source of truth is the number of rows in the "Keycloak Asymmetric Crypto Audit" table,
+  not the number of domain `.md` files (some rows may not yet have a backing `.md` file).
 - **GAP_LIST** — the sorted list from 0b; use this as the complete GAP checklist in Part 3
 - **FILE_LIST** — the sorted list from 0c; use this as the complete file checklist in B1
 
@@ -237,11 +242,26 @@ grep -n "\[TODO\].*alg\|alg.*\[TODO\]" services/src/main/java/org/keycloak/authe
 # GAP-23: OIDCWellKnownProvider.java — hardcoded RS256 constant (documented: line 85)
 grep -n "DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED" services/src/main/java/org/keycloak/protocol/oidc/OIDCWellKnownProvider.java
 
-# Domain 48: JWKSServerUtils.toJwk() — no AKP branch (documented: lines 59-63)
-grep -n "KeyType\.\|toJwk\b" services/src/main/java/org/keycloak/protocol/oidc/utils/JWKSServerUtils.java
+# GAP-26: JWKSServerUtils.toJwk() — no AKP branch (documented: lines 59-65)
+grep -n "KeyType\.\|toJwk\b\|AKP" services/src/main/java/org/keycloak/protocol/oidc/utils/JWKSServerUtils.java
 
-# Domain 53: ClientAsymmetricSignatureVerifierContext — RSA guard (documented: lines 36-37)
-grep -n "not RSA\|Key Type is not RSA\|KeyType\.RSA" services/src/main/java/org/keycloak/crypto/ClientAsymmetricSignatureVerifierContext.java
+# GAP-30: ClientAsymmetricSignatureVerifierContext — RSA guard (documented: lines 36-37)
+grep -n "not RSA\|Key Type is not RSA\|KeyType\.RSA\|KeyType\.AKP" services/src/main/java/org/keycloak/crypto/ClientAsymmetricSignatureVerifierContext.java
+
+# GAP-24: OID4VP — ACCEPTED_ALGORITHMS hardcoded ES256 (documented: lines 83, 196-197)
+grep -n "ACCEPTED_ALGORITHMS\|Algorithm\.ES256\|getActiveKey.*ES256\|ES256.*getActiveKey" services/src/main/java/org/keycloak/broker/oid4vp/OID4VPIdentityProvider.java | head -10
+
+# GAP-25: OID4VP — ECDH-ES/secp256r1 response encryption (documented: EphemeralKey line 41, ResponseEncryption line 38)
+grep -n "secp256r1\|CURVE_SEC\|ECDH_ES\|KEY_MANAGEMENT_ALG" services/src/main/java/org/keycloak/broker/oid4vp/EphemeralKey.java services/src/main/java/org/keycloak/broker/oid4vp/ResponseEncryption.java
+
+# GAP-27: ClientAttributeCertificateResource — generateKeyPairCertificate RSA hardcoding (documented: lines 119, 258)
+grep -n "generateRsaKeyPair\|KeyUtils\.generateRsa\|generateKeyPairCertificate\|ML.DSA\|AKP" services/src/main/java/org/keycloak/services/resources/admin/ClientAttributeCertificateResource.java
+
+# GAP-28: JWTClientCredentialsProvider — switch missing AKP case (documented: lines 77-96)
+grep -n "KeyType\.RSA\|KeyType\.EC\|KeyType\.OKP\|KeyType\.AKP\|Invalid KeyPair algorithm" core/src/main/java/org/keycloak/protocol/oidc/client/authentication/JWTClientCredentialsProvider.java
+
+# GAP-29: DPoPGenerator — no ML-DSA convenience method (documented: lines 49-50)
+grep -n "generateRsaSignedDPoPProof\|TODO\|ML.DSA\|AKP" core/src/main/java/org/keycloak/util/DPoPGenerator.java | head -10
 
 # Domain 61: SAML2Signature — RSA_SHA1 default (documented: lines 55/57)
 grep -n "RSA_SHA1\|DigestMethod\.SHA1\|signatureMethod\s*=" saml-core/src/main/java/org/keycloak/saml/processing/api/saml/v2/sig/SAML2Signature.java
@@ -278,6 +298,11 @@ grep -n "secp256r1\|CURVE_SEC\|ECDH_ES\|KEY_MANAGEMENT_ALG" services/src/main/ja
 > `CekManagementProviderFactory`), and missing algorithm support in allow-lists
 > (`FapiConstant`, `JWKSServerUtils`, `JWKSUtils`, `OIDCWellKnownProvider`,
 > `DefaultKeyProviders`, `ClientAsymmetricSignatureVerifierContext`).
+
+> **Full gap descriptions** are maintained in
+> `gaps/Github_issue_requirements_for_gaps.md`. The checks below verify each
+> gap's current state against the Keycloak source. When a gap is RESOLVED,
+> update both the HTML GAP summary table and the gaps doc.
 
 These are the claims most likely to change as Keycloak progresses on PQC. Run these checks:
 
@@ -390,8 +415,13 @@ Your output file (`findings/pqc_overview_review_findings_YYYY-MM-DD.md`) must fo
 
 ## Part 3 — GAP Reference Verification
 <table with columns: GAP | Title | Files Correct? | Line Numbers | Notes>
-<all 25+ GAPs>
+<all 30 GAPs>
 <Apply the ±3-line tolerance rule: a shift of ≤3 lines with unchanged crypto code is ✅ not an error>
+
+For each GAP, cross-reference the full description in
+`gaps/Github_issue_requirements_for_gaps.md#gap-N`. If the gaps doc
+description no longer matches the source, flag it as STALE in both
+Part 3 and Part 7.
 
 ## Part 4 — "Files Evaluated" Section Verification
 <confirm each file in the exclusion list still exists and reason is still valid>
