@@ -1,6 +1,6 @@
 # Domain 27 — OID4VC c_nonce JWT Signing
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

@@ -1,6 +1,6 @@
 # Domain 38 — kcadm.sh / kcreg.sh — private_key_jwt Auth
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

@@ -1,6 +1,6 @@
 # Domain 23 — SPIFFE / SVID Identity Provider
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

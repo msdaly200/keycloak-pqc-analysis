@@ -1,6 +1,6 @@
 # Domain 16 — CIBA Signed Backchannel Auth Request
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

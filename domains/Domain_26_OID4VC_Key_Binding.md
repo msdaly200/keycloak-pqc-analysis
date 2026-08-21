@@ -1,6 +1,6 @@
 # Domain 26 — OID4VC Key Binding — JWT Proof Validation
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

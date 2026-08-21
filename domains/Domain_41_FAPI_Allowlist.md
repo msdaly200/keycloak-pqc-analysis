@@ -1,6 +1,6 @@
 # Domain 41 — FAPI Algorithm Allowlist Enforcement
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

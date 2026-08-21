@@ -1,6 +1,6 @@
 # Domain 14 — WebAuthn / Passkeys (FIDO2)
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

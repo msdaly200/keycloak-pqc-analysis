@@ -1,6 +1,6 @@
 # Domain 25 — LD-Proof Credential Signing (Linked Data)
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

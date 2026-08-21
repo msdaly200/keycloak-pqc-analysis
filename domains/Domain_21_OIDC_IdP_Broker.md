@@ -1,6 +1,6 @@
 # Domain 21 — OIDC IdP — Token Signature Verification & JWE Decryption
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

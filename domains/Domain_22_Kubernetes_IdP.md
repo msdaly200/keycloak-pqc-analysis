@@ -1,6 +1,6 @@
 # Domain 22 — Kubernetes Identity Provider
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

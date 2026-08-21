@@ -1,6 +1,6 @@
 # Domain 8 — JAR: Encrypted Request Object Decryption
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 **ML-KEM implementation plan**  
 **Gap:** GAP-20  

@@ -1,6 +1,6 @@
 # Domain 39 — JGroups ASYM_ENCRYPT (non-default / test config)
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

@@ -1,6 +1,6 @@
 # Domain 4 — UserInfo Endpoint: Signed & Encrypted Response
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

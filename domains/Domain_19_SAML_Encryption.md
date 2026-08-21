@@ -1,6 +1,6 @@
 # Domain 19 — SAML Assertion Encryption
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

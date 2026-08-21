@@ -1,6 +1,6 @@
 # Domain 6 — Token Verification (Identity & Session Tokens)
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

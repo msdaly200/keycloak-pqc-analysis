@@ -1,6 +1,6 @@
 # Domain 46 — Default Realm Key Providers (Bootstrap)
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

@@ -1,6 +1,6 @@
 # Domain 24 — JWT-VC / SD-JWT Credential Signing
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

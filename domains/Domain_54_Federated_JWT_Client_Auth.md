@@ -1,6 +1,6 @@
 # Domain 54 — Federated JWT Client Authentication
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

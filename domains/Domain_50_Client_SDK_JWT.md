@@ -1,6 +1,6 @@
 # Domain 50 — Client SDK — JWT Client Credentials Provider
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

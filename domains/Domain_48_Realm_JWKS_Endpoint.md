@@ -1,6 +1,6 @@
 # Domain 48 — Realm JWKS Endpoint — Key Serialisation
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

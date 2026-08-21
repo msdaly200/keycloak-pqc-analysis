@@ -1,6 +1,6 @@
 # Domain 51 — Client SDK — DPoP Proof Generation
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

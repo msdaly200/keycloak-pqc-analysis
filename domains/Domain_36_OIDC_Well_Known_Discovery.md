@@ -1,6 +1,6 @@
 # Domain 36 — OIDC Well-Known Discovery — Algorithm Advertisement
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

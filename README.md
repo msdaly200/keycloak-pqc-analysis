@@ -45,7 +45,7 @@ Each distinct use-case was classified as an independent **domain**. 63 domains w
 
 To update `pqc_overview.html` with the latest Keycloak PQC information, please read [README_UPDATE.md](README_UPDATE.md).
 
-**Last updated:** 11 August 2026 — Review findings from `findings/pqc_overview_review_findings_2026-08-11.md` applied: line number corrections for GAP-24/row 62 OID4VP; 7 supporting OID4VP files added to row 62 key files; ES256/384/512 SignatureProviderFactory files added to Files Evaluated; Domain_62 and Domain_63 .md files created.
+**Last updated:** 21 August 2026 — Review findings from `findings/pqc_overview_review_findings_2026-08-21.md` applied: full accuracy verification against Keycloak main @ `0c6afdae2f` across all 63 domains and 30 GAPs; status distribution verified; implementation plan links connected for Domain 62 and Domain 63.
 
 ## PQC Readiness Accuracy Reviews
 
@@ -53,6 +53,7 @@ The following accuracy reviews have been conducted against the live Keycloak sou
 
 | Date | PQC Changes |
 |------|-------------|
+| 2026-08-21 | [pqc_overview_review_findings_2026-08-21.md](findings/pqc_overview_review_findings_2026-08-21.md) |
 | 2026-08-11 | [pqc_overview_review_findings_2026-08-11.md](findings/pqc_overview_review_findings_2026-08-11.md) |
 | 2026-08-10 | [pqc_overview_review_findings_2026-08-10.md](findings/pqc_overview_review_findings_2026-08-10.md) |
 | 2026-07-30 | [pqc_overview_review_findings_2026-07-30.md](findings/pqc_overview_review_findings_2026-07-30.md) |

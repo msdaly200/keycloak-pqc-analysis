@@ -1,6 +1,6 @@
 # Domain 49 — Admin API — Client Certificate & Keypair Generation
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

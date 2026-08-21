@@ -1,6 +1,6 @@
 # Domain 1 — Access Token / ID Token Signing
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 **ML-DSA implementation plan**  
 **GitHub Issues:** [#43692](https://github.com/keycloak/keycloak/issues/43692), [#50678](https://github.com/keycloak/keycloak/issues/50678) 

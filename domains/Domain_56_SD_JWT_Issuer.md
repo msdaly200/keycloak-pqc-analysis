@@ -1,6 +1,6 @@
 # Domain 56 — SD-JWT Issuer Signing & Key Binding
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

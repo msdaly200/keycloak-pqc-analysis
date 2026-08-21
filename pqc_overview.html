@@ -798,6 +798,8 @@
   </td>
   <td>
     (1) Replace <code>ACCEPTED_ALGORITHMS</code> hardcoded list with a configurable/SPI-driven set; update <code>signingKey()</code> to select from configured algorithm. (2) Track HAIP spec evolution for ECDH-ES/ML-KEM response encryption once the spec gates lift. No GitHub issue yet — requires a new issue under the PQC tracking parent. <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a>
+  <br />
+    <a href="domains/Domain_62_OID4VP_IdP.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -820,6 +822,8 @@
   </td>
   <td>
     No independent Keycloak code changes are needed beyond GAP-4 (ML-KEM <code>CekManagementProviderFactory</code>). Once ML-KEM CEK management providers are registered, <code>getSupportedEncryptionAlgorithms()</code> will advertise them automatically and clients can request ML-KEM key wrap. The RSA-OAEP fallback default should also be revisited once ML-KEM providers are available. Track under the same GitHub issue as GAP-4. <a class="gap-tag" href="#gap-4">GAP-4</a>
+  <br />
+    <a href="domains/Domain_63_OID4VCI_Credential_Response_Encryption.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
 
@@ -2303,7 +2307,7 @@ domain table above.</p>
 </p>
 
 <footer>
-  <p>Last updated: 11 August 2026 (gap reconciliation: GAP reference table slimmed to summary index; full detail moved to gaps doc; GAP-26 through GAP-30 added; anchor link fixed; gap-tags added to domain rows 48-51, 53)</p>
+  <p>Last updated: 21 August 2026 (accuracy review against Keycloak main @ 0c6afdae2f: verified all 63 domains and 30 GAPs; confirmed status distribution; added implementation plan links for domains 62 and 63)</p>
 </footer>
 </div>
 </body>

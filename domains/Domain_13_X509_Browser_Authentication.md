@@ -1,6 +1,6 @@
 # Domain 13 — X.509 Browser Authentication Flow
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

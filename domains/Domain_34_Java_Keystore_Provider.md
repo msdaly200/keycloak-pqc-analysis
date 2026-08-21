@@ -1,6 +1,6 @@
 # Domain 34 — Java Keystore Key Provider (PKCS12 / BCFKS)
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 

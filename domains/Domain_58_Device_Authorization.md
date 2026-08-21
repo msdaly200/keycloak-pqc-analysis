@@ -1,6 +1,6 @@
 # Domain 58 — Device Authorization Grant — Token Signing
 
-[← Back to PQC Overview](pqc_overview.html)
+[← Back to PQC Overview](../pqc_overview.html)
 
 ## What is this?
 
