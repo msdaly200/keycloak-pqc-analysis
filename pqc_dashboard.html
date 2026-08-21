@@ -133,7 +133,7 @@
 <div class="wrap">
 
 <h1>Keycloak — PQC Issues Dashboard</h1>
-<p class="subtitle">GitHub issue tracking status &amp; domain readiness summary · Last updated: 2026-08-11</p>
+<p class="subtitle">GitHub issue tracking status &amp; domain readiness summary · Last updated: 2026-08-21</p>
 <div class="nav-links">
   <a href="pqc_overview.html">← PQC Readiness Overview</a>
   <a href="gh_issues/Github_PQC_issues_overview.md">GitHub Issues Hierarchy (Markdown)</a>
@@ -144,7 +144,7 @@
 <!-- ── Stat cards ── -->
 <div class="stats">
   <div class="stat">
-    <div class="stat-number">54</div>
+    <div class="stat-number">55</div>
     <div class="stat-label">Tracked Issues</div>
   </div>
   <div class="stat">
@@ -152,7 +152,7 @@
     <div class="stat-label">Open</div>
   </div>
   <div class="stat">
-    <div class="stat-number" style="color:#7c3aed;">12</div>
+    <div class="stat-number" style="color:#7c3aed;">13</div>
     <div class="stat-label">Closed</div>
   </div>
   <div class="stat">
@@ -160,7 +160,7 @@
     <div class="stat-label">Domains Analysed</div>
   </div>
   <div class="stat">
-    <div class="stat-number" style="color:#991b1b;">25</div>
+    <div class="stat-number" style="color:#991b1b;">30</div>
     <div class="stat-label">New Issues Needed</div>
   </div>
 </div>
@@ -168,22 +168,22 @@
 <!-- ── Donut charts ── -->
 <div class="donuts">
 
-  <!-- Left: GitHub Issue Status (total=54, C=251.33) -->
+  <!-- Left: GitHub Issue Status (total=55, C=251.33) -->
   <!-- Draw order: smallest first, largest last (sits on top) -->
   <div class="donut-block">
     <div class="donut-title">GitHub Issue Status</div>
     <div class="donut-row">
       <svg width="150" height="150" viewBox="0 0 100 100">
         <circle cx="50" cy="50" r="40" fill="none" stroke="#7c3aed" stroke-width="18"
-          stroke-dasharray="55.85 251.33" stroke-dashoffset="-132.65"
+          stroke-dasharray="59.41 251.33" stroke-dashoffset="-129.09"
           transform="rotate(-90 50 50)"/>
         <circle cx="50" cy="50" r="40" fill="none" stroke="#d97706" stroke-width="18"
-          stroke-dasharray="9.31 251.33" stroke-dashoffset="-123.34"
+          stroke-dasharray="9.14 251.33" stroke-dashoffset="-119.95"
           transform="rotate(-90 50 50)"/>
         <circle cx="50" cy="50" r="40" fill="none" stroke="#059669" stroke-width="18"
-          stroke-dasharray="186.17 251.33" stroke-dashoffset="62.83"
+          stroke-dasharray="182.78 251.33" stroke-dashoffset="62.83"
           transform="rotate(-90 50 50)"/>
-        <text x="50" y="47" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2328">54</text>
+        <text x="50" y="47" text-anchor="middle" font-size="15" font-weight="700" fill="#1f2328">55</text>
         <text x="50" y="59" text-anchor="middle" font-size="7.5" fill="#57606a">issues</text>
       </svg>
       <div class="legend">
@@ -197,7 +197,7 @@
         </div>
         <div class="legend-item">
           <span class="legend-dot" style="background:#7c3aed;"></span>
-          <span>Closed <span class="legend-count">(12)</span></span>
+          <span>Closed <span class="legend-count">(13)</span></span>
         </div>
       </div>
     </div>
@@ -255,7 +255,7 @@
 </div>
 
 <!-- ── New issues needed summary ── -->
-<h2>New Issues Needed — 25 Total</h2>
+<h2>New Issues Needed — 30 Total</h2>
 <table>
   <thead>
     <tr>
@@ -267,18 +267,18 @@
   <tbody>
     <tr>
       <td class="priority-high">HIGH</td>
-      <td>9</td>
-      <td>GAP-1 JWK Thumbprint · GAP-2/3 FN-DSA/ML-DSA signing · GAP-4 ML-KEM CekManagement · GAP-6 BC-FIPS · GAP-8 FAPI allowlist · GAP-9 SAML RS256 · GAP-15 ML-KEM keygen · GAP-24 OID4VP ES256</td>
+      <td>11</td>
+      <td>GAP-1 JWK Thumbprint · GAP-2 SAML signing · GAP-3 SAML ML-KEM · GAP-4 ML-KEM CekManagement · GAP-6 BC-FIPS · GAP-8 FAPI allowlist · GAP-9 SAML RS256 · GAP-15 ML-DSA keygen · GAP-24 OID4VP ES256 · GAP-26 JWKS endpoint · GAP-30 Client sig verifier</td>
     </tr>
     <tr>
       <td class="priority-medium">MEDIUM</td>
-      <td>12</td>
-      <td>GAP-5/16 Keystore import · GAP-7/10/12/13/17/18/19/20/21/22 · and more</td>
+      <td>15</td>
+      <td>GAP-5/16 Keystore import · GAP-7 OID4VC Ed25519 · GAP-10/12/13/17/18/19/20/21/22 · GAP-27 Admin API · GAP-28/29 Client SDK</td>
     </tr>
     <tr>
       <td class="priority-low">LOW</td>
       <td>3</td>
-      <td>GAP-11 DCR RS256 · GAP-14 · GAP-23</td>
+      <td>GAP-11 DCR RS256 · GAP-14 JGroups · GAP-23 OIDC Discovery</td>
     </tr>
     <tr>
       <td class="priority-external">EXTERNAL DEPENDENCY</td>

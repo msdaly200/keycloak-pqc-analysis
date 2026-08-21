@@ -1,4 +1,4 @@
-# Keycloak Post-Quantum Cryptography (PQC) Readiness Analysis
+# Keycloak Post-Quantum Cryptography (PQC) Readiness Analysis And Dashboard
 
 With the publication of NIST FIPS 203 (ML-KEM) and FIPS 204 (ML-DSA) in August 2024, widely-used asymmetric algorithms — RSA, ECDSA, ECDH, and EdDSA — are now considered quantum-vulnerable. A sufficiently powerful quantum computer running Shor's algorithm could break the mathematical hardness assumptions underpinning all of these schemes. 
 

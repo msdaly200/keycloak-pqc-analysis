@@ -2,7 +2,7 @@
 
 **Parent Feature Issue:** [#43690 - Post-Quantum Cryptography (PQC) readiness](https://github.com/keycloak/keycloak/issues/43690)
 
-**Last Updated:** 2026-08-11
+**Last Updated:** 2026-08-21
 
 ---
 
@@ -12,7 +12,7 @@
 
 | Tracked Issues | 🟢 Open | 🟣 Closed | Domains Analysed | 🔴 New Issues Needed |
 |:-:|:-:|:-:|:-:|:-:|
-| **54** | **42** | **12** | **63** | **25** |
+| **55** | **42** | **13** | **63** | **30** |
 
 ---
 
@@ -47,7 +47,7 @@ Top-level feature issue tracking full PQC readiness for Keycloak.
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48829](https://github.com/keycloak/keycloak/issues/48829) | Review if there are any areas not identified around PQC readiness | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48830](https://github.com/keycloak/keycloak/issues/48830) | Create a plan for documentation around PQC readiness | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#49851](https://github.com/keycloak/keycloak/issues/49851) | PQC modes | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | **(1)** | |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#51132](https://github.com/keycloak/keycloak/issues/51132) | PQC Config Option design | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | spike | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#51132](https://github.com/keycloak/keycloak/issues/51132) | PQC Config Option design | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | spike | N/A | 0 | |
 | [#46333](https://github.com/keycloak/keycloak/issues/46333) | Audit and Upgrade Cryptographic Defaults | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | milestone | 0 of 1 | **1** | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#46336](https://github.com/keycloak/keycloak/issues/46336) | Cryptographic Inventory for Keycloak | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | [#48821](https://github.com/keycloak/keycloak/issues/48821) | PQC support for OAuth 2.0 and OpenID Connect | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | milestone | 0 of 4 | **4** | |
@@ -224,4 +224,4 @@ The following domains are covered by issues in the hierarchy:
 ---
 
 **Analysis Source:** `pqc_overview.html` (63 domains analyzed)  
-**GitHub Issue Hierarchy:** Verified from GitHub API (2026-08-11)
+**GitHub Issue Hierarchy:** Verified from GitHub API (2026-08-21)
