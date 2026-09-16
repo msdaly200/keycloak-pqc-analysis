@@ -2,7 +2,7 @@
 
 **Parent Feature Issue:** [#43690 - Post-Quantum Cryptography (PQC) readiness](https://github.com/keycloak/keycloak/issues/43690)
 
-**Last Updated:** 2026-08-21
+**Last Updated:** 2026-09-15
 
 ---
 
@@ -224,4 +224,4 @@ The following domains are covered by issues in the hierarchy:
 ---
 
 **Analysis Source:** `pqc_overview.html` (63 domains analyzed)  
-**GitHub Issue Hierarchy:** Verified from GitHub API (2026-08-21)
+**GitHub Issue Hierarchy:** Verified from GitHub API (2026-09-15)

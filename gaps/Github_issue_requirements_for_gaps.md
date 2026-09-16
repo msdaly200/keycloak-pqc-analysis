@@ -168,12 +168,12 @@ Any ML-DSA algorithm name appears in `FapiConstant.ALLOWED_ALGORITHMS` (requires
 |-------|-------|
 | **Severity** | HIGH |
 | **Domains Affected** | 18, 20, 59, 60, 61 |
-| **Affected File(s)** | `services/src/main/java/org/keycloak/broker/saml/SAMLIdentityProvider.java` (lines 416, 507); `services/src/main/java/org/keycloak/protocol/saml/SamlProtocol.java` (line 544); `services/src/main/java/org/keycloak/protocol/saml/SamlService.java` (line 965) |
+| **Affected File(s)** | `services/src/main/java/org/keycloak/broker/saml/SAMLIdentityProvider.java` (lines 416, 507); `services/src/main/java/org/keycloak/protocol/saml/SamlProtocol.java` (line 544); `services/src/main/java/org/keycloak/protocol/saml/SamlService.java` (line 991) |
 | **GitHub Issue** | [#50292](https://github.com/keycloak/keycloak/issues/50292) (create sub-issue) |
 
 ### Description & Impact
 
-Four hardcoded `Algorithm.RS256` key-selection call sites in SAML code: SP metadata signing key export (line 416), SP metadata document signing (line 507), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 965). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. Requires a third sub-issue under [#50292](https://github.com/keycloak/keycloak/issues/50292).
+Four hardcoded `Algorithm.RS256` key-selection call sites in SAML code: SP metadata signing key export (line 416), SP metadata document signing (line 507), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 991). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. Requires a third sub-issue under [#50292](https://github.com/keycloak/keycloak/issues/50292).
 
 ### Resolution Criteria
 
@@ -455,16 +455,16 @@ The static constant is replaced with a dynamic lookup merging registered asymmet
 |-------|-------|
 | **Severity** | HIGH |
 | **Domains Affected** | 62 |
-| **Affected File(s)** | `services/src/main/java/org/keycloak/broker/oid4vp/OID4VPIdentityProvider.java` (lines 83, 196–197) |
+| **Affected File(s)** | `services/src/main/java/org/keycloak/broker/oid4vp/OID4VPIdentityProvider.java` (lines 85, 210–211) |
 | **GitHub Issue** | *None — needs new issue under [#45168](https://github.com/keycloak/keycloak/issues/45168)* |
 
 ### Description & Impact
 
-`ACCEPTED_ALGORITHMS = List.of(Algorithm.ES256)` (line 83) is used by `OID4VPIdentityProviderEndpoint.requireAcceptedAlgorithm()` to actively reject all non-ES256 VP token signatures at runtime, including ML-DSA. `signingKey()` (lines 196–197) hardcodes ES256 for both active-key lookup (`getKeyIncludingDisabled`) and kid-based lookup (`getActiveKey`), preventing ML-DSA key selection. Even after ML-DSA providers exist, OID4VP will silently fail at the algorithm enforcement layer.
+`ACCEPTED_ALGORITHMS = List.of(Algorithm.ES256)` (line 85) is used by `OID4VPIdentityProviderEndpoint.requireAcceptedAlgorithm()` to actively reject all non-ES256 VP token signatures at runtime, including ML-DSA. `signingKey()` (lines 210–211) hardcodes ES256 for both active-key lookup (`getKeyIncludingDisabled`) and kid-based lookup (`getActiveKey`), preventing ML-DSA key selection. Even after ML-DSA providers exist, OID4VP will silently fail at the algorithm enforcement layer.
 
 ### Resolution Criteria
 
-`ACCEPTED_ALGORITHMS` is configurable or includes ML-DSA; the hardcoded ES256 lookups at lines 196–197 are replaced with configurable/SPI-driven selection.
+`ACCEPTED_ALGORITHMS` is configurable or includes ML-DSA; the hardcoded ES256 lookups at lines 210–211 are replaced with configurable/SPI-driven selection.
 
 ---
 
@@ -512,12 +512,12 @@ An `AKP` branch appears in `toJwk()` calling `JWKBuilder.akp()`.
 |-------|-------|
 | **Severity** | MEDIUM |
 | **Domains Affected** | 49 |
-| **Affected File(s)** | `services/src/main/java/org/keycloak/services/resources/admin/ClientAttributeCertificateResource.java` (lines 119, 258) |
+| **Affected File(s)** | `services/src/main/java/org/keycloak/services/resources/admin/ClientAttributeCertificateResource.java` (lines 126, 293) |
 | **GitHub Issue** | [#48821](https://github.com/keycloak/keycloak/issues/48821) (create sub-issue) |
 
 ### Description & Impact
 
-Both `generate()` (line 119) and `generateAndGetKeystore()` (line 258) call `KeycloakModelUtils.generateKeyPairCertificate()`, which hardcodes RSA key generation (`KeyUtils.generateRsaKeyPair(keysize)`). No algorithm selection is exposed in the API or UI. Admin-generated client keypairs will always be RSA regardless of realm PQC configuration.
+Both `generate()` (line 126) and `generateAndGetKeystore()` (line 293) call `KeycloakModelUtils.generateKeyPairCertificate()`, which hardcodes RSA key generation (`KeyUtils.generateRsaKeyPair(keysize)`). No algorithm selection is exposed in the API or UI. Admin-generated client keypairs will always be RSA regardless of realm PQC configuration.
 
 ### Resolution Criteria
 

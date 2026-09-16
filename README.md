@@ -45,7 +45,7 @@ Each distinct use-case was classified as an independent **domain**. 63 domains w
 
 To update `pqc_overview.html` with the latest Keycloak PQC information, please read [README_UPDATE.md](README_UPDATE.md).
 
-**Last updated:** 21 August 2026 — Review findings from `findings/pqc_overview_review_findings_2026-08-21.md` applied: full accuracy verification against Keycloak main @ `0c6afdae2f` across all 63 domains and 30 GAPs; status distribution verified; implementation plan links connected for Domain 62 and Domain 63.
+**Last updated:** 15 September 2026 — Review findings from `findings/pqc_overview_review_findings_2026-09-15.md` applied: corrected OID4VPIdentityProvider.java line refs (83→85, 196–197→210–211); renamed AttestationX509CertificateValidator.java → AttestationProofValidator.java in Files Evaluated; updated SamlService.java line 965→991 and ClientAttributeCertificateResource lines 119/258→126/293 in gaps doc; verified all 63 domains and 30 GAPs against Keycloak main @ `02a16d4201`.
 
 ## PQC Readiness Accuracy Reviews
 
@@ -53,6 +53,7 @@ The following accuracy reviews have been conducted against the live Keycloak sou
 
 | Date | PQC Changes |
 |------|-------------|
+| 2026-09-15 | [pqc_overview_review_findings_2026-09-15.md](findings/pqc_overview_review_findings_2026-09-15.md) |
 | 2026-08-21 | [pqc_overview_review_findings_2026-08-21.md](findings/pqc_overview_review_findings_2026-08-21.md) |
 | 2026-08-11 | [pqc_overview_review_findings_2026-08-11.md](findings/pqc_overview_review_findings_2026-08-11.md) |
 | 2026-08-10 | [pqc_overview_review_findings_2026-08-10.md](findings/pqc_overview_review_findings_2026-08-10.md) |

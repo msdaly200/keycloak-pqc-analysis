@@ -794,7 +794,7 @@
   <td>Hardcoded ES256 for request object signing and VP token algorithm enforcement; ECDH-ES secp256r1 hardcoded for response encryption (HAIP spec-gated)</td>
   <td>
     <span class="pqc pqc-blocked">BLOCKED</span><br />
-    Signing: <code>OID4VPIdentityProvider.signingKey()</code> hardcodes <code>Algorithm.ES256</code> at lines 196–197 for both active-key lookup and kid-based lookup. <code>ACCEPTED_ALGORITHMS = List.of(Algorithm.ES256)</code> (line 83) is used by <code>OID4VPIdentityProviderEndpoint.requireAcceptedAlgorithm()</code> to actively reject all non-ES256 algorithms, including ML-DSA. Even after ML-DSA providers exist, VP tokens signed with ML-DSA will be rejected at runtime. Encryption: <code>EphemeralKey.generate()</code> hardcodes <code>secp256r1</code> (line: <code>CURVE_SEC = "secp256r1"</code>); <code>ResponseEncryption.KEY_MANAGEMENT_ALG = ECDH_ES</code> — spec-gated by HAIP which currently mandates ECDH-ES/P-256 for <code>direct_post.jwt</code>. Developer-acknowledged TODO at line 81. <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a>
+    Signing: <code>OID4VPIdentityProvider.signingKey()</code> hardcodes <code>Algorithm.ES256</code> at lines 210–211 for both active-key lookup and kid-based lookup. <code>ACCEPTED_ALGORITHMS = List.of(Algorithm.ES256)</code> (line 85) is used by <code>OID4VPIdentityProviderEndpoint.requireAcceptedAlgorithm()</code> to actively reject all non-ES256 algorithms, including ML-DSA. Even after ML-DSA providers exist, VP tokens signed with ML-DSA will be rejected at runtime. Encryption: <code>EphemeralKey.generate()</code> hardcodes <code>secp256r1</code> (line: <code>CURVE_SEC = "secp256r1"</code>); <code>ResponseEncryption.KEY_MANAGEMENT_ALG = ECDH_ES</code> — spec-gated by HAIP which currently mandates ECDH-ES/P-256 for <code>direct_post.jwt</code>. Developer-acknowledged TODO at line 81. <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a>
   </td>
   <td>
     (1) Replace <code>ACCEPTED_ALGORITHMS</code> hardcoded list with a configurable/SPI-driven set; update <code>signingKey()</code> to select from configured algorithm. (2) Track HAIP spec evolution for ECDH-ES/ML-KEM response encryption once the spec gates lift. No GitHub issue yet — requires a new issue under the PQC tracking parent. <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a>
@@ -2107,8 +2107,8 @@ domain table above.</p>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Resolves trusted attestation keys from configured trust-material IdPs. Algorithm-agnostic at the key-loading layer — delegates to the JWKS/trust material SPI. Covered under row 26 (OID4VC Proof Validation / JwtProofValidator). No independent PQC gap.</td>
 </tr>
 <tr style="background:#f7f8fa;">
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/keybinding/AttestationX509CertificateValidator.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">X.509 certificate chain validation for OID4VC attestation proofs. Validates the <code>x5c</code> header in attestation JWTs against configured trust material, then converts the leaf certificate to a JWK via <code>X5cKeyUtils</code>. Algorithm parameter is passed in from <code>JwtProofValidator</code> — no hardcoded algorithm. No independent PQC gap; covered under row 26 (OID4VC Key Binding).</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/keybinding/AttestationProofValidator.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">X.509 certificate chain validation for OID4VC attestation proofs. Validates the <code>x5c</code> header in attestation JWTs against configured trust material, then converts the leaf certificate to a JWK via <code>X5cKeyUtils</code>. Algorithm parameter is passed in from <code>JwtProofValidator</code> — no hardcoded algorithm. No independent PQC gap; covered under row 26 (OID4VC Key Binding). <em>(Previously cited as <code>AttestationX509CertificateValidator.java</code>; renamed/refactored upstream in commit <code>0ac222fec9</code>.)</em></td>
 </tr>
 <tr>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/keybinding/StaticAttestationKeyResolver.java</code></td>
@@ -2307,7 +2307,7 @@ domain table above.</p>
 </p>
 
 <footer>
-  <p>Last updated: 21 August 2026 (accuracy review against Keycloak main @ 0c6afdae2f: verified all 63 domains and 30 GAPs; confirmed status distribution; added implementation plan links for domains 62 and 63)</p>
+  <p>Last updated: 15 September 2026 (review findings applied: corrected OID4VPIdentityProvider.java line refs 83→85 and 196–197→210–211; renamed AttestationX509CertificateValidator.java → AttestationProofValidator.java in Files Evaluated; verified all 63 domains and 30 GAPs against Keycloak main @ 02a16d4201)</p>
 </footer>
 </div>
 </body>
