@@ -4,9 +4,9 @@
 > table in [`pqc_overview.html`](../pqc_overview.html) links here for full
 > detail. Gap numbering matches the HTML's `GAP-N` tags exactly.
 
-**Total gaps:** 30 (GAP-1 through GAP-30)  
-**Keycloak HEAD at verification:** `f03a2104ec`  
-**Last reconciled:** 2026-08-11
+**Total gaps:** 31 (GAP-1 through GAP-31)
+**Keycloak HEAD at verification:** `63aeb4c98a`
+**Last reconciled:** 2026-09-24
 
 ---
 
@@ -168,12 +168,12 @@ Any ML-DSA algorithm name appears in `FapiConstant.ALLOWED_ALGORITHMS` (requires
 |-------|-------|
 | **Severity** | HIGH |
 | **Domains Affected** | 18, 20, 59, 60, 61 |
-| **Affected File(s)** | `services/src/main/java/org/keycloak/broker/saml/SAMLIdentityProvider.java` (lines 416, 507); `services/src/main/java/org/keycloak/protocol/saml/SamlProtocol.java` (line 544); `services/src/main/java/org/keycloak/protocol/saml/SamlService.java` (line 991) |
+| **Affected File(s)** | `services/src/main/java/org/keycloak/broker/saml/SAMLIdentityProvider.java` (lines 416, 507); `services/src/main/java/org/keycloak/protocol/saml/SamlProtocol.java` (line 544); `services/src/main/java/org/keycloak/protocol/saml/SamlService.java` (line 992) |
 | **GitHub Issue** | [#50292](https://github.com/keycloak/keycloak/issues/50292) (create sub-issue) |
 
 ### Description & Impact
 
-Four hardcoded `Algorithm.RS256` key-selection call sites in SAML code: SP metadata signing key export (line 416), SP metadata document signing (line 507), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 991). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. Requires a third sub-issue under [#50292](https://github.com/keycloak/keycloak/issues/50292).
+Four hardcoded `Algorithm.RS256` key-selection call sites in SAML code: SP metadata signing key export (line 416), SP metadata document signing (line 507), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 992). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. Requires a third sub-issue under [#50292](https://github.com/keycloak/keycloak/issues/50292).
 
 ### Resolution Criteria
 
@@ -365,7 +365,7 @@ The hardcoded lookups are replaced with a configurable or SPI-driven selection.
 
 ### Description & Impact
 
-`bcprov-jdk18on` is inherited via the Quarkus BOM with no explicit version or Maven Enforcer minimum-version rule in Keycloak's own `pom.xml`. ML-DSA classes (`org.bouncycastle.pqc.crypto.mldsa.*`) first appeared in version 1.78. A downstream build with an older BOM version could silently drop ML-DSA support without a build-time failure.
+`bcprov-jdk18on` is inherited via the Quarkus BOM (current version in use is 1.85.2 via Quarkus BOM 3.40.0.CR1) with no explicit version or Maven Enforcer minimum-version rule in Keycloak's own `pom.xml`. ML-DSA classes (`org.bouncycastle.pqc.crypto.mldsa.*`) first appeared in version 1.78. A downstream build with an older BOM version could silently drop ML-DSA support without a build-time failure.
 
 ### Resolution Criteria
 
@@ -582,6 +582,25 @@ The `KeyType.RSA` guard is removed or an AKP path is added.
 
 ---
 
+## GAP-31 — MdocAlgorithm — No ML-DSA COSE Mapping {#gap-31}
+
+| Field | Value |
+|-------|-------|
+| **Severity** | MEDIUM |
+| **Domains Affected** | 24 |
+| **Affected File(s)** | `core/src/main/java/org/keycloak/mdoc/MdocAlgorithm.java`; `services/src/main/java/org/keycloak/protocol/oid4vc/model/CredentialSigningAlgorithmResolver.java` |
+| **GitHub Issue** | Under [#48821](https://github.com/keycloak/keycloak/issues/48821) (create sub-issue) |
+
+### Description & Impact
+
+`MdocCredentialSigner` signs ISO 18013-5 mdoc credentials via `AbstractCredentialSigner.getSigner()` (the standard `SignatureProvider` SPI path). However, `MdocAlgorithm.java` contains the JOSE&rarr;COSE algorithm mapping and currently lists only classical algorithms: RS256, RS384, RS512, PS256, PS384, PS512, ES256, ES384, ES512, EdDSA &mdash; no ML-DSA entry. `CredentialSigningAlgorithmResolver` uses `MdocAlgorithm.getSupportedJoseAlgorithms()` to filter available realm keys, meaning ML-DSA keys will not be advertised or selected for mdoc signing even once ML-DSA providers exist.
+
+### Resolution Criteria
+
+An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) appears in `MdocAlgorithm.java`.
+
+---
+
 ## Gap Summary by Severity
 
 ### HIGH Priority (11 gaps)
@@ -597,7 +616,7 @@ The `KeyType.RSA` guard is removed or an AKP path is added.
 - **GAP-26** — JWKS Endpoint — AKP Branch in JWKSServerUtils.toJwk()
 - **GAP-30** — Client Signature Verifier — RSA Guard Blocks AKP Keys
 
-### MEDIUM Priority (15 gaps)
+### MEDIUM Priority (16 gaps)
 - **GAP-5** — JavaKeystoreKeyProvider — ML-DSA Key Import
 - **GAP-7** — OID4VC Linked Data Proof Suite — Hardcoded Ed25519
 - **GAP-10** — IdP Broker — Hardcoded RS256 / HS256 Fallback
@@ -613,6 +632,7 @@ The `KeyType.RSA` guard is removed or an AKP path is added.
 - **GAP-27** — Admin API — Client Keypair Generation Hardcodes RSA
 - **GAP-28** — Client SDK — JWTClientCredentialsProvider Missing AKP
 - **GAP-29** — Client SDK — DPoPGenerator No ML-DSA Convenience Path
+- **GAP-31** — MdocAlgorithm — No ML-DSA COSE Mapping
 
 ### LOW Priority (4 gaps)
 - **GAP-11** — Dynamic Client Registration — RS256 Special-Case Logic
@@ -620,7 +640,7 @@ The `KeyType.RSA` guard is removed or an AKP path is added.
 - **GAP-23** — OIDC Discovery — Hardcoded RS256 CIBA Constant
 - **GAP-25** — OID4VP — ECDH-ES/secp256r1 Response Encryption (HAIP spec-gated)
 
-**Verified counts:** HIGH=11, MEDIUM=15, LOW=4. Total = 30.
+**Verified counts:** HIGH=11, MEDIUM=16, LOW=4. Total = 31.
 
 ---
 
@@ -647,6 +667,7 @@ The `KeyType.RSA` guard is removed or an AKP path is added.
 - **GAP-27** — Admin API Client Keypair (MEDIUM)
 - **GAP-28** — Client SDK JWT Credentials (MEDIUM) *could combine with GAP-29*
 - **GAP-29** — Client SDK DPoP (MEDIUM) *could combine with GAP-28*
+- **GAP-31** — MdocAlgorithm ML-DSA COSE Mapping (MEDIUM)
 
 ### Need New Issues — Under [#50292](https://github.com/keycloak/keycloak/issues/50292) SAML
 - **GAP-9** — SAML Hardcoded RS256 Key Selection (HIGH)
@@ -693,6 +714,7 @@ The `KeyType.RSA` guard is removed or an AKP path is added.
 | 19 | GAP-3 | SAML encryption ML-KEM |
 | 20 | GAP-2, GAP-9 | SAML signing URIs; SAML hardcoded RS256 |
 | 21 | GAP-10 | IdP broker fallback |
+| 24 | GAP-31 | mdoc credential signing algorithm mapping |
 | 25 | GAP-7 | LD-Proof suite |
 | 27 | GAP-18 | c_nonce signing hardcoded |
 | 28 | GAP-15 | ML-DSA key generation |
@@ -723,8 +745,8 @@ The `KeyType.RSA` guard is removed or an AKP path is added.
 
 ---
 
-**Total Gaps:** 30  
-**With Existing GitHub Issues:** 6  
-**Need Verification:** 2  
-**Need New Issues:** 16  
+**Total Gaps:** 31
+**With Existing GitHub Issues:** 6
+**Need Verification:** 2
+**Need New Issues:** 17
 **External/Documentation:** 7

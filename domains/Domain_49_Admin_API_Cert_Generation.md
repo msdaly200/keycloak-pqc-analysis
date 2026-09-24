@@ -10,15 +10,15 @@ Admin API endpoints for generating client keypairs and self-signed certificates.
 
 **Hardcoded RSA key generation.**
 
-**File:** `services/src/main/java/org/keycloak/services/resources/admin/ClientAttributeCertificateResource.java:119, 258`
+**File:** `services/src/main/java/org/keycloak/services/resources/admin/ClientAttributeCertificateResource.java:126, 293`
 
 **Current implementation:**
 
 ```java
-// Line 119:
+// Line 126:
 CertificateRepresentation info = KeycloakModelUtils.generateKeyPairCertificate(client.getClientId());
 
-// Line 258:
+// Line 293:
 CertificateRepresentation info = KeycloakModelUtils.generateKeyPairCertificate(client.getClientId(), keySize, calendar);
 ```
 

@@ -92,33 +92,19 @@ The document uses a **table-based hierarchy** format:
 ## Example Commands
 
 ```bash
-# Get basic issue status
+# Get basic issue status (read-only)
 gh issue view 43690 --repo keycloak/keycloak --json number,title,state,closedAt
 
-# Get multiple issues in batch
+# Get multiple issues in batch using --jq (clean output, no JSON parse errors)
 for issue in 43690 45168 46333 48821 49865 50084 50292; do
-  gh issue view $issue --repo keycloak/keycloak --json number,title,state,closedAt --jq '{number, title, state, closedAt}'
+  gh issue view $issue --repo keycloak/keycloak --json number,title,state \
+    --jq '"#\(.number) [\(.state)] \(.title)"'
 done
-
-# For sub-issue counts, you may need to use GraphQL:
-gh api graphql -f query='
-query {
-  repository(owner: "keycloak", name: "keycloak") {
-    issue(number: 45168) {
-      number
-      title
-      state
-      trackedIssues(first: 100) {
-        totalCount
-        nodes {
-          number
-          state
-        }
-      }
-    }
-  }
-}'
 ```
+
+> **⚠️ Important:** The `trackedIssues` GraphQL field returns **0** for Keycloak issues because
+> they use GitHub's newer **sub-issues** feature, not the legacy task-list tracking. Always use
+> the REST sub-issues endpoint shown below instead.
 
 ## Key Issues to Check
 
@@ -126,70 +112,38 @@ query {
 - #43690 - Post-Quantum Cryptography (PQC) readiness
 
 **⚠️ IMPORTANT:** Do NOT rely on any hardcoded list of sub-issues. The hierarchy MUST be
-discovered fresh from GitHub every time this prompt runs. Use the GraphQL queries below to
-fetch the live list of direct and nested sub-issues under #43690, then reconcile against the
-current document.
+discovered fresh from GitHub every time this prompt runs. Use the REST sub-issues API shown
+below to fetch the live list of direct and nested sub-issues under #43690, then reconcile
+against the current document.
 
 ### Step A — Discover all direct sub-issues of #43690 from GitHub
 
 ```bash
-gh api graphql -f query='
-query {
-  repository(owner: "keycloak", name: "keycloak") {
-    issue(number: 43690) {
-      trackedIssues(first: 100) {
-        totalCount
-        nodes {
-          number
-          title
-          state
-        }
-      }
-    }
-  }
-}'
+# REST sub-issues endpoint — fast and reliable (returns all sub-issues, not task-list checkboxes)
+gh api repos/keycloak/keycloak/issues/43690/sub_issues \
+  --jq '.[] | "#\(.number) [\(.state)] \(.title)"'
 ```
 
-Use `totalCount` to update the **Direct Sub-Issues: N** header in the document.
-Use the `nodes` list as the authoritative set of direct sub-issues — do not assume any
-specific numbers or count. Any issue in the document but not in this response has been
-de-linked; any issue in this response but not in the document is newly added.
+Use the count of returned items to update the **Direct Sub-Issues: N** header in the document.
+Use the returned list as the authoritative set of direct sub-issues — do not assume any
+specific numbers. Any issue in the document but not in this response has been de-linked;
+any issue in this response but not in the document is newly added.
 
-### Step B — Discover nested sub-issues for any direct sub-issue that has children
+### Step B — Discover nested sub-issues for every direct sub-issue
 
-For each direct sub-issue returned in Step A, check whether it has its own tracked issues:
+For each direct sub-issue number returned in Step A, run:
 
 ```bash
-gh api graphql -f query='
-query {
-  repository(owner: "keycloak", name: "keycloak") {
-    issue(number: ISSUE_NUMBER) {
-      number
-      title
-      state
-      trackedIssues(first: 100) {
-        totalCount
-        nodes {
-          number
-          title
-          state
-          trackedIssues(first: 100) {
-            totalCount
-            nodes {
-              number
-              title
-              state
-            }
-          }
-        }
-      }
-    }
-  }
-}'
+# One call per direct sub-issue — use --jq for clean output
+for issue in <list from Step A>; do
+  echo "=== #$issue ==="
+  gh api repos/keycloak/keycloak/issues/$issue/sub_issues \
+    --jq '.[] | "  #\(.number) [\(.state)] \(.title)"' 2>/dev/null || echo "  (no sub-issues)"
+done
 ```
 
-Replace `ISSUE_NUMBER` with each direct sub-issue number. This gives you the full three-level
-hierarchy in one query per direct sub-issue (or combine into a single query using aliases).
+Then for any level-2 sub-issues that themselves have children (identified from the existing
+document or by checking), run the same command one more level deep.
 
 ### Additional Issues (not in main hierarchy)
 
@@ -197,7 +151,8 @@ Fetch the current document to identify any issues listed in the "Additional Issu
 then check their status with:
 
 ```bash
-gh issue view ISSUE_NUMBER --repo keycloak/keycloak --json number,title,state,closedAt
+gh issue view ISSUE_NUMBER --repo keycloak/keycloak \
+  --json number,title,state --jq '"#\(.number) [\(.state)] \(.title)"'
 ```
 
 Do not maintain a hardcoded list of additional issues in this prompt — the document itself
@@ -255,21 +210,73 @@ The document uses a **table format** for the issue hierarchy. Update values with
 **Last Updated:** 2026-07-09
 ```
 
+## 11. Update pqc_overview.html — Critical Gaps Summary and New GitHub Issues Needed
+
+After fully updating `gh_issues/Github_PQC_issues_overview.md`, also update **two sections**
+in `pqc_overview.html`. Do **not** change any other part of that file — no footer, no domain
+rows, no status badges, no gap reference table, no "Last Updated" date.
+
+### Source of truth
+
+Use the now-updated `gh_issues/Github_PQC_issues_overview.md` as the sole source of truth
+for which gaps have filed issues. **Do not re-query GitHub** for this step.
+
+A gap is considered **filed** if the issue number that covers it appears anywhere in the
+main hierarchy table (direct sub-issues or nested sub-issues) in the markdown file.
+The `*Issues now filed for previously-unfiled gaps*` note at the bottom of the
+"Domains NOT Covered" section records the current gap → issue mapping.
+
+### Section A — "Critical Gaps Summary"
+
+This section runs from the `<h3>` heading "Critical Gaps Summary" to the `</ul>` closing
+the MEDIUM Priority list (just before the `<h3>` heading "New GitHub Issues Needed").
+
+For each `<li>` bullet item in the CRITICAL, HIGH, and MEDIUM priority lists:
+- If the gap cited in that bullet now has a filed issue, **append** the following before
+  the closing `</li>` (if not already present):
+  ```html
+   — filed: <a href="https://github.com/keycloak/keycloak/issues/NNNNN">#NNNNN</a>
+  ```
+- If the bullet already has a `— filed:` annotation with the correct issue number, leave
+  it unchanged.
+- If the bullet already has a `— filed:` annotation but the issue number has changed,
+  update it.
+- If the gap has no filed issue, leave the bullet entirely unchanged.
+- **Do not add, remove, or reorder bullet items.**
+
+### Section B — "New GitHub Issues Needed" table
+
+This table follows the `<h3>` heading "New GitHub Issues Needed" and has four columns:
+Priority | Gap/Domain | Title | Issue.
+
+For each row:
+- If the gap now has a filed issue and the Issue cell currently shows `—`, replace `—` with:
+  ```html
+  ✅ <a href="https://github.com/keycloak/keycloak/issues/NNNNN" style="color:#3b82d4;">#NNNNN</a>
+  ```
+  and change the row's `style` attribute to `background:#f0fdf4;` (light green highlight).
+- If the Issue cell already shows a ✅ link with the correct issue number, leave the row
+  unchanged.
+- If the Issue cell shows a ✅ link but the issue number has changed, update it and keep
+  the `background:#f0fdf4;` style.
+- If the gap has no filed issue, leave the cell as `—` and preserve the existing row style.
+- **Do not add or remove rows.**
+
 ## Notes
 
 - ⚠️ **READ-ONLY GitHub access** - **ABSOLUTELY NO MODIFICATIONS TO ANY GITHUB ISSUES**
-- You are **ONLY** reading issue status to update the **LOCAL** markdown file
+- You are **ONLY** reading issue status to update **LOCAL** files
 - **DO NOT** use any GitHub API endpoints that modify, create, update, or comment on issues
-- Use only `gh issue view` (read-only) and `gh api` with read-only GraphQL queries
+- Use only `gh api repos/.../sub_issues` and `gh issue view` (read-only)
 - If GitHub rate limits are hit, pause and retry
 - If progress counts cannot be retrieved via API, note in the output which ones need manual verification
-- Maintain exact formatting and structure of the original document
-- Only update status-related fields and the date in the **LOCAL FILE**
+- Maintain exact formatting and structure of all original documents
+- Only update status-related fields and the date in the **LOCAL FILES**
 
 ## Completion Criteria
 
-The updated **LOCAL FILE** should:
-1. Have today's date in the "Last Updated" field
+The updated local files should:
+1. Have today's date in the "Last Updated" field (`gh_issues/Github_PQC_issues_overview.md`)
 2. Have current OPEN/CLOSED status for all issues in the main hierarchy table (read from GitHub)
 3. Have current OPEN/CLOSED status for all issues in the Additional Issues tables (read from GitHub)
 4. Have current progress counts where applicable
@@ -277,7 +284,9 @@ The updated **LOCAL FILE** should:
 6. Have updated sub-issue counts if new issues were added (e.g., "Direct Sub-Issues: 11" instead of "10")
 7. Have recalculated Tracked Issues / Open / Closed counts in the Status Dashboard table
 8. Have no issue appearing in both the main hierarchy table and the Additional Issues tables — any such duplicate rows must have been removed from the Additional Issues section
-9. Maintain all other content unchanged
+9. Have the "Critical Gaps Summary" bullets in `pqc_overview.html` annotated with `— filed: #NNNNN` for any gap that now has a filed issue
+10. Have the "New GitHub Issues Needed" table in `pqc_overview.html` updated with ✅ links for any gap that now has a filed issue
+11. Maintain all other content in both files unchanged
 
 ## Final Reminder
 

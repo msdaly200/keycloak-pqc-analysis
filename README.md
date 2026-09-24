@@ -45,7 +45,7 @@ Each distinct use-case was classified as an independent **domain**. 63 domains w
 
 To update `pqc_overview.html` with the latest Keycloak PQC information, please read [README_UPDATE.md](README_UPDATE.md).
 
-**Last updated:** 15 September 2026 — Review findings from `findings/pqc_overview_review_findings_2026-09-15.md` applied: corrected OID4VPIdentityProvider.java line refs (83→85, 196–197→210–211); renamed AttestationX509CertificateValidator.java → AttestationProofValidator.java in Files Evaluated; updated SamlService.java line 965→991 and ClientAttributeCertificateResource lines 119/258→126/293 in gaps doc; verified all 63 domains and 30 GAPs against Keycloak main @ `02a16d4201`.
+**Last updated:** 24 September 2026 — Review findings from `findings/pqc_overview_review_findings_2026-09-24.md` applied: updated bcprov-jdk18on version 1.84→1.85.2 in Domain 42; added GAP-31 for MdocAlgorithm missing ML-DSA mapping; added ISO mdoc signing files to Files Evaluated; verified all 63 domains and 31 GAPs against Keycloak main @ `63aeb4c98a`.
 
 ## PQC Readiness Accuracy Reviews
 
@@ -53,6 +53,7 @@ The following accuracy reviews have been conducted against the live Keycloak sou
 
 | Date | PQC Changes |
 |------|-------------|
+| 2026-09-24 | [pqc_overview_review_findings_2026-09-24.md](findings/pqc_overview_review_findings_2026-09-24.md) |
 | 2026-09-15 | [pqc_overview_review_findings_2026-09-15.md](findings/pqc_overview_review_findings_2026-09-15.md) |
 | 2026-08-21 | [pqc_overview_review_findings_2026-08-21.md](findings/pqc_overview_review_findings_2026-08-21.md) |
 | 2026-08-11 | [pqc_overview_review_findings_2026-08-11.md](findings/pqc_overview_review_findings_2026-08-11.md) |

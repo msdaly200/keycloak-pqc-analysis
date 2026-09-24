@@ -2,7 +2,7 @@
 
 **Parent Feature Issue:** [#43690 - Post-Quantum Cryptography (PQC) readiness](https://github.com/keycloak/keycloak/issues/43690)
 
-**Last Updated:** 2026-09-15
+**Last Updated:** 2026-09-24
 
 ---
 
@@ -12,26 +12,26 @@
 
 | Tracked Issues | 🟢 Open | 🟣 Closed | Domains Analysed | 🔴 New Issues Needed |
 |:-:|:-:|:-:|:-:|:-:|
-| **55** | **42** | **13** | **63** | **30** |
+| **62** | **47** | **15** | **63** | **31** |
 
 ---
 
 ## Complete Issue Hierarchy
 
 ### **[#43690](https://github.com/keycloak/keycloak/issues/43690) - Post-Quantum Cryptography (PQC) readiness**
-**Status:** <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | **Type:** feature | **Progress:** 1 of 15
+**Status:** <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | **Type:** feature | **Progress:** 1 of 16
 
 Top-level feature issue tracking full PQC readiness for Keycloak.
 
-**Direct Sub-Issues: 15**
+**Direct Sub-Issues: 16**
 
 | Issue | Title | Status | Type | Progress | Sub-Issues | Gaps |
 |-------|-------|--------|------|----------|------------|------|
 | [#43691](https://github.com/keycloak/keycloak/issues/43691) | Hybrid key exchange in TLS 1.3 | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | milestone | N/A | **6** | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50674](https://github.com/keycloak/keycloak/issues/50674) | Adopt Quarkus PQC TLS support and adapt Keycloak configuration | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50677](https://github.com/keycloak/keycloak/issues/50677) | Add OpenSSL libraries to Keycloak container image | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50677](https://github.com/keycloak/keycloak/issues/50677) | Add OpenSSL libraries to Keycloak container image | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50676](https://github.com/keycloak/keycloak/issues/50676) | Add database TLS test coverage and verify JDBC driver PQC compatibility | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50675](https://github.com/keycloak/keycloak/issues/50675) | Determine Infinispan PQC path for Hot Rod client and server transport | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50675](https://github.com/keycloak/keycloak/issues/50675) | Determine Infinispan PQC path for Hot Rod client and server transport | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#49968](https://github.com/keycloak/keycloak/issues/49968) | Switch internal HTTP client from Apache to Vert.x/Netty | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#51255](https://github.com/keycloak/keycloak/issues/51255) | PQC for OTLP exporter - support hybrid key exchange and enforcing of PQC modes | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | [#45168](https://github.com/keycloak/keycloak/issues/45168) | Review what is needed for PQC readiness in Keycloak | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | spike | 7 of 12 | **12** | |
@@ -79,6 +79,14 @@ Top-level feature issue tracking full PQC readiness for Keycloak.
 | [#50938](https://github.com/keycloak/keycloak/issues/50938) | Loadtesting with PQC enabled | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | [#50940](https://github.com/keycloak/keycloak/issues/50940) | Test CloudNativePG database connection for PQC readiness | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | [#50941](https://github.com/keycloak/keycloak/issues/50941) | Update the proxy quickstarts to use PQC | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| [#52814](https://github.com/keycloak/keycloak/issues/52814) | PQC readiness for core-authn authentication flows | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | milestone | 0 of 7 | **7** | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#52815](https://github.com/keycloak/keycloak/issues/52815) | JWK Thumbprint and JWKS Endpoint: Add AKP (ML-DSA) key type support | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#52816](https://github.com/keycloak/keycloak/issues/52816) | Attestation-Based Client Auth: Implement algorithm enforcement and fix AKP cnf.jwk thumbprint path | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#52817](https://github.com/keycloak/keycloak/issues/52817) | Client Asymmetric Signature Verifier: Add AKP verifier path for private_key_jwt | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#52818](https://github.com/keycloak/keycloak/issues/52818) | OIDC IdP Broker: Make outbound client assertion signing algorithm configurable | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#52819](https://github.com/keycloak/keycloak/issues/52819) | FAPI Client Policy Executor: Add ML-DSA | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#52820](https://github.com/keycloak/keycloak/issues/52820) | WebAuthn: Update WebAuthnRegister and WebAuthnAuthenticator for ML-DSA | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#52821](https://github.com/keycloak/keycloak/issues/52821) | Client SDK JWTClientCredentialsProvider: Add AKP case to setupKeyPair() | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 
 ---
 
@@ -112,7 +120,6 @@ Based on the comprehensive analysis of 63 domains in `pqc_overview.html`, the fo
 
 | GAP/Domain | Title | Reason | Affected Domains |
 |------------|-------|--------|------------------|
-| **GAP-1** | JWK Thumbprint for AKP (ML-DSA) Keys | Blocks DPoP and attestation-based client auth | Domains 12, 15, 45 |
 | **GAP-4** | ML-KEM CekManagementProvider for OIDC Token Encryption | No quantum-safe JWE encryption path exists | Domains 2, 4, 8 |
 | **GAP-9** | SAML: Replace Hardcoded RS256 Key Selection | 4 call sites bypass ML-DSA keys even when present | Domains 18, 20, 59-61 |
 
@@ -120,8 +127,6 @@ Based on the comprehensive analysis of 63 domains in `pqc_overview.html`, the fo
 
 | GAP/Domain | Title | Reason | Affected Domains |
 |------------|-------|--------|------------------|
-| **Domain 48** | JWKS Endpoint: Add AKP Branch to JWKSServerUtils.toJwk() | ML-DSA keys return null, never appear in public JWKS | Domain 48 |
-| **Domain 53** | Client Signature Verifier: Add AKP Support / Remove RSA-Only Guard | ClientAsymmetricSignatureVerifierContext rejects all non-RSA keys | Domain 53 |
 | **Domain 46** | Realm Bootstrap: Add ML-DSA/ML-KEM Default Key Providers | New realms never get PQC keys by default | Domain 46 |
 
 ### MEDIUM Priority - New Issues Needed
@@ -133,10 +138,8 @@ Based on the comprehensive analysis of 63 domains in `pqc_overview.html`, the fo
 | **GAP-19** | Maven Enforcer: bcprov-jdk18on ≥ 1.78 Minimum Version | Silent ML-DSA regression risk | Domain 42 |
 | **GAP-20** | JAR Encrypted Request Object Decryption - ML-KEM Inbound Path | No inbound ML-KEM decryption (distinct from GAP-4 outbound) | Domain 8 |
 | **GAP-21** | UserInfo Endpoint: Per-Client Signing Attribute & Encryption Gap | Doesn't inherit realm default, requires explicit migration | Domain 4 |
-| **GAP-22** | Attestation-Based Client Auth: Enforce Asymmetric Algorithm Requirement | Algorithm enforcement TODO not implemented | Domain 12 |
 | **GAP-23** | OIDC Discovery: Make DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED Dynamic | Hardcoded RS256 constant for CIBA discovery | Domain 36 |
 | **Domain 49** | Admin API: Client Keypair Generation Algorithm Parameter | Hardcoded RSA generation | Domain 49 |
-| **GAP-10** | IdP Broker: Configurable Outbound Assertion Algorithm | Hardcoded RS256 fallback for private_key_jwt | Domain 21 |
 | **GAP-13** | Admin CLI: Add --sigalg Parameter for Client Assertions | kcadm.sh/kcreg.sh hardcoded RS256 | Domain 38 |
 | **GAP-18** | OID4VC c_nonce JWT: Replace Hardcoded ES256/RS256 Selection | Bypasses realm default algorithm | Domain 27 |
 | **Database Schema** | Database Schema: Expand REALM_ATTRIBUTE.VALUE for PQC Algorithm Strings | 255-character column limit may be insufficient for concatenated PQC algorithm identifiers | Infrastructure |
@@ -145,7 +148,6 @@ Based on the comprehensive analysis of 63 domains in `pqc_overview.html`, the fo
 
 | GAP/Domain | Title | Reason | Affected Domains |
 |------------|-------|--------|------------------|
-| **Domains 50-51** | Client SDK: Add AKP Support to JWTClientCredentialsProvider & DPoPGenerator | Client-side SDK missing ML-DSA support | Domains 50-51 |
 | **GAP-11** | Dynamic Client Registration: RS256 Special-Case Logic | RS256 omitted from DCR response, no ML-DSA equivalent | Domain 35 |
 | **Domain 52** | Docker Registry: Configurable Certificate Algorithm | Hardcoded RSA-2048 for test/dev path | Domain 52 |
 
@@ -155,7 +157,6 @@ Based on the comprehensive analysis of 63 domains in `pqc_overview.html`, the fo
 |------------|-------|---------|------------------|
 | **GAP-6** | FIPS 140-2 Backend — ML-DSA Availability Blocked | BC-FIPS 2.1.2 lacks ML-DSA/ML-KEM | Domains 11, 13, 43 |
 | **GAP-7** | OID4VC Linked Data Proof Suite — Hardcoded Ed25519 | Spec-level work needed | Domain 25 |
-| **GAP-8** | FAPI / Client Policy Allowlist — ML-DSA Actively Blocked | Spec-gated on FAPI 2.0 | Domains 16, 41 |
 | **Domain 37** | Security Event Token (SET) Signing | CAEP spec gated | Domain 37 |
 | **Domain 44** | CryptoProvider SPI — WildFly Elytron Backend | WildFly Elytron roadmap | Domain 44 |
 
@@ -194,24 +195,36 @@ The following domains are covered by issues in the hierarchy:
 - Domain 40: TLS 1.3 hybrid key exchange
 - HTTP client, database TLS, OTLP exporter, container dependencies, Infinispan transport
 
+**Core AuthN / Cross-cutting (#52814, #52815, #52816, #52817, #52818, #52819, #52820, #52821):**
+- Domain 45: JWK Thumbprint AKP support (GAP-1)
+- Domain 48: JWKS endpoint AKP branch
+- Domain 53: Client asymmetric signature verifier AKP path
+- Domain 12: Attestation-based client auth algorithm enforcement (GAP-22)
+- Domain 21: IdP broker configurable outbound assertion algorithm (GAP-10)
+- Domains 16, 41: FAPI client policy ML-DSA (GAP-8)
+- Domain 14/WebAuthn: ML-DSA COSE algorithm support
+- Domains 50-51: Client SDK JWTClientCredentialsProvider AKP support
+
 **Other:**
 - Domain 40: Organizations
 - Domain 41: FAPI policy enforcement
 - Domain 47: Client public key loader
 
-### Domains NOT Covered (25 New Issues Needed)
+### Domains NOT Covered (19 New Issues Still Needed)
 
-- **CRITICAL (3):** GAP-1, GAP-4, GAP-9
-- **HIGH (3):** Domain 48, Domain 53, Domain 46
-- **MEDIUM (12):** GAP-5/16, Domains 29/32, GAP-19, GAP-20, GAP-21, GAP-22, GAP-23, Domain 49, GAP-10, GAP-13, GAP-18, Database Schema
-- **LOW (3):** Domains 50-51, GAP-11, Domain 52
-- **EXTERNAL (5):** GAP-6, GAP-7, GAP-8, Domain 37, Domain 44
+- **CRITICAL (2):** GAP-4, GAP-9
+- **HIGH (1):** Domain 46
+- **MEDIUM (10):** GAP-5/16, Domains 29/32, GAP-19, GAP-20, GAP-21, GAP-23, Domain 49, GAP-13, GAP-18, Database Schema
+- **LOW (2):** GAP-11, Domain 52
+- **EXTERNAL (4):** GAP-6, GAP-7, Domain 37, Domain 44
+
+*Issues now filed for previously-unfiled gaps: GAP-1 → [#52815](https://github.com/keycloak/keycloak/issues/52815), Domain 48 → [#52815](https://github.com/keycloak/keycloak/issues/52815), GAP-22 → [#52816](https://github.com/keycloak/keycloak/issues/52816), Domain 53 → [#52817](https://github.com/keycloak/keycloak/issues/52817), GAP-10 → [#52818](https://github.com/keycloak/keycloak/issues/52818), GAP-8 → [#52819](https://github.com/keycloak/keycloak/issues/52819), Domains 50-51 → [#52821](https://github.com/keycloak/keycloak/issues/52821)*
 
 ---
 
 ## Next Steps
 
-1. **Review the 25 new issues** listed in "Domains Missing GitHub Issues" section
+1. **Review the 19 remaining unfiled gaps** listed in "Domains Missing GitHub Issues" section
 2. **Create new GitHub issues** for CRITICAL and HIGH priority gaps first
 3. **Link new issues** to appropriate parent issues in the hierarchy:
    - ML-DSA signing issues → under #43692
@@ -223,5 +236,5 @@ The following domains are covered by issues in the hierarchy:
 
 ---
 
-**Analysis Source:** `pqc_overview.html` (63 domains analyzed)  
-**GitHub Issue Hierarchy:** Verified from GitHub API (2026-09-15)
+**Analysis Source:** `pqc_overview.html` (63 domains analyzed)
+**GitHub Issue Hierarchy:** Verified from GitHub API (2026-09-24)

@@ -13,6 +13,12 @@ Do not modify:
 - any files under `domains/`
 - any files under `findings/`
 
+> **Note on `pqc_overview.html`:** The "New GitHub Issues Needed" table inside `pqc_overview.html`
+> is **not managed by this prompt**. It is static HTML maintained manually (or via
+> `Github_PQC_issues_overview_prompt.md` when new issues are filed against tracked gaps).
+> When a gap gets a GitHub issue filed against it, update that table in `pqc_overview.html`
+> directly by adding a ✅ Issue column entry — it is not auto-synced by any prompt.
+
 ## Required inputs
 
 1. Read `pqc_dashboard.html` fully.
@@ -43,12 +49,77 @@ Use `pqc_overview.html` as the source of truth only for:
 
 Update all affected dashboard content so it is internally consistent:
 - page title
-- subtitle / “Last updated” text
+- subtitle / "Last updated" text
 - summary stat cards
 - donut chart numbers, labels, legends, and SVG dash values
-- “New Issues Needed” heading total
+- "New Issues Needed" heading total
 - summary tables and counts
 - any links to `pqc_overview.html` or `gh_issues/Github_PQC_issues_overview.md` if needed
+
+## SVG Donut Maths
+
+Both donuts use `r="40"`, so the full circumference **C = 2π × 40 = 251.33**.
+
+Each segment is a `<circle>` with `stroke-dasharray="ARC C"` and `stroke-dashoffset="OFFSET"`,
+plus `transform="rotate(-90 50 50)"` so 0° is at 12 o'clock.
+
+### How to compute arc lengths
+
+```
+arc = round(count / total * 251.33, 2)
+```
+
+All arcs for a donut must sum to exactly 251.33 (adjust the largest arc by any rounding
+remainder if needed).
+
+### How to compute dashoffsets
+
+The segments are drawn in **smallest-arc-first order** in the HTML (so the largest sits on
+top and is most visible). Visually they read left-to-right in the legend order. The
+**first legend item** (e.g. green "Open") always starts at the same fixed start angle,
+which is preserved across updates by keeping `green_dashoffset = 62.83` constant.
+
+Given legend order **green → amber → purple**:
+
+```
+green_dashoffset  = 62.83          # fixed — do not change
+amber_dashoffset  = green_dashoffset - green_arc
+purple_dashoffset = amber_dashoffset - amber_arc
+```
+
+The draw order in the HTML is the **reverse** of the legend: purple first, amber second,
+green last (so green is on top).
+
+### Example — GitHub Issue Status donut (current values)
+
+| Segment | count | arc    | dashoffset |
+|---------|-------|--------|------------|
+| green (Open) | 44 of 62 | 178.36 | 62.83 |
+| amber (In Progress) | 3 of 62 | 12.16 | −115.53 |
+| purple (Closed) | 15 of 62 | 60.81 | −127.69 |
+
+The centre `<text>` shows the **total** (62). The legend counts show each segment's count.
+
+### Quick Python snippet
+
+```python
+import math
+C = round(2 * math.pi * 40, 2)  # 251.33
+total, green, amber, purple = 62, 44, 3, 15
+g = round(green  / total * C, 2)
+a = round(amber  / total * C, 2)
+p = round(C - g - a, 2)          # use subtraction for last segment to avoid rounding drift
+g_off = 62.83                     # fixed
+a_off = round(g_off - g, 2)
+p_off = round(a_off - a, 2)
+print(f"green: arc={g}, offset={g_off}")
+print(f"amber: arc={a}, offset={a_off}")
+print(f"purple: arc={p}, offset={p_off}")
+```
+
+The **Domain PQC Readiness** donut follows the same maths with its own segment counts
+(BLOCKED, PENDING, PARTIAL, SAFE, EXTERNAL) and its own fixed start offset for the first
+segment. Preserve the existing first segment's dashoffset value when updating that donut.
 
 ## Consistency requirements
 

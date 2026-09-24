@@ -1,0 +1,720 @@
+
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>PQC Issues &amp; Gaps — core-authn Ownership Analysis</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    font-size: 14px;
+    line-height: 1.6;
+    color: #1f2328;
+    background: #ffffff;
+    padding: 32px 24px;
+  }
+  .page { max-width: 960px; margin: 0 auto; }
+  h1 { font-size: 20px; font-weight: 700; margin-bottom: 4px; }
+  .meta { color: #57606a; font-size: 13px; margin-bottom: 28px; }
+  h2 { font-size: 16px; font-weight: 700; margin: 32px 0 8px; border-bottom: 2px solid #e5e7eb; padding-bottom: 6px; }
+  h3 { font-size: 14px; font-weight: 600; margin: 20px 0 8px; }
+
+  /* Legend */
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; margin-bottom: 20px; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 2px 9px; border-radius: 12px; font-size: 12px; font-weight: 600;
+    white-space: nowrap;
+  }
+  .own   { background: #dcfce7; color: #166534; }
+  .ambig { background: #fef9c3; color: #713f12; }
+  .other { background: #fee2e2; color: #991b1b; }
+
+  /* Ownership map callout */
+  .map-box {
+    background: #f7f8fa; border: 1px solid #e5e7eb;
+    border-radius: 6px; padding: 14px 18px; margin-bottom: 28px;
+  }
+  .map-box ul { list-style: none; padding: 0; display: flex; flex-wrap: wrap; gap: 6px 12px; }
+  .map-box li { font-size: 12.5px; color: #1f2328; }
+  .map-box li span { background: #e5e7eb; border-radius: 4px; padding: 1px 6px; font-size: 11.5px; margin-right: 4px; font-weight: 600; }
+
+  /* Tables */
+  table { width: 100%; border-collapse: collapse; margin-bottom: 8px; font-size: 13px; }
+  th { background: #f7f8fa; border: 1px solid #e5e7eb; padding: 7px 10px; text-align: left; font-weight: 600; }
+  td { border: 1px solid #e5e7eb; padding: 7px 10px; vertical-align: top; }
+  tr:hover td { background: #f7f8fa; }
+  td.verdict { white-space: nowrap; }
+  a { color: #3b82d4; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  .section-count { font-size: 12px; color: #57606a; margin-bottom: 12px; }
+
+  /* Priority labels */
+  .crit { font-size: 11px; font-weight: 700; color: #991b1b; }
+  .high { font-size: 11px; font-weight: 700; color: #c2410c; }
+  .med  { font-size: 11px; font-weight: 700; color: #713f12; }
+  .low  { font-size: 11px; font-weight: 700; color: #1e40af; }
+  .ext  { font-size: 11px; font-weight: 700; color: #57606a; }
+
+  .summary-grid {
+    display: grid; grid-template-columns: repeat(3,1fr); gap: 12px; margin-bottom: 24px;
+  }
+  .summary-card {
+    border: 1px solid #e5e7eb; border-radius: 6px; padding: 14px 16px; text-align: center;
+  }
+  .summary-card .num { font-size: 26px; font-weight: 700; }
+  .summary-card .lbl { font-size: 12px; color: #57606a; margin-top: 2px; }
+
+  footer { border-top: 1px solid #e5e7eb; margin-top: 40px; padding-top: 12px; text-align: center; font-size: 12px; color: #57606a; }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <h1>PQC Issues &amp; Gaps — core-authn Ownership Analysis</h1>
+  <p class="meta">Keycloak · Post-Quantum Cryptography · Classification against <code>team/core-authn</code> functionality areas · 2026-08-21</p>
+
+  <div class="legend">
+    <span class="badge own">✔ Clearly core-authn</span>
+    <span class="badge ambig">~ Ambiguous / partial</span>
+    <span class="badge other">✗ Other team</span>
+  </div>
+
+  <div class="map-box">
+    <strong>core-authn Functional Ownership Map (reference)</strong>
+    <ul>
+      <li><span>§1.1</span> Authentication Engine &amp; Flows</li>
+      <li><span>§1.2</span> Credentials, Passwords &amp; Brute-Force Protection</li>
+      <li><span>§1.3</span> WebAuthn / Passkeys</li>
+      <li><span>§1.4</span> X.509 / SPNEGO / Kerberos</li>
+      <li><span>§1.5</span> Sessions</li>
+      <li><span>§1.6</span> Login / Registration / Logout UI &amp; Theming</li>
+      <li><span>§1.7</span> Identity Broker (login-side) &amp; Delegation/Scopes</li>
+      <li><span>§1.8</span> Testing &amp; QA Infrastructure for the above</li>
+    </ul>
+  </div>
+
+  
+  <h2>Analysis A — PQC GitHub Issues (55 tracked issues)</h2>
+
+  <div class="summary-grid">
+    <div class="summary-card"><div class="num" style="color:#166534">3</div><div class="lbl">Clearly core-authn</div></div>
+    <div class="summary-card"><div class="num" style="color:#713f12">4</div><div class="lbl">Ambiguous / partial</div></div>
+    <div class="summary-card"><div class="num" style="color:#991b1b">48</div><div class="lbl">Other team</div></div>
+  </div>
+
+  
+  <h3><span class="badge own">✔ Clearly core-authn</span></h3>
+  <p class="section-count">3 issues</p>
+  <table>
+    <thead><tr><th>Issue</th><th>Title</th><th>Reasoning (core-authn §)</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50084">#50084</a></td>
+        <td>PQC support for WebAuthn/Passkeys <em>(milestone)</em></td>
+        <td>Directly governs the WebAuthn/passkeys authenticator subsystem (§1.3). core-authn owns all <code>WebAuthn*Authenticator</code> production code and <code>tests/webauthn/**</code>.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50085">#50085</a></td>
+        <td>Upgrade webauthn4j to a version with ML-DSA support</td>
+        <td>Library bump directly feeding the webauthn4j integration in core-authn's <code>WebAuthnAuthenticator</code> (§1.3).</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50086">#50086</a></td>
+        <td>Add ML-DSA COSE algorithm IDs to WebAuthn policies</td>
+        <td>Policy configuration for WebAuthn credential registration/assertion — core-authn-owned (§1.3). Touches the authenticator policy model, not the protocol wire format.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h3><span class="badge ambig">~ Ambiguous / partially relevant to core-authn</span></h3>
+  <p class="section-count">4 issues</p>
+  <table>
+    <thead><tr><th>Issue</th><th>Title</th><th>Reasoning</th></tr></thead>
+    <tbody>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48826">#48826</a></td>
+        <td>Investigate what is required for WebAuthn/passkeys to be PQC ready <em>(CLOSED)</em></td>
+        <td>The investigation covers §1.3 (WebAuthn — core-authn). However, as a closed spike that also spans COSE algorithm IDs and spec coordination, the residual work products (open sub-issues #50084–#50086) are the cleaner ownership signal. The spike itself sits at the boundary between core-authn and the broader PQC programme.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/49865">#49865</a> + <a href="https://github.com/keycloak/keycloak/issues/49858">#49858</a> + <a href="https://github.com/keycloak/keycloak/issues/49860">#49860</a></td>
+        <td>Milestone: Cookies PQC ready / AES-256 KC_RESTART cookie / SHA-384/512 AUTH_SESSION_ID_HASH (all CLOSED)</td>
+        <td>The AUTH_SESSION_ID_HASH and KC_RESTART cookies directly protect session and authentication-session identifiers — crossing §1.5 (Sessions) and §1.6 (Login). However, the cryptographic upgrade itself (choosing AES-256, SHA-384) is infrastructure/crypto-defaults work, not authentication-flow logic. Shared boundary with the crypto/infrastructure team.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50355">#50355</a></td>
+        <td>Post-Quantum Keys choice for signing/encryption <em>(standalone, UI/UX configuration)</em></td>
+        <td>Algorithm picker UI for realm key configuration touches the Admin UI authentication policies area that core-authn's PRs have modified (§1.6, <code>admin-ui/src/authentication/**</code>). But the underlying key management is owned by the crypto/key-management team. Shared UI-vs-backend boundary.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/43690">#43690</a></td>
+        <td>Post-Quantum Cryptography (PQC) readiness <em>(top-level feature)</em></td>
+        <td>Programme-wide epic that includes the WebAuthn sub-tree (§1.3). core-authn is a stakeholder but not the primary owner of the full PQC programme; it should participate in, not lead, this parent issue.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h3><span class="badge other">✗ Clearly other teams</span></h3>
+  <p class="section-count">48 issues — grouped by domain</p>
+
+  <table>
+    <thead><tr><th>Issue(s)</th><th>Title / Group</th><th>Primary Team / Domain</th><th>Why not core-authn</th></tr></thead>
+    <tbody>
+      <tr>
+        <td colspan="4" style="background:#f7f8fa;font-weight:600;font-size:12px">TLS / Network Infrastructure</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/43691">#43691</a></td>
+        <td>Hybrid key exchange in TLS 1.3 <em>(milestone)</em></td>
+        <td>team/infra + Quarkus</td>
+        <td>TLS 1.3 transport layer; none of §1.1–§1.8.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50674">#50674</a></td>
+        <td>Adopt Quarkus PQC TLS support and adapt Keycloak configuration</td>
+        <td>team/infra</td>
+        <td>Quarkus runtime config, not auth flows.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50677">#50677</a></td>
+        <td>Add OpenSSL libraries to Keycloak container image</td>
+        <td>team/infra / Ops</td>
+        <td>Container image packaging.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50676">#50676</a></td>
+        <td>Add database TLS test coverage and verify JDBC driver PQC compatibility</td>
+        <td>team/infra / DB</td>
+        <td>JDBC/DB layer.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50675">#50675</a></td>
+        <td>Determine Infinispan PQC path for Hot Rod client and server transport</td>
+        <td>team/infra / Infinispan</td>
+        <td>Infinispan transport — not auth-flow sessions per se.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/49968">#49968</a></td>
+        <td>Switch internal HTTP client from Apache to Vert.x/Netty</td>
+        <td>team/infra</td>
+        <td>HTTP client library migration.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/51255">#51255</a></td>
+        <td>PQC for OTLP exporter</td>
+        <td>team/infra / Observability</td>
+        <td>Telemetry/OTLP pipeline.</td>
+      </tr>
+      <tr>
+        <td colspan="4" style="background:#f7f8fa;font-weight:600;font-size:12px">PQC Readiness Investigation Spikes</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/45168">#45168</a></td>
+        <td>Review what is needed for PQC readiness in Keycloak <em>(spike)</em></td>
+        <td>Cross-team / Programme</td>
+        <td>Programme-level coordination spike.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48819">#48819</a></td>
+        <td>Create inventory of cryptography in Keycloak</td>
+        <td>Cross-team</td>
+        <td>Crypto inventory across all teams.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48820">#48820</a></td>
+        <td>Investigate and plan TLS PQC support <em>(CLOSED)</em></td>
+        <td>team/infra</td>
+        <td>TLS layer.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48822">#48822</a></td>
+        <td>Investigate truststore/keystore PQC support <em>(CLOSED)</em></td>
+        <td>team/core-crypto / Key mgmt</td>
+        <td>Keystore SPI, not auth flows.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48823">#48823</a></td>
+        <td>Investigate production readiness around PQC <em>(CLOSED)</em></td>
+        <td>team/infra</td>
+        <td>Ops/production readiness.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48824">#48824</a></td>
+        <td>Investigate what is needed for OIDC/OAuth 2.0 PQC</td>
+        <td>team/core-protocols</td>
+        <td>OIDC/OAuth wire protocol — core-protocols, not core-authn.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48825">#48825</a></td>
+        <td>Investigate SAML 2.0 PQC <em>(CLOSED)</em></td>
+        <td>team/core-protocols</td>
+        <td>SAML protocol — core-protocols.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48827">#48827</a></td>
+        <td>Investigate cookies PQC <em>(CLOSED)</em></td>
+        <td>team/infra / core-protocols</td>
+        <td>Crypto defaults for session cookies — infrastructure/crypto, not auth-flow engine.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48828">#48828</a></td>
+        <td>Investigate password hashing PQC <em>(CLOSED)</em></td>
+        <td>team/core-authn (§1.2) — but CLOSED spike</td>
+        <td>Unusually this spike <em>does</em> touch §1.2 (password hash providers), but it is closed; it would have been core-authn's area. Keeping it in "other" as it is resolved.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48829">#48829</a></td>
+        <td>Review if there are any areas not identified around PQC readiness</td>
+        <td>Cross-team</td>
+        <td>Gap-analysis sweep across all teams.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48830">#48830</a></td>
+        <td>Create a plan for documentation around PQC readiness</td>
+        <td>Docs / Cross-team</td>
+        <td>Cross-team documentation planning.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/49851">#49851</a></td>
+        <td>PQC modes</td>
+        <td>Cross-team / Programme</td>
+        <td>Configuration mode design spanning all crypto areas.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/51132">#51132</a></td>
+        <td>PQC Config Option design <em>(CLOSED)</em></td>
+        <td>Cross-team</td>
+        <td>Config option architecture, closed spike.</td>
+      </tr>
+      <tr>
+        <td colspan="4" style="background:#f7f8fa;font-weight:600;font-size:12px">Cryptographic Audit / Defaults</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/46333">#46333</a></td>
+        <td>Audit and Upgrade Cryptographic Defaults <em>(milestone)</em></td>
+        <td>team/core-crypto</td>
+        <td>Crypto defaults across the whole platform.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/46336">#46336</a></td>
+        <td>Cryptographic Inventory for Keycloak</td>
+        <td>team/core-crypto / Cross-team</td>
+        <td>Full crypto inventory.</td>
+      </tr>
+      <tr>
+        <td colspan="4" style="background:#f7f8fa;font-weight:600;font-size:12px">OAuth 2.0 / OIDC Protocol (ML-DSA / ML-KEM / HPKE / JOSE)</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48821">#48821</a></td>
+        <td>PQC support for OAuth 2.0 and OpenID Connect <em>(milestone)</em></td>
+        <td>team/core-protocols</td>
+        <td>OIDC/OAuth wire protocol and token signing — core-protocols.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/43693">#43693</a></td>
+        <td>Support FN-DSA for OAuth and OpenID Connect</td>
+        <td>team/core-protocols</td>
+        <td>Token algorithm support — core-protocols.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/43692">#43692</a></td>
+        <td>Support ML-DSA for OAuth and OpenID Connect</td>
+        <td>team/core-protocols</td>
+        <td>Token algorithm support — core-protocols.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/44141">#44141</a></td>
+        <td>JWK Algorithm Key Pair support <em>(CLOSED)</em></td>
+        <td>team/core-crypto / core-protocols</td>
+        <td>JWK/JOSE infrastructure.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/44142">#44142</a></td>
+        <td>Add generated keys provider for ML-DSA</td>
+        <td>team/core-crypto</td>
+        <td>Key provider SPI — crypto/key management team.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/43684">#43684</a></td>
+        <td>Add ML-DSA SignatureProviderFactory and ClientSignatureVerifierProviderFactory</td>
+        <td>team/core-protocols / core-crypto</td>
+        <td>Signature SPI — protocol/crypto team.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/44143">#44143</a></td>
+        <td>Support issuing tokens with ML-DSA</td>
+        <td>team/core-protocols</td>
+        <td>Token issuance — core-protocols.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/44144">#44144</a></td>
+        <td>Support verifying tokens issued by clients signed with ML-DSA</td>
+        <td>team/core-protocols</td>
+        <td>Token verification — core-protocols.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50299">#50299</a></td>
+        <td>Support HPKE algorithms for JWE</td>
+        <td>team/core-protocols / core-crypto</td>
+        <td>JWE encryption algorithm — protocol/crypto.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50304">#50304</a></td>
+        <td>Support PQ/T Hybrid Composite Signatures for JOSE and COSE</td>
+        <td>team/core-protocols / core-crypto</td>
+        <td>JOSE/COSE algorithm — protocol/crypto.</td>
+      </tr>
+      <tr>
+        <td colspan="4" style="background:#f7f8fa;font-weight:600;font-size:12px">SAML Protocol</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50292">#50292</a></td>
+        <td>PQC support for SAML 2.0 <em>(milestone)</em></td>
+        <td>team/core-protocols</td>
+        <td>SAML 2.0 protocol — core-protocols.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50294">#50294</a></td>
+        <td>Add ML-DSA algorithm support for XMLSignatureUtil and XMLEncryptionUtil</td>
+        <td>team/core-protocols</td>
+        <td>XML signature/encryption utilities — core-protocols.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/51421">#51421</a></td>
+        <td>Add generated keys provider for ML-DSA (SAML)</td>
+        <td>team/core-crypto</td>
+        <td>Key provider SPI.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/51422">#51422</a></td>
+        <td>Final review of ML-DSA in SAML 2.0 protocol</td>
+        <td>team/core-protocols</td>
+        <td>SAML protocol review.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50295">#50295</a></td>
+        <td>Dual hybrid support for SAML assertions</td>
+        <td>team/core-protocols</td>
+        <td>SAML assertion format — core-protocols.</td>
+      </tr>
+      <tr>
+        <td colspan="4" style="background:#f7f8fa;font-weight:600;font-size:12px">Key Management &amp; Keystores</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50678">#50678</a></td>
+        <td>Add ML-DSA JCE algorithm mapping to JavaAlgorithm</td>
+        <td>team/core-crypto</td>
+        <td>JCE algorithm mapping — crypto layer.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50679">#50679</a></td>
+        <td>Support loading ML-DSA keys from Java keystores</td>
+        <td>team/core-crypto</td>
+        <td>Keystore loading — crypto/key management.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50680">#50680</a></td>
+        <td>Add test coverage for truststore loading with PQC certificates</td>
+        <td>team/core-crypto</td>
+        <td>Truststore/certificate loading — crypto team.</td>
+      </tr>
+      <tr>
+        <td colspan="4" style="background:#f7f8fa;font-weight:600;font-size:12px">Infrastructure / DB / Federation / Ops</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50789">#50789</a></td>
+        <td>Verify LDAP federation compatibility on PQC-capable JDK</td>
+        <td>team/core-iam / LDAP</td>
+        <td>LDAP federation — core-iam.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50868">#50868</a></td>
+        <td>Make embedded Infinispan support PQC</td>
+        <td>team/infra / Infinispan</td>
+        <td>Infinispan cluster transport.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50938">#50938</a></td>
+        <td>Loadtesting with PQC enabled</td>
+        <td>team/performance</td>
+        <td>Performance/loadtest infrastructure.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50940">#50940</a></td>
+        <td>Test CloudNativePG database connection for PQC readiness</td>
+        <td>team/infra / DB</td>
+        <td>Database TLS/PQC testing.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/50941">#50941</a></td>
+        <td>Update the proxy quickstarts to use PQC</td>
+        <td>Docs / infra</td>
+        <td>Quickstart/documentation update.</td>
+      </tr>
+      <tr>
+        <td><a href="https://github.com/keycloak/keycloak/issues/48415">#48415</a></td>
+        <td>[OID4VCI] Review JwtProofValidator.JWK_PRIVATE_KEY_CLAIMS <em>(CLOSED)</em></td>
+        <td>team/oid4vc</td>
+        <td>OID4VC verifiable credentials — separate team.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Analysis B — The 30 Gaps (new issues needed)</h2>
+
+  <div class="summary-grid">
+    <div class="summary-card"><div class="num" style="color:#166534">4</div><div class="lbl">Clearly core-authn</div></div>
+    <div class="summary-card"><div class="num" style="color:#713f12">3</div><div class="lbl">Ambiguous / partial</div></div>
+    <div class="summary-card"><div class="num" style="color:#991b1b">23</div><div class="lbl">Other team</div></div>
+  </div>
+
+  
+  <h3><span class="badge own">✔ Clearly core-authn</span></h3>
+  <p class="section-count">4 gaps</p>
+  <table>
+    <thead><tr><th>Gap</th><th>Priority</th><th>Title</th><th>Affected Domains</th><th>Reasoning (core-authn §)</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>GAP-1</td>
+        <td><span class="crit">CRITICAL</span></td>
+        <td>JWK Thumbprint for AKP (ML-DSA) Keys</td>
+        <td>12, 15, 45</td>
+        <td>Blocks DPoP and <strong>attestation-based client auth</strong>. Domain 15 is DPoP (touches auth flow token binding) and Domain 12 is <code>AttestationBasedClientAuthenticator</code> — explicitly named in core-authn's ownership map (§1.1: <code>authenticators/client/AttestationBasedClientAuthenticator</code>). This gap directly prevents a core-authn-owned authenticator from working with ML-DSA keys.</td>
+      </tr>
+      <tr>
+        <td>GAP-22</td>
+        <td><span class="med">MEDIUM</span></td>
+        <td>Attestation-Based Client Auth: Enforce Asymmetric Algorithm Requirement</td>
+        <td>12</td>
+        <td>Unimplemented algorithm enforcement TODO in <code>AttestationBasedClientAuthenticator</code>, an authenticator explicitly listed in §1.1. This is a security gap within an authenticator core-authn owns outright.</td>
+      </tr>
+      <tr>
+        <td>GAP-10</td>
+        <td><span class="med">MEDIUM</span></td>
+        <td>IdP Broker: Configurable Outbound Assertion Algorithm</td>
+        <td>21</td>
+        <td>Hardcoded RS256 fallback for <code>private_key_jwt</code> in the IdP broker's outbound assertion path. The login-side broker (<code>AbstractOAuth2IdentityProvider</code>) is owned by core-authn (§1.7). The fix is to make the algorithm configurable in the authenticator/broker configuration, not to change the OIDC wire format.</td>
+      </tr>
+      <tr>
+        <td>GAP-7</td>
+        <td><span class="ext">EXTERNAL</span></td>
+        <td>OID4VC Linked Data Proof Suite — Hardcoded Ed25519</td>
+        <td>25</td>
+        <td><em>Partial ownership only</em> — listed here because OID4VP broker integration touches core-authn's §1.7 (<code>broker/oid4vp/**</code>). However, the hardcoded Ed25519 is a spec-level blocker in the Linked Data Proof suite, making this primarily an external dependency / OID4VC team issue. Core-authn has limited direct action.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h3><span class="badge ambig">~ Ambiguous / partially relevant to core-authn</span></h3>
+  <p class="section-count">3 gaps</p>
+  <table>
+    <thead><tr><th>Gap</th><th>Priority</th><th>Title</th><th>Affected Domains</th><th>Reasoning</th></tr></thead>
+    <tbody>
+      <tr>
+        <td>GAP-4</td>
+        <td><span class="crit">CRITICAL</span></td>
+        <td>ML-KEM CekManagementProvider for OIDC Token Encryption</td>
+        <td>2, 4, 8</td>
+        <td>Domain 8 (JAR encrypted request object) involves request objects used in authentication flows (§1.1), while Domains 2 and 4 are token encryption — a core-protocols concern. The inbound decryption path for JAR in Domain 8 has a direct effect on how authenticated requests enter the flow engine, making this a shared boundary between core-authn (§1.1) and core-protocols.</td>
+      </tr>
+      <tr>
+        <td>Domains 50–51</td>
+        <td><span class="low">LOW</span></td>
+        <td>Client SDK: Add AKP Support to JWTClientCredentialsProvider &amp; DPoPGenerator</td>
+        <td>50, 51</td>
+        <td><code>JWTClientCredentialsProvider</code> relates to client-credentials authentication (§1.1 — <code>authenticators/client/JWTClientSecretAuthenticator</code>), but the SDK is a client-facing library, and DPoP generation is a protocol concern. Shared territory between core-authn's client-auth authenticators and core-protocols' token-handling SDK.</td>
+      </tr>
+      <tr>
+        <td>Database Schema</td>
+        <td><span class="med">MEDIUM</span></td>
+        <td>Database Schema: Expand REALM_ATTRIBUTE.VALUE for PQC Algorithm Strings</td>
+        <td>Infrastructure</td>
+        <td>Algorithm configuration is stored in realm attributes that feed authentication policies (§1.1, §1.2). Core-authn is a consumer of this data but does not own the database schema layer. The fix is a DB/infrastructure concern; core-authn should be a reviewer, not the lead owner.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h3><span class="badge other">✗ Clearly other teams</span></h3>
+  <p class="section-count">23 gaps — grouped by responsible team</p>
+  <table>
+    <thead><tr><th>Gap</th><th>Priority</th><th>Title</th><th>Primary Team</th><th>Why not core-authn</th></tr></thead>
+    <tbody>
+      <tr>
+        <td colspan="5" style="background:#f7f8fa;font-weight:600;font-size:12px">OIDC / OAuth / JOSE — team/core-protocols &amp; team/core-crypto</td>
+      </tr>
+      <tr>
+        <td>GAP-9</td>
+        <td><span class="crit">CRITICAL</span></td>
+        <td>SAML: Replace Hardcoded RS256 Key Selection (4 call sites)</td>
+        <td>team/core-protocols</td>
+        <td>XMLSignatureUtil and SAML signing — core-protocols. None of §1.1–§1.8.</td>
+      </tr>
+      <tr>
+        <td>Domain 48</td>
+        <td><span class="high">HIGH</span></td>
+        <td>JWKS Endpoint: Add AKP Branch to JWKSServerUtils.toJwk()</td>
+        <td>team/core-protocols / core-crypto</td>
+        <td>JWKS endpoint serialisation — OIDC discovery, not auth flows.</td>
+      </tr>
+      <tr>
+        <td>Domain 53</td>
+        <td><span class="high">HIGH</span></td>
+        <td>Client Signature Verifier: Add AKP Support / Remove RSA-Only Guard</td>
+        <td>team/core-protocols</td>
+        <td><code>ClientAsymmetricSignatureVerifierContext</code> is a token-verification / protocol-endpoint concern (core-protocols), distinct from the client authenticator factory in §1.1.</td>
+      </tr>
+      <tr>
+        <td>Domain 46</td>
+        <td><span class="high">HIGH</span></td>
+        <td>Realm Bootstrap: Add ML-DSA/ML-KEM Default Key Providers</td>
+        <td>team/core-crypto / core-iam</td>
+        <td>Realm key bootstrapping — key management / IAM team. Not authentication flows.</td>
+      </tr>
+      <tr>
+        <td>GAP-5 + GAP-16</td>
+        <td><span class="med">MEDIUM</span></td>
+        <td>Keystore Import: Add ML-DSA Support (BCFKS/PKCS12)</td>
+        <td>team/core-crypto</td>
+        <td>Keystore import SPI — crypto/key management.</td>
+      </tr>
+      <tr>
+        <td>Domains 29, 32</td>
+        <td><span class="med">MEDIUM</span></td>
+        <td>ML-KEM Key Generation Provider</td>
+        <td>team/core-crypto</td>
+        <td>Key generation provider SPI — crypto/key management.</td>
+      </tr>
+      <tr>
+        <td>GAP-19</td>
+        <td><span class="med">MEDIUM</span></td>
+        <td>Maven Enforcer: bcprov-jdk18on ≥ 1.78 Minimum Version</td>
+        <td>team/infra / Build</td>
+        <td>Build/dependency enforcement — infra/build team.</td>
+      </tr>
+      <tr>
+        <td>GAP-20</td>
+        <td><span class="med">MEDIUM</span></td>
+        <td>JAR Encrypted Request Object Decryption — ML-KEM Inbound Path</td>
+        <td>team/core-protocols</td>
+        <td>JAR decryption is a protocol-endpoint operation. Although JAR affects flow entry (§1.1 boundary), the decryption itself lives in the protocol layer. Compare with GAP-4's ambiguous status — this inbound path is more clearly protocol-owned.</td>
+      </tr>
+      <tr>
+        <td>GAP-21</td>
+        <td><span class="med">MEDIUM</span></td>
+        <td>UserInfo Endpoint: Per-Client Signing Attribute &amp; Encryption Gap</td>
+        <td>team/core-protocols</td>
+        <td>UserInfo endpoint is a protocol response — core-protocols.</td>
+      </tr>
+      <tr>
+        <td>GAP-23</td>
+        <td><span class="med">MEDIUM</span></td>
+        <td>OIDC Discovery: Make DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED Dynamic</td>
+        <td>team/core-protocols</td>
+        <td>OIDC discovery endpoint configuration — core-protocols.</td>
+      </tr>
+      <tr>
+        <td>Domain 49</td>
+        <td><span class="med">MEDIUM</span></td>
+        <td>Admin API: Client Keypair Generation Algorithm Parameter</td>
+        <td>team/core-iam / admin</td>
+        <td>Admin REST API for client management — core-iam or admin team.</td>
+      </tr>
+      <tr>
+        <td>GAP-13</td>
+        <td><span class="med">MEDIUM</span></td>
+        <td>Admin CLI: Add --sigalg Parameter for Client Assertions</td>
+        <td>team/infra / CLI</td>
+        <td>kcadm.sh/kcreg.sh CLI tooling — infra/CLI team.</td>
+      </tr>
+      <tr>
+        <td>GAP-18</td>
+        <td><span class="med">MEDIUM</span></td>
+        <td>OID4VC c_nonce JWT: Replace Hardcoded ES256/RS256 Selection</td>
+        <td>team/oid4vc</td>
+        <td>OID4VC credential issuance flow — OID4VC team.</td>
+      </tr>
+      <tr>
+        <td>GAP-11</td>
+        <td><span class="low">LOW</span></td>
+        <td>Dynamic Client Registration: RS256 Special-Case Logic</td>
+        <td>team/core-protocols</td>
+        <td>DCR response algorithm handling — protocol registration endpoint, core-protocols.</td>
+      </tr>
+      <tr>
+        <td>Domain 52</td>
+        <td><span class="low">LOW</span></td>
+        <td>Docker Registry: Configurable Certificate Algorithm</td>
+        <td>team/infra / integrations</td>
+        <td>Docker registry integration — hardcoded RSA-2048 in test/dev path, infra/integrations team.</td>
+      </tr>
+      <tr>
+        <td colspan="5" style="background:#f7f8fa;font-weight:600;font-size:12px">External Dependencies (no immediate owner action)</td>
+      </tr>
+      <tr>
+        <td>GAP-6</td>
+        <td><span class="ext">EXTERNAL</span></td>
+        <td>FIPS 140-2 Backend — ML-DSA Availability Blocked (BC-FIPS 2.1.2)</td>
+        <td>External (BC-FIPS)</td>
+        <td>Blocked on BouncyCastle FIPS library release. Tracking item, no Keycloak team can unblock this.</td>
+      </tr>
+      <tr>
+        <td>GAP-7</td>
+        <td><span class="ext">EXTERNAL</span></td>
+        <td>OID4VC Linked Data Proof Suite — Hardcoded Ed25519</td>
+        <td>External / team/oid4vc</td>
+        <td>Spec-level dependency. Surfaced in §1.7 (oid4vp broker) but primarily external. See "Clearly core-authn" note above — classified here definitively as external-led.</td>
+      </tr>
+      <tr>
+        <td>GAP-8</td>
+        <td><span class="ext">EXTERNAL</span></td>
+        <td>FAPI / Client Policy Allowlist — ML-DSA Actively Blocked</td>
+        <td>External (FAPI 2.0 spec)</td>
+        <td>Blocked on FAPI 2.0 spec ratification. Policy enforcement layer (§1.1 boundary) but externally gated.</td>
+      </tr>
+      <tr>
+        <td>Domain 37</td>
+        <td><span class="ext">EXTERNAL</span></td>
+        <td>Security Event Token (SET) Signing</td>
+        <td>External (CAEP spec)</td>
+        <td>SET/CAEP spec-gated. Not an authentication-flow concern.</td>
+      </tr>
+      <tr>
+        <td>Domain 44</td>
+        <td><span class="ext">EXTERNAL</span></td>
+        <td>CryptoProvider SPI — WildFly Elytron Backend</td>
+        <td>External (WildFly roadmap)</td>
+        <td>WildFly Elytron roadmap dependency. Not auth flows.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  
+  <h2>Summary &amp; Key Observations</h2>
+
+  <table>
+    <thead><tr><th></th><th>Clearly core-authn</th><th>Ambiguous / partial</th><th>Other team</th><th>Total</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Analysis A — Issues</strong></td><td>3 (5%)</td><td>4 (7%)</td><td>48 (87%)</td><td>55</td></tr>
+      <tr><td><strong>Analysis B — Gaps</strong></td><td>4 (13%)</td><td>3 (10%)</td><td>23 (77%)</td><td>30</td></tr>
+    </tbody>
+  </table>
+
+  <ul style="margin-top:16px;padding-left:20px;line-height:2">
+    <li><strong>The PQC programme is largely owned outside core-authn.</strong> The vast majority of issues and gaps belong to core-protocols (OIDC/SAML/JOSE), core-crypto (key management/keystores), and infra (TLS/Infinispan/containers).</li>
+    <li><strong>core-authn's clear PQC slice is narrow but important:</strong> the three WebAuthn issues (#50084, #50085, #50086) and four gaps (GAP-1, GAP-22, GAP-10, and partially GAP-4/JAR) are directly within their authenticator and broker ownership.</li>
+    <li><strong>GAP-1 (JWK Thumbprint for ML-DSA) is the most critical gap for core-authn</strong> — it blocks <code>AttestationBasedClientAuthenticator</code> (§1.1) and DPoP flows. This should be the highest-priority new issue core-authn champions.</li>
+    <li><strong>GAP-22 (Attestation-Based Client Auth algorithm enforcement)</strong> is a security TODO sitting unimplemented inside a core-authn-owned authenticator — it is owned outright and has no dependency on other teams.</li>
+    <li><strong>The ambiguous issues/gaps</strong> (cookies, JAR decryption, client SDK, DB schema) require cross-team coordination where core-authn should be a reviewer/stakeholder rather than the primary implementer.</li>
+  </ul>
+
+  <footer>Made with IBM Bob</footer>
+</div>
+</body>
+</html>

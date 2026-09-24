@@ -59,7 +59,7 @@ Even if Gap 1 is resolved, there are **4 call sites** that hardcode `Algorithm.R
 KeyWrapper keyPair = keyManager.getActiveKey(realm, KeyUse.SIG, Algorithm.RS256);
 ```
 
-**File:** `SamlService.java` (line 965)
+**File:** `SamlService.java` (line 992)
 
 ```java
 List<KeyWrapper> keys = session.keys().getKeysStream(realm, KeyUse.SIG, Algorithm.RS256)
@@ -141,7 +141,7 @@ KeyWrapper keyPair = keyManager.getActiveKey(realm, KeyUse.SIG, samlSignatureAlg
 ```
 
 **Similar fixes needed in:**
-- `SamlService.java` line 965
+- `SamlService.java` line 992
 - `SAMLIdentityProvider.java` line 506
 - (4th call site)
 
