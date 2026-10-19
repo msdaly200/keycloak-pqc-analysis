@@ -233,7 +233,7 @@ For Keycloak to *decapsulate* an ML-KEM encrypted token (i.e. when Keycloak itse
 
 ⚠️ **Dependencies:**
 - **BouncyCastle 1.84** (non-FIPS) — confirmed to include `org.bouncycastle.jcajce.provider.asymmetric.mlkem.*`. Available now.
-- **BC-FIPS** — ML-KEM not present in BC-FIPS 2.1.2. FIPS deployments remain blocked until a future BC-FIPS release. No change to the FIPS provider until then.
+- **BC-FIPS** — ML-KEM not present in BC-FIPS 2.1.3. FIPS deployments remain blocked until a future BC-FIPS release. No change to the FIPS provider until then.
 - **Domain 29** — ML-KEM realm `KeyProvider` is required before Keycloak can act as the *recipient* of an ML-KEM encrypted token. The outbound path (encrypting to a client) does not depend on Domain 29.
 - **IETF JOSE ML-KEM spec** — the JWE algorithm identifier strings (`"ML-KEM-512"` etc.) and the KDF step between the ML-KEM shared secret and the CEK should be validated against the current IETF draft (draft-ietf-jose-json-web-algorithms-pqc or equivalent) before finalising.
 

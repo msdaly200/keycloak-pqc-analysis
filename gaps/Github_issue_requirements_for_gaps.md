@@ -111,12 +111,12 @@ An `AKP` case appears in `JavaKeystoreKeyProvider`.
 |-------|-------|
 | **Severity** | HIGH |
 | **Domains Affected** | 11, 13, 43 |
-| **Affected File(s)** | `crypto/fips1402/…/FIPS1402Provider.java`; `crypto/fips1402/…/BCFIPSCertificateUtilsProvider.java`; `pom.xml` (line 78: `bouncycastle.bcfips.version=2.1.2`) |
+| **Affected File(s)** | `crypto/fips1402/…/FIPS1402Provider.java`; `crypto/fips1402/…/BCFIPSCertificateUtilsProvider.java`; `pom.xml` (line 78: `bouncycastle.bcfips.version=2.1.3`) |
 | **GitHub Issue** | *External Dependency* |
 
 ### Description & Impact
 
-BC-FIPS 2.1.2 (pinned at `pom.xml` line 78) contains only LMS under `org.bouncycastle.crypto.internal.pqc`. No ML-DSA and no ML-KEM classes are present. FIPS-mode Keycloak deployments cannot use ML-DSA or ML-KEM. Confirmed hard blocker for regulated environments targeting FIPS 140-2/3 compliance. Unblocked only when BC-FIPS 2.x achieves NIST FIPS 140-3 validation for ML-DSA/ML-KEM. Affects X.509 cert validation with PQC certificates in FIPS mode.
+BC-FIPS 2.1.3 (pinned at `pom.xml` line 78) contains only LMS under `org.bouncycastle.crypto.internal.pqc`. No ML-DSA and no ML-KEM classes are present. FIPS-mode Keycloak deployments cannot use ML-DSA or ML-KEM. Confirmed hard blocker for regulated environments targeting FIPS 140-2/3 compliance. Unblocked only when BC-FIPS 2.x achieves NIST FIPS 140-3 validation for ML-DSA/ML-KEM. Affects X.509 cert validation with PQC certificates in FIPS mode.
 
 ### Resolution Criteria
 
@@ -168,12 +168,12 @@ Any ML-DSA algorithm name appears in `FapiConstant.ALLOWED_ALGORITHMS` (requires
 |-------|-------|
 | **Severity** | HIGH |
 | **Domains Affected** | 18, 20, 59, 60, 61 |
-| **Affected File(s)** | `services/src/main/java/org/keycloak/broker/saml/SAMLIdentityProvider.java` (lines 416, 507); `services/src/main/java/org/keycloak/protocol/saml/SamlProtocol.java` (line 544); `services/src/main/java/org/keycloak/protocol/saml/SamlService.java` (line 992) |
+| **Affected File(s)** | `services/src/main/java/org/keycloak/broker/saml/SAMLIdentityProvider.java` (lines 416, 507); `services/src/main/java/org/keycloak/protocol/saml/SamlProtocol.java` (line 544); `services/src/main/java/org/keycloak/protocol/saml/SamlService.java` (line 1012) |
 | **GitHub Issue** | [#50292](https://github.com/keycloak/keycloak/issues/50292) (create sub-issue) |
 
 ### Description & Impact
 
-Four hardcoded `Algorithm.RS256` key-selection call sites in SAML code: SP metadata signing key export (line 416), SP metadata document signing (line 507), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 992). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. Requires a third sub-issue under [#50292](https://github.com/keycloak/keycloak/issues/50292).
+Four hardcoded `Algorithm.RS256` key-selection call sites in SAML code: SP metadata signing key export (line 416), SP metadata document signing (line 507), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 1012). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. Requires a third sub-issue under [#50292](https://github.com/keycloak/keycloak/issues/50292).
 
 ### Resolution Criteria
 
@@ -187,16 +187,16 @@ All four hardcoded `Algorithm.RS256` references are removed or made configurable
 |-------|-------|
 | **Severity** | MEDIUM |
 | **Domains Affected** | 21 |
-| **Affected File(s)** | `services/src/main/java/org/keycloak/broker/oidc/AbstractOAuth2IdentityProvider.java` (lines 737, 745) |
+| **Affected File(s)** | `services/src/main/java/org/keycloak/broker/oidc/AbstractOAuth2IdentityProvider.java` (lines 969, 977) |
 | **GitHub Issue** | [#48821](https://github.com/keycloak/keycloak/issues/48821) (create sub-issue) |
 
 ### Description & Impact
 
-Line 737 hardcodes `Algorithm.HS256` as the fallback when `client_secret_jwt` has no configured algorithm. Line 745 hardcodes `Algorithm.RS256` as the fallback for all other client assertion signing (e.g., `private_key_jwt`). An IdP broker configured for `private_key_jwt` will always fall back to RS256 unless the admin explicitly sets `clientAssertionSigningAlg`. No path to select ML-DSA as the outbound default even after providers exist.
+Line 969 hardcodes `Algorithm.HS256` as the fallback when `client_secret_jwt` has no configured algorithm. Line 977 hardcodes `Algorithm.RS256` as the fallback for all other client assertion signing (e.g., `private_key_jwt`). An IdP broker configured for `private_key_jwt` will always fall back to RS256 unless the admin explicitly sets `clientAssertionSigningAlg`. No path to select ML-DSA as the outbound default even after providers exist.
 
 ### Resolution Criteria
 
-The RS256 fallback at line 745 is removed or made configurable.
+The RS256 fallback at line 977 is removed or made configurable.
 
 ---
 
@@ -225,12 +225,12 @@ The RS256 special-case is removed or extended to handle ML-DSA.
 |-------|-------|
 | **Severity** | MEDIUM |
 | **Domains Affected** | 35 |
-| **Affected File(s)** | `server-spi-private/src/main/java/org/keycloak/models/Constants.java` (line 68); `services/src/main/java/org/keycloak/jose/jws/DefaultTokenManager.java` (line 233) |
+| **Affected File(s)** | `server-spi-private/src/main/java/org/keycloak/models/Constants.java` (line 68); `services/src/main/java/org/keycloak/jose/jws/DefaultTokenManager.java` (line 240) |
 | **GitHub Issue** | [#48823](https://github.com/keycloak/keycloak/issues/48823) (document) |
 
 ### Description & Impact
 
-`DEFAULT_SIGNATURE_ALGORITHM = Algorithm.RS256` (line 68) is the ultimate fallback for all token signing when neither client nor realm has configured an algorithm. `DefaultTokenManager` returns this constant at line 233. Any incomplete PQC migration (realm default updated but client attributes not set) will silently revert to classical RS256. Operators and documentation must explicitly flag this transition risk.
+`DEFAULT_SIGNATURE_ALGORITHM = Algorithm.RS256` (line 68) is the ultimate fallback for all token signing when neither client nor realm has configured an algorithm. `DefaultTokenManager` returns this constant at line 240. Any incomplete PQC migration (realm default updated but client attributes not set) will silently revert to classical RS256. Operators and documentation must explicitly flag this transition risk.
 
 ### Resolution Criteria
 
@@ -284,7 +284,7 @@ The example config uses a PQC-safe key exchange or deployment documentation advi
 |-------|-------|
 | **Severity** | HIGH |
 | **Domains Affected** | 1, 28, 29, 30, 31, 46 |
-| **Affected File(s)** | `services/src/main/java/org/keycloak/keys/GeneratedRsaKeyProviderFactory.java`; `services/src/main/java/org/keycloak/keys/GeneratedEcdsaKeyProviderFactory.java`; `services/src/main/java/org/keycloak/keys/GeneratedEddsaKeyProviderFactory.java`; `services/src/main/java/org/keycloak/keys/DefaultKeyManager.java`; `core/src/main/java/org/keycloak/common/crypto/CryptoProvider.java` |
+| **Affected File(s)** | `services/src/main/java/org/keycloak/keys/GeneratedRsaKeyProviderFactory.java`; `services/src/main/java/org/keycloak/keys/GeneratedEcdsaKeyProviderFactory.java`; `services/src/main/java/org/keycloak/keys/GeneratedEddsaKeyProviderFactory.java`; `services/src/main/java/org/keycloak/keys/DefaultKeyManager.java`; `common/src/main/java/org/keycloak/common/crypto/CryptoProvider.java` |
 | **GitHub Issue** | [#44142](https://github.com/keycloak/keycloak/issues/44142) / [#48824](https://github.com/keycloak/keycloak/issues/48824) |
 
 ### Description & Impact
@@ -365,7 +365,7 @@ The hardcoded lookups are replaced with a configurable or SPI-driven selection.
 
 ### Description & Impact
 
-`bcprov-jdk18on` is inherited via the Quarkus BOM (current version in use is 1.85.2 via Quarkus BOM 3.40.0.CR1) with no explicit version or Maven Enforcer minimum-version rule in Keycloak's own `pom.xml`. ML-DSA classes (`org.bouncycastle.pqc.crypto.mldsa.*`) first appeared in version 1.78. A downstream build with an older BOM version could silently drop ML-DSA support without a build-time failure.
+`bcprov-jdk18on` is inherited via the Quarkus BOM (current version in use is 1.86 via Quarkus BOM 3.40.1) with no explicit version or Maven Enforcer minimum-version rule in Keycloak's own `pom.xml`. ML-DSA classes (`org.bouncycastle.pqc.crypto.mldsa.*`) first appeared in version 1.78. A downstream build with an older BOM version could silently drop ML-DSA support without a build-time failure.
 
 ### Resolution Criteria
 
@@ -384,7 +384,7 @@ An Enforcer rule pinning `bcprov-jdk18on ≥ 1.78` is present in `pom.xml`.
 
 ### Description & Impact
 
-`decodeClientJWT()` (line 123) selects a realm private key by `KeyUse.ENC` (lines 139, 144) and passes it directly to the JWE engine. No ML-KEM `CekManagementProviderFactory` exists and the realm cannot hold an ML-KEM ENC key. A client wishing to send an encrypted JAR using ML-KEM key encapsulation cannot do so. Distinct from GAP-4 (outbound) — this is *inbound* decryption.
+`decodeClientJWT()` (line 122) selects a realm private key by `KeyUse.ENC` (lines 144, 150) and passes it directly to the JWE engine. No ML-KEM `CekManagementProviderFactory` exists and the realm cannot hold an ML-KEM ENC key. A client wishing to send an encrypted JAR using ML-KEM key encapsulation cannot do so. Distinct from GAP-4 (outbound) — this is *inbound* decryption.
 
 ### Resolution Criteria
 
@@ -398,12 +398,12 @@ An ML-KEM decapsulation path is present in `decodeClientJWT()` (contingent on GA
 |-------|-------|
 | **Severity** | MEDIUM |
 | **Domains Affected** | 4 |
-| **Affected File(s)** | `services/src/main/java/org/keycloak/protocol/oidc/endpoints/UserInfoEndpoint.java` (lines 341, 379–380) |
+| **Affected File(s)** | `services/src/main/java/org/keycloak/protocol/oidc/endpoints/UserInfoEndpoint.java` (lines 348, 386–387) |
 | **GitHub Issue** | [#48821](https://github.com/keycloak/keycloak/issues/48821) (create sub-issue); document in [#48823](https://github.com/keycloak/keycloak/issues/48823) |
 
 ### Description & Impact
 
-Signing: `signatureAlgorithm(TokenCategory.USERINFO)` (line 341) resolves only the per-client `userinfo.response.signature.alg` attribute, then falls back to the realm default (`RS256`). Unlike ID tokens, there is no automatic inheritance — each client's explicit attribute must be updated independently during migration. Encryption: `jweFromContent()` uses `CekManagementProvider` SPI (lines 379–380, no ML-KEM provider, same as GAP-4) but in a separate class and code path. UserInfo encryption is a confirmed hard gap requiring explicit testing once GAP-4 is resolved.
+Signing: `signatureAlgorithm(TokenCategory.USERINFO)` (line 348) resolves only the per-client `userinfo.response.signature.alg` attribute, then falls back to the realm default (`RS256`). Unlike ID tokens, there is no automatic inheritance — each client's explicit attribute must be updated independently during migration. Encryption: `jweFromContent()` uses `CekManagementProvider` SPI (lines 386–387, no ML-KEM provider, same as GAP-4) but in a separate class and code path. UserInfo encryption is a confirmed hard gap requiring explicit testing once GAP-4 is resolved.
 
 ### Resolution Criteria
 
@@ -588,16 +588,16 @@ The `KeyType.RSA` guard is removed or an AKP path is added.
 |-------|-------|
 | **Severity** | MEDIUM |
 | **Domains Affected** | 24 |
-| **Affected File(s)** | `core/src/main/java/org/keycloak/mdoc/MdocAlgorithm.java`; `services/src/main/java/org/keycloak/protocol/oid4vc/model/CredentialSigningAlgorithmResolver.java` |
+| **Affected File(s)** | `core/src/main/java/org/keycloak/mdoc/MdocAlgorithm.java`; `services/src/main/java/org/keycloak/protocol/oid4vc/model/CredentialSigningAlgorithmResolver.java`; `core/src/main/java/org/keycloak/mdoc/MdocDeviceKey.java` |
 | **GitHub Issue** | Under [#48821](https://github.com/keycloak/keycloak/issues/48821) (create sub-issue) |
 
 ### Description & Impact
 
-`MdocCredentialSigner` signs ISO 18013-5 mdoc credentials via `AbstractCredentialSigner.getSigner()` (the standard `SignatureProvider` SPI path). However, `MdocAlgorithm.java` contains the JOSE&rarr;COSE algorithm mapping and currently lists only classical algorithms: RS256, RS384, RS512, PS256, PS384, PS512, ES256, ES384, ES512, EdDSA &mdash; no ML-DSA entry. `CredentialSigningAlgorithmResolver` uses `MdocAlgorithm.getSupportedJoseAlgorithms()` to filter available realm keys, meaning ML-DSA keys will not be advertised or selected for mdoc signing even once ML-DSA providers exist.
+`MdocCredentialSigner` signs ISO 18013-5 mdoc credentials via `AbstractCredentialSigner.getSigner()` (the standard `SignatureProvider` SPI path). However, `MdocAlgorithm.java` contains the JOSE&rarr;COSE algorithm mapping and currently lists only classical algorithms: RS256, RS384, RS512, PS256, PS384, PS512, ES256, ES384, ES512, EdDSA &mdash; no ML-DSA entry. `CredentialSigningAlgorithmResolver` uses `MdocAlgorithm.getSupportedJoseAlgorithms()` to filter available realm keys, meaning ML-DSA keys will not be advertised or selected for mdoc signing even once ML-DSA providers exist. Separately, `MdocDeviceKey.fromProofJwk()` converts the holder proof JWK into a COSE_Key and supports only `KeyType.EC`, `RSA` and `OKP` (Ed25519); any other type (including `AKP`) throws `MdocException("Unsupported proof key type for mDoc COSE_Key")`. This is a second, holder-side ML-DSA blocker for mdoc, distinct from the issuer-side `MdocAlgorithm` mapping. `MdocCose.sign1()` writes the COSE `alg` header from `MdocAlgorithm` and inherits the same allow-list.
 
 ### Resolution Criteria
 
-An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) appears in `MdocAlgorithm.java`.
+An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) appears in `MdocAlgorithm.java`, and `MdocDeviceKey.fromProofJwk()` accepts `KeyType.AKP` proof keys and produces a valid COSE_Key.
 
 ---
 

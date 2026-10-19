@@ -2,7 +2,7 @@
 
 **Parent Feature Issue:** [#43690 - Post-Quantum Cryptography (PQC) readiness](https://github.com/keycloak/keycloak/issues/43690)
 
-**Last Updated:** 2026-09-24
+**Last Updated:** 2026-10-17
 
 ---
 
@@ -12,7 +12,7 @@
 
 | Tracked Issues | 🟢 Open | 🟣 Closed | Domains Analysed | 🔴 New Issues Needed |
 |:-:|:-:|:-:|:-:|:-:|
-| **62** | **47** | **15** | **63** | **31** |
+| **63** | **47** | **16** | **63** | **31** |
 
 ---
 
@@ -27,12 +27,12 @@ Top-level feature issue tracking full PQC readiness for Keycloak.
 
 | Issue | Title | Status | Type | Progress | Sub-Issues | Gaps |
 |-------|-------|--------|------|----------|------------|------|
-| [#43691](https://github.com/keycloak/keycloak/issues/43691) | Hybrid key exchange in TLS 1.3 | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | milestone | N/A | **6** | |
+| [#43691](https://github.com/keycloak/keycloak/issues/43691) | Hybrid key exchange in TLS 1.3 | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | milestone | 3 of 6 | **6** | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50674](https://github.com/keycloak/keycloak/issues/50674) | Adopt Quarkus PQC TLS support and adapt Keycloak configuration | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50677](https://github.com/keycloak/keycloak/issues/50677) | Add OpenSSL libraries to Keycloak container image | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50676](https://github.com/keycloak/keycloak/issues/50676) | Add database TLS test coverage and verify JDBC driver PQC compatibility | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#50675](https://github.com/keycloak/keycloak/issues/50675) | Determine Infinispan PQC path for Hot Rod client and server transport | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#49968](https://github.com/keycloak/keycloak/issues/49968) | Switch internal HTTP client from Apache to Vert.x/Netty | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#49968](https://github.com/keycloak/keycloak/issues/49968) | Switch internal HTTP client from Apache to Vert.x/Netty | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#51255](https://github.com/keycloak/keycloak/issues/51255) | PQC for OTLP exporter - support hybrid key exchange and enforcing of PQC modes | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | [#45168](https://github.com/keycloak/keycloak/issues/45168) | Review what is needed for PQC readiness in Keycloak | <span style="color: #d97706; font-weight: bold;">🔵 OPEN</span> | spike | 7 of 12 | **12** | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48819](https://github.com/keycloak/keycloak/issues/48819) | Create inventory of cryptography in Keycloak | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
@@ -237,4 +237,4 @@ The following domains are covered by issues in the hierarchy:
 ---
 
 **Analysis Source:** `pqc_overview.html` (63 domains analyzed)
-**GitHub Issue Hierarchy:** Verified from GitHub API (2026-09-24)
+**GitHub Issue Hierarchy:** Verified from GitHub API (2026-10-17)

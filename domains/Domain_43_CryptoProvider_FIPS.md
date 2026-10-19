@@ -8,13 +8,13 @@ FIPS-mode cryptography provider using BouncyCastle FIPS (`bc-fips`). Used when K
 
 ## Gap
 
-**BC-FIPS 2.1.2 lacks ML-DSA/ML-KEM (GAP-6).**
+**BC-FIPS 2.1.3 lacks ML-DSA/ML-KEM (GAP-6).**
 
-**Current version:** `bc-fips` **2.1.2** (pinned in root `pom.xml` line 78)
+**Current version:** `bc-fips` **2.1.3** (pinned in root `pom.xml` line 78)
 
 **PQC support status:**
 
-Confirmed by JAR inspection: `bc-fips-2.1.2.jar` contains **only LMS** under `org.bouncycastle.crypto.internal.pqc/`. 
+Confirmed by JAR inspection: `bc-fips-2.1.3.jar` contains **only LMS** under `org.bouncycastle.crypto.internal.pqc/`. 
 
 **No ML-DSA classes.**  
 **No ML-KEM classes.**

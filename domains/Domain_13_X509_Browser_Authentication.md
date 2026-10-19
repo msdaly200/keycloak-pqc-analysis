@@ -72,7 +72,7 @@ These are OID-based checks on certificate extensions — no cryptographic operat
 This domain shares the **exact same conclusion** as Domain 11 (X.509 mTLS Client Authentication):
 
 - **Non-FIPS mode**: BouncyCastle (default crypto provider) can parse and validate ML-DSA/FN-DSA/SLH-DSA certificates today (BC 1.79+)
-- **FIPS mode**: BouncyCastle FIPS (BC-FIPS) version 2.1.2 does **not yet support PQC certificates** — this is a hard blocker for FIPS deployments
+- **FIPS mode**: BouncyCastle FIPS (BC-FIPS) version 2.1.3 does **not yet support PQC certificates** — this is a hard blocker for FIPS deployments
 
 This FIPS blocker is tracked as **GAP-6** across all certificate-based authentication domains.
 

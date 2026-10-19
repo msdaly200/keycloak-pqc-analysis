@@ -44,7 +44,7 @@ OCSP responses are verified using BouncyCastle's `OCSPProvider` (line 209, 226 i
 Keycloak's X.509 mTLS client authentication code does not contain any hardcoded algorithm assumptions or quantum-vulnerable operations. The certificate's signing algorithm is determined by the issuing CA, not by Keycloak. 
 
 - **Non-FIPS mode**: BouncyCastle (the default crypto provider) can parse and validate ML-DSA/FN-DSA/SLH-DSA certificates today (as of BC 1.79+).
-- **FIPS mode**: BouncyCastle FIPS (BC-FIPS) version 2.1.2 (current as of this analysis) does **not yet support PQC certificates**. FIPS deployments are **hard-blocked** until BC-FIPS 2.x ships with ML-DSA/FN-DSA/SLH-DSA certificate support.
+- **FIPS mode**: BouncyCastle FIPS (BC-FIPS) version 2.1.3 (current as of this analysis) does **not yet support PQC certificates**. FIPS deployments are **hard-blocked** until BC-FIPS 2.x ships with ML-DSA/FN-DSA/SLH-DSA certificate support.
 
 This FIPS blocker is tracked as **GAP-6** across all certificate-based authentication domains (rows 11, 13).
 

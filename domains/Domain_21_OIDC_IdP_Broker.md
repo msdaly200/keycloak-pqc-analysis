@@ -15,7 +15,7 @@ When Keycloak acts as an OIDC/OAuth2 client federating with an external Identity
 
 ### Hardcoded RS256 fallback (GAP-10)
 
-**File:** `AbstractOAuth2IdentityProvider.java` (line 697)
+**File:** `AbstractOAuth2IdentityProvider.java` (line 977)
 
 ```java
 String alg = getConfig().getClientAssertionSigningAlg() != null ? getConfig().getClientAssertionSigningAlg() : Algorithm.RS256;
@@ -38,9 +38,9 @@ The fallback algorithm for `private_key_jwt` broker assertions is hardcoded to `
 
 GAP-10 technically includes **two** hardcoded fallbacks in this file:
 - **Line 689:** `Algorithm.HS256` for `client_secret_jwt` (symmetric, not PQC-relevant)
-- **Line 697:** `Algorithm.RS256` for `private_key_jwt` (asymmetric, PQC-relevant)
+- **Line 977:** `Algorithm.RS256` for `private_key_jwt` (asymmetric, PQC-relevant)
 
-This domain focuses on line 697 (asymmetric signing) since HS256 is quantum-safe (symmetric algorithms are not vulnerable to Shor's algorithm).
+This domain focuses on line 977 (asymmetric signing) since HS256 is quantum-safe (symmetric algorithms are not vulnerable to Shor's algorithm).
 
 ## Current PQC State
 
@@ -67,7 +67,7 @@ This domain focuses on line 697 (asymmetric signing) since HS256 is quantum-safe
 ### What's blocked
 
 4. **Outbound client assertion signing** (default behavior)
-   - Hardcoded RS256 fallback (line 697)
+   - Hardcoded RS256 fallback (line 977)
    - No way to change the global default
    - Requires manual configuration per broker to use ML-DSA
 
@@ -75,7 +75,7 @@ This domain focuses on line 697 (asymmetric signing) since HS256 is quantum-safe
 
 ### Change: Make outbound broker assertion algorithm configurable
 
-**File:** `AbstractOAuth2IdentityProvider.java` (line 697)
+**File:** `AbstractOAuth2IdentityProvider.java` (line 977)
 
 **Proposed fix:**
 ```java
@@ -104,7 +104,7 @@ Add configuration attribute to OIDC IdP broker settings for `client_assertion_si
 Create a sub-issue under [#43690](https://github.com/keycloak/keycloak/issues/43690):
 - **Title:** "OIDC IdP Broker: make RS256 fallback configurable for private_key_jwt assertions"
 - **Description:**
-  > `AbstractOAuth2IdentityProvider.java` line 697 hardcodes `Algorithm.RS256` as the fallback when `clientAssertionSigningAlg` is not configured. This means OIDC IdP brokers default to RS256 even after ML-DSA providers exist.
+  > `AbstractOAuth2IdentityProvider.java` line 977 hardcodes `Algorithm.RS256` as the fallback when `clientAssertionSigningAlg` is not configured. This means OIDC IdP brokers default to RS256 even after ML-DSA providers exist.
   >
   > **Current behavior:**
   > - If `clientAssertionSigningAlg` is explicitly set, that algorithm is used (ML-DSA will work)

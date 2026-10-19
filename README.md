@@ -45,7 +45,7 @@ Each distinct use-case was classified as an independent **domain**. 63 domains w
 
 To update `pqc_overview.html` with the latest Keycloak PQC information, please read [README_UPDATE.md](README_UPDATE.md).
 
-**Last updated:** 24 September 2026 — Review findings from `findings/pqc_overview_review_findings_2026-09-24.md` applied: updated bcprov-jdk18on version 1.84→1.85.2 in Domain 42; added GAP-31 for MdocAlgorithm missing ML-DSA mapping; added ISO mdoc signing files to Files Evaluated; verified all 63 domains and 31 GAPs against Keycloak main @ `63aeb4c98a`.
+**Last updated:** 17 October 2026 — Review findings from `findings/pqc_overview_review_findings_2026-10-17.md` applied: bc-fips 2.1.2→2.1.3 and bcprov-jdk18on 1.85.2→1.86 (Quarkus 3.40.1); corrected row 60 SOAP back-channel class to SAMLIdentityProvider.resolveArtifact(); updated GAP-10 line numbers in Domain 21; extended GAP-31 to cover MdocDeviceKey; added mdoc, RSAWrapperAlgorithmProvider, OID4VP mapper and ClaimVerifier entries to Files Evaluated; verified all 63 domains and 31 GAPs against Keycloak main @ `eb3ac9a4ba`.
 
 ## PQC Readiness Accuracy Reviews
 
@@ -53,6 +53,7 @@ The following accuracy reviews have been conducted against the live Keycloak sou
 
 | Date | PQC Changes |
 |------|-------------|
+| 2026-10-17 | [pqc_overview_review_findings_2026-10-17.md](findings/pqc_overview_review_findings_2026-10-17.md) |
 | 2026-09-24 | [pqc_overview_review_findings_2026-09-24.md](findings/pqc_overview_review_findings_2026-09-24.md) |
 | 2026-09-15 | [pqc_overview_review_findings_2026-09-15.md](findings/pqc_overview_review_findings_2026-09-15.md) |
 | 2026-08-21 | [pqc_overview_review_findings_2026-08-21.md](findings/pqc_overview_review_findings_2026-08-21.md) |
