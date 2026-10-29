@@ -10,7 +10,7 @@ Default JCE cryptography provider using BouncyCastle (`bcprov-jdk18on`). Provide
 
 **No Maven enforcer minimum-version constraint (GAP-19).**
 
-**Current version:** Keycloak uses `bcprov-jdk18on` **1.86** (inherited from Quarkus platform BOM 3.40.1 in `pom.xml`).
+**Current version:** Keycloak uses `bcprov-jdk18on` **1.86** (inherited from Quarkus platform BOM 3.40.1.1 in `pom.xml`).
 
 **PQC support:**
 - ML-DSA and ML-KEM support **first appeared in BC 1.78** (August 2024)

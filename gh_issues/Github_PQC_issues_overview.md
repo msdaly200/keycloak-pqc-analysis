@@ -2,7 +2,7 @@
 
 **Parent Feature Issue:** [#43690 - Post-Quantum Cryptography (PQC) readiness](https://github.com/keycloak/keycloak/issues/43690)
 
-**Last Updated:** 2026-10-17
+**Last Updated:** 2026-10-29
 
 ---
 
@@ -12,7 +12,7 @@
 
 | Tracked Issues | 🟢 Open | 🟣 Closed | Domains Analysed | 🔴 New Issues Needed |
 |:-:|:-:|:-:|:-:|:-:|
-| **63** | **47** | **16** | **63** | **31** |
+| **66** | **50** | **16** | **63** | **31** |
 
 ---
 
@@ -46,8 +46,11 @@ Top-level feature issue tracking full PQC readiness for Keycloak.
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48828](https://github.com/keycloak/keycloak/issues/48828) | Investigate and plan what is needed for password hashing to be PQC ready | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48829](https://github.com/keycloak/keycloak/issues/48829) | Review if there are any areas not identified around PQC readiness | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#48830](https://github.com/keycloak/keycloak/issues/48830) | Create a plan for documentation around PQC readiness | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
-| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#49851](https://github.com/keycloak/keycloak/issues/49851) | PQC modes | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | **(1)** | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#49851](https://github.com/keycloak/keycloak/issues/49851) | PQC modes | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | **(4)** | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#51132](https://github.com/keycloak/keycloak/issues/51132) | PQC Config Option design | <span style="color: #7c3aed; font-weight: bold;">🟣 CLOSED</span> | spike | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#54160](https://github.com/keycloak/keycloak/issues/54160) | Leverage PQC in Quarkus for incoming and outgoing connections | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#54164](https://github.com/keycloak/keycloak/issues/54164) | Reporting on non-PQC TLS key exchange algorithms | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
+| &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#54175](https://github.com/keycloak/keycloak/issues/54175) | Document experimental PQC modes | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | [#46333](https://github.com/keycloak/keycloak/issues/46333) | Audit and Upgrade Cryptographic Defaults | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | milestone | 0 of 1 | **1** | |
 | &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳ [#46336](https://github.com/keycloak/keycloak/issues/46336) | Cryptographic Inventory for Keycloak | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | task | N/A | 0 | |
 | [#48821](https://github.com/keycloak/keycloak/issues/48821) | PQC support for OAuth 2.0 and OpenID Connect | <span style="color: #059669; font-weight: bold;">🟢 OPEN</span> | milestone | 0 of 4 | **4** | |
@@ -155,7 +158,7 @@ Based on the comprehensive analysis of 63 domains in `pqc_overview.html`, the fo
 
 | GAP/Domain | Title | Blocker | Affected Domains |
 |------------|-------|---------|------------------|
-| **GAP-6** | FIPS 140-2 Backend — ML-DSA Availability Blocked | BC-FIPS 2.1.2 lacks ML-DSA/ML-KEM | Domains 11, 13, 43 |
+| **GAP-6** | FIPS 140-2 Backend — ML-DSA Availability Blocked | BC-FIPS 2.1.3 lacks ML-DSA/ML-KEM | Domains 11, 13, 43 |
 | **GAP-7** | OID4VC Linked Data Proof Suite — Hardcoded Ed25519 | Spec-level work needed | Domain 25 |
 | **Domain 37** | Security Event Token (SET) Signing | CAEP spec gated | Domain 37 |
 | **Domain 44** | CryptoProvider SPI — WildFly Elytron Backend | WildFly Elytron roadmap | Domain 44 |
@@ -237,4 +240,4 @@ The following domains are covered by issues in the hierarchy:
 ---
 
 **Analysis Source:** `pqc_overview.html` (63 domains analyzed)
-**GitHub Issue Hierarchy:** Verified from GitHub API (2026-10-17)
+**GitHub Issue Hierarchy:** Verified from GitHub API (2026-10-29)

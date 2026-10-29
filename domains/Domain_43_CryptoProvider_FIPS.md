@@ -19,6 +19,9 @@ Confirmed by JAR inspection: `bc-fips-2.1.3.jar` contains **only LMS** under `or
 **No ML-DSA classes.**  
 **No ML-KEM classes.**
 
+**Related note (JDK TLS, informational):** Keycloak's FIPS CI scripts (`.github/scripts/run-fips-it.sh`, `run-fips-ut.sh`) disable the JDK hybrid TLS group `X25519MLKEM768` via `-Djdk.tls.namedGroups=…` (commit `cfe4a411c5`, 2026-10-28), because JDK 25.0.5+ offers it by default and it fails in FIPS mode. This is a JSSE transport matter, not a Keycloak token/JWT/SAML code path, but it reinforces that BC-FIPS 2.1.3 cannot supply ML-KEM.
+
+
 **What's needed:**
 
 BC-FIPS PQC support (FIPS 204/203) requires a forthcoming BC-FIPS 2.x release that achieves **NIST FIPS 140-3 validation** for ML-DSA and ML-KEM algorithms.

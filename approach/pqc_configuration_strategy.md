@@ -120,7 +120,7 @@ Operator can switch to PQC on their own schedule. No coordination needed.
 | EXTERNAL DEPENDENCY| 3     | Blocked on external specs (FIDO2, CAEP, Elytron) |
 
 ## External Blockers
-- BC-FIPS 2.1.2 has no ML-DSA/ML-KEM — hard blocker for all FIPS deployments (GAP-6)
+- BC-FIPS 2.1.3 has no ML-DSA/ML-KEM — hard blocker for all FIPS deployments (GAP-6)
 - FAPI 2.0 profile has not yet included PQC algorithms (GAP-8)
 - FIDO2/WebAuthn has no PQC COSE algorithm identifiers (domain 14)
 - CAEP Interoperability Profile pins RS256 (domain 37)

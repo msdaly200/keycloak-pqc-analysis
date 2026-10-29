@@ -17,9 +17,9 @@ Keycloak's implementation aligns with the [OpenID4VC High Assurance Interoperabi
 
 **Two gaps prevent end-to-end ML-DSA support:**
 
-### Gap 1: Algorithm enforcement TODO (line 418)
+### Gap 1: Algorithm enforcement TODO (lines 423–424)
 
-**File:** `AttestationBasedClientAuthenticator.java` (line 418)
+**File:** `AttestationBasedClientAuthenticator.java` (lines 423–424)
 
 ```java
 // [TODO] The alg JOSE Header Parameter for both JWTs indicates a registered asymmetric digital signature algorithm
@@ -78,7 +78,7 @@ Both verification paths are **SPI-driven** and will support ML-DSA automatically
 - Line 332-339: `toPublicKeyWrapper()` converts the `cnf.jwk` into a `KeyWrapper` — this is algorithm-agnostic and will work with ML-DSA JWKs once `JWKParser` supports them
 
 **What's missing:**
-- Algorithm-type enforcement (TODO at line 418)
+- Algorithm-type enforcement (TODO at lines 423–424)
 - JWK thumbprint support for AKP keys (GAP-1)
 
 ## Required Changes
@@ -179,11 +179,11 @@ This requires defining `AKPPublicJWK` constants (similar to `OKPPublicJWK`) — 
 **Partially tracked:**
 - The SPI-driven verification path is covered by the core ML-DSA provider work under **#48824**
 - **GAP-1** (JWK thumbprint for AKP) is identified but not yet tracked by a GitHub issue — needs a new sub-issue under #43690
-- **GAP-22** (algorithm enforcement TODO at line 418) is identified in the overview table but not yet tracked — should be created as a sub-issue under #43690 or #48824
+- **GAP-22** (algorithm enforcement TODO at lines 423–424) is identified in the overview table but not yet tracked — should be created as a sub-issue under #43690 or #48824
 
 **Recommended new issue:**
 - Title: "Attestation-Based Client Auth: enforce asymmetric algorithm requirement and add AKP JWK thumbprint support"
-- Description: "Complete PQC readiness for Domain 12 (Attestation-Based Client Authentication) by implementing the algorithm-type enforcement TODO at line 418 and adding AKP key support to JWKSUtils.computeThumbprint(). Both changes are required before ML-DSA client instance keys can be used in the `cnf.jwk` claim."
+- Description: "Complete PQC readiness for Domain 12 (Attestation-Based Client Authentication) by implementing the algorithm-type enforcement TODO at lines 423–424 and adding AKP key support to JWKSUtils.computeThumbprint(). Both changes are required before ML-DSA client instance keys can be used in the `cnf.jwk` claim."
 - Should reference both **GAP-1** and **GAP-22**
 
 ## Related Domains

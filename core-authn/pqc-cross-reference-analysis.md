@@ -364,7 +364,7 @@ The following domains and gaps have **no existing GitHub issue** and need new is
 
 **15. GAP-22 — Attestation-Based Client Auth: Algorithm Enforcement TODO**
 - **Affected domain:** 12
-- **The problem:** `AttestationBasedClientAuthenticator.java` has an unimplemented `[TODO]` at line 418 for algorithm-type enforcement. The check that client attestations must use an asymmetric algorithm is not yet coded.
+- **The problem:** `AttestationBasedClientAuthenticator.java` has an unimplemented `[TODO]` at lines 423–424 for algorithm-type enforcement. The check that client attestations must use an asymmetric algorithm is not yet coded.
 - **Suggested parent:** Sub-issue under `#48824` or `#43692`
 
 ---
@@ -464,7 +464,7 @@ The following domains and gaps have **no existing GitHub issue** and need new is
 ---
 
 **28. GAP-6 — FIPS 140-2 Backend: BC-FIPS 2.x with ML-DSA/ML-KEM**
-- BC-FIPS 2.1.2 contains only LMS under PQC; no ML-DSA or ML-KEM classes. Awaiting BC-FIPS release with FIPS 140-3 validated PQC algorithms. Keycloak cannot unblock this. A tracking issue to monitor BC-FIPS releases and coordinate the version upgrade would be valuable.
+- BC-FIPS 2.1.3 contains only LMS under PQC; no ML-DSA or ML-KEM classes. Awaiting BC-FIPS release with FIPS 140-3 validated PQC algorithms. Keycloak cannot unblock this. A tracking issue to monitor BC-FIPS releases and coordinate the version upgrade would be valuable.
 
 **29. GAP-7 — OID4VC Linked Data Proof Suite: ML-DSA Cryptographic Suite**
 - A new ML-DSA LD cryptographic suite would need to be implemented. Currently spec-level work. Requires a dedicated tracking issue once the W3C Data Integrity spec defines a PQC suite.

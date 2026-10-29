@@ -105,7 +105,7 @@ This is a **CRITICAL** blocker because DPoP is a widely deployed client authenti
 
 `AttestationBasedClientAuthenticator.java` has two independent PQC gaps:
 
-1. **Unimplemented `[TODO]` at line 418** — algorithm-type enforcement for client assertion JWTs is not implemented. The comment marks the enforcement as intended but deferred.
+1. **Unimplemented `[TODO]` at lines 423–424** — algorithm-type enforcement for client assertion JWTs is not implemented. The comment marks the enforcement as intended but deferred.
 2. **AKP `cnf.jwk` thumbprint failure** — when the `cnf.jwk` claim contains an ML-DSA (AKP) key, the call to `JWKSUtils.computeThumbprint()` throws `UnsupportedOperationException` (GAP-1), halting the attestation flow entirely before verification can proceed.
 
 Together these gaps mean attestation-based client authentication cannot be used with ML-DSA keys.
@@ -124,7 +124,7 @@ Both the SPI-driven signature verification (step 3) and the algorithm enforcemen
 
 **In scope:**
 - Fix the `cnf.jwk` → `KeyWrapper` conversion and thumbprint computation path to handle `KeyType.AKP` keys (depends on Issue 1).
-- Implement the deferred algorithm enforcement at line 418: validate that the key algorithm in `cnf.jwk` matches or is at least as strong as the realm's configured minimum algorithm requirement.
+- Implement the deferred algorithm enforcement at lines 423–424: validate that the key algorithm in `cnf.jwk` matches or is at least as strong as the realm's configured minimum algorithm requirement.
 - Unit/integration tests covering:
   - Attestation auth with an ML-DSA AKP `cnf.jwk` key.
   - Rejection of a classical (RSA) `cnf.jwk` key when realm policy mandates ML-DSA or stronger.
@@ -138,7 +138,7 @@ Both the SPI-driven signature verification (step 3) and the algorithm enforcemen
 #### Acceptance Criteria
 
 - [ ] `AttestationBasedClientAuthenticator` successfully processes an attestation JWT whose `cnf.jwk` contains an AKP (ML-DSA) public key without throwing `UnsupportedOperationException`.
-- [ ] The algorithm enforcement at line 418 is implemented: if the realm has a PQC-minimum algorithm requirement configured, assertion keys that do not meet it are rejected with a descriptive error.
+- [ ] The algorithm enforcement at lines 423–424 is implemented: if the realm has a PQC-minimum algorithm requirement configured, assertion keys that do not meet it are rejected with a descriptive error.
 - [ ] When no algorithm policy is set, the flow behaves identically to today (backward compatible).
 - [ ] New integration test: attestation-based client auth succeeds end-to-end with an ML-DSA key pair (once ML-DSA `SignatureProviderFactory` is available; test may be gated with an `@RequireProvider` annotation until then).
 - [ ] No regression in existing attestation-based client auth tests.
@@ -231,13 +231,13 @@ NIST FIPS 204 (ML-DSA) is a standardised post-quantum digital signature algorith
 
 #### Summary
 
-Both X.509-based authentication flows owned by core-authn — **X.509 Browser Authentication** (`CertificateValidator`, Domain 13) and **X.509 mTLS Client Authentication** (`AbstractX509ClientCertificateAuthenticator`, Domain 11) — are fully PQC-ready in non-FIPS mode, because `CertPathBuilder` delegation through `CryptoProvider` is algorithm-agnostic. However, both are **hard-blocked in FIPS-regulated deployments**: BC-FIPS 2.1.2 (currently pinned in `pom.xml`) does not contain ML-DSA or ML-KEM classes. FIPS 140-3 validation for these algorithms requires a forthcoming BC-FIPS 2.x release.
+Both X.509-based authentication flows owned by core-authn — **X.509 Browser Authentication** (`CertificateValidator`, Domain 13) and **X.509 mTLS Client Authentication** (`AbstractX509ClientCertificateAuthenticator`, Domain 11) — are fully PQC-ready in non-FIPS mode, because `CertPathBuilder` delegation through `CryptoProvider` is algorithm-agnostic. However, both are **hard-blocked in FIPS-regulated deployments**: BC-FIPS 2.1.3 (currently pinned in `pom.xml`) does not contain ML-DSA or ML-KEM classes. FIPS 140-3 validation for these algorithms requires a forthcoming BC-FIPS 2.x release.
 
 This issue tracks the dependency, defines the migration plan, and ensures core-authn is prepared to test and validate these flows as soon as BC-FIPS support becomes available.
 
 #### Background / Context
 
-Keycloak's FIPS 140-2/3 deployment mode routes all cryptographic operations through `FIPS1402Provider`. Inspection of the BC-FIPS 2.1.2 JAR confirms it contains only LMS under `org.bouncycastle.crypto.internal.pqc` — no ML-DSA (`FIPS 204`) and no ML-KEM (`FIPS 203`) classes are present. This means:
+Keycloak's FIPS 140-2/3 deployment mode routes all cryptographic operations through `FIPS1402Provider`. Inspection of the BC-FIPS 2.1.3 JAR confirms it contains only LMS under `org.bouncycastle.crypto.internal.pqc` — no ML-DSA (`FIPS 204`) and no ML-KEM (`FIPS 203`) classes are present. This means:
 
 - **X.509 Browser Authentication:** In FIPS mode, `CertificateValidator` cannot validate a certificate chain where any certificate uses an ML-DSA key, because the underlying JVM security provider does not support ML-DSA key parsing or signature verification. This affects regulated deployments where a CA has issued ML-DSA end-entity certificates.
 - **X.509 mTLS Client Authentication:** Same constraint — mTLS handshakes presenting ML-DSA client certificates will fail in FIPS mode.
