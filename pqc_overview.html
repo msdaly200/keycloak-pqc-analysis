@@ -2243,89 +2243,223 @@ domain table above.</p>
 </ul>
 
 <h3 style="font-size:15px; margin: 24px 0 8px;">New GitHub Issues Needed</h3>
-<p style="font-size:12px; margin:0 0 12px 0; line-height:1.5;">Based on the complete analysis, these new issues should be created under <a href="https://github.com/keycloak/keycloak/issues/43690">#43690</a>. Issues marked ✅ have been filed.</p>
+<p style="font-size:12px; margin:0 0 12px 0; line-height:1.5;">All 31 gaps identified across the 63-domain analysis. Issues marked ✅ have been filed; <code>—</code> still needs a new issue. <strong>17 still needed</strong> (14 code fixes + 3 external, 1 external already tracked). Gaps blocked on external specs or libraries are in the second table below.</p>
 
-<table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:24px;">
+<table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:8px;">
 <thead>
 <tr>
   <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:60px; text-align:center;">Priority</th>
-  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:120px;">Gap/Domain</th>
+  <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:80px;">Gap</th>
   <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328;">Title</th>
   <th style="background:#1f2328; color:#fff; padding:8px 9px; border:1px solid #1f2328; width:90px; text-align:center;">Issue</th>
 </tr>
 </thead>
 <tbody>
 <tr style="background:#f0fdf4;">
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">CRIT</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">HIGH</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-1</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JWK Thumbprint for AKP (ML-DSA) Keys</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/52815" style="color:#3b82d4;">#52815</a></td>
 </tr>
-<tr>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#d97706; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-4</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">ML-KEM CekManagementProvider for OIDC Token Encryption</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+<tr style="background:#f0fdf4;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-2</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">SAML Signing — No PQC Algorithm Entries in SignatureAlgorithm enum</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/50294" style="color:#3b82d4;">#50294</a></td>
 </tr>
-<tr style="background:#f7f8fa;">
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#d97706; font-weight:600;">HIGH</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-9</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">SAML: Replace Hardcoded RS256 Key Selection (3rd sub-issue under #50292)</td>
+<tr style="background:#f0fdf4;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-3</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">SAML Encryption — No ML-KEM Key Wrapping in XMLEncryptionUtil</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/50295" style="color:#3b82d4;">#50295</a></td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-4</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JWE Key Management — No ML-KEM CekManagementProvider</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
 </tr>
 <tr style="background:#f0fdf4;">
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#d97706; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-8</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">FAPI / Client Policy Allowlist — ML-DSA Actively Blocked</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/52819" style="color:#3b82d4;">#52819</a></td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-9</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">SAML Protocol — Hardcoded RS256 Key Lookup (4 call sites)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
+<tr style="background:#f0fdf4;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-15</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Realm Key Management — No ML-DSA Key Generation Provider</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/44142" style="color:#3b82d4;">#44142</a></td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-24</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">OID4VP — Hardcoded ES256 Signing / ACCEPTED_ALGORITHMS blocks ML-DSA</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
+<tr style="background:#f0fdf4;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">HIGH</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-26</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JWKS Endpoint: Add AKP Branch to JWKSServerUtils.toJwk()</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JWKS Endpoint — AKP Branch Missing in JWKSServerUtils.toJwk()</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/52815" style="color:#3b82d4;">#52815</a></td>
 </tr>
 <tr style="background:#f0fdf4;">
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#d97706; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">HIGH</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-30</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Client Signature Verifier: Add AKP Support / Remove RSA-Only Guard</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Client Signature Verifier — RSA Guard Blocks AKP Keys</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/52817" style="color:#3b82d4;">#52817</a></td>
 </tr>
-<tr style="background:#f7f8fa;">
+<tr style="background:#f0fdf4;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-5, GAP-16</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Keystore Import: Add ML-DSA Support (Domains 33-34)</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-5</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JavaKeystoreKeyProvider — ML-DSA Key Import Missing AKP Branch</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/50679" style="color:#3b82d4;">#50679</a></td>
 </tr>
 <tr>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Domains 29, 32</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">ML-KEM Key Generation Provider (Separate from GAP-15)</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-7</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">OID4VC Linked Data Proof Suite — Hardcoded Ed25519, No ML-DSA Suite</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
+<tr style="background:#f0fdf4;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-10</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">IdP Broker — Hardcoded RS256/HS256 Fallback for Client Assertion Signing</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/52818" style="color:#3b82d4;">#52818</a></td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-12</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Constants.DEFAULT_SIGNATURE_ALGORITHM — RS256 Fallback Migration Risk</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-13</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Admin CLI &amp; Authz Client — Hardcoded RS256 / No --sigalg Parameter</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
+<tr style="background:#f0fdf4;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-16</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JavaKeystoreKeyProviderFactory — ML-DSA Excluded from Admin UI Algorithm List</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/50679" style="color:#3b82d4;">#50679</a></td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-18</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JwtCNonceHandler — c_nonce Signing Hardcoded ES256/RS256</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
 </tr>
 <tr style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-19</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Maven Enforcer: bcprov-jdk18on ≥ 1.78 Minimum Version</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">No Minimum-Version Constraint on bcprov-jdk18on — Silent ML-DSA Regression Risk</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
 </tr>
 <tr>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-23</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">OIDC Discovery: Make DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED Dynamic</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-20</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JAR Encrypted Request Object — No ML-KEM Inbound Decryption Path</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-21</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">UserInfo Endpoint — Per-Client Signing Attribute Doesn't Inherit Realm Default</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
 </tr>
 <tr style="background:#f0fdf4;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-22</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Attestation-Based Client Auth: Enforce Asymmetric Algorithm Requirement</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Attestation-Based Client Auth — Algorithm Enforcement TODO Not Implemented</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/52816" style="color:#3b82d4;">#52816</a></td>
 </tr>
-<tr style="background:#f7f8fa;">
+<tr>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-27</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Admin API: Client Keypair Generation Algorithm Parameter</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Admin API — Client Keypair Generation Hardcodes RSA</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
 </tr>
 <tr style="background:#f0fdf4;">
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">LOW</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-28, GAP-29</td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Client SDK: Add AKP Support to JWTClientCredentialsProvider & DPoPGenerator</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-28</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Client SDK — JWTClientCredentialsProvider Missing AKP Case</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/52821" style="color:#3b82d4;">#52821</a></td>
+</tr>
+<tr style="background:#f0fdf4;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-29</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Client SDK — DPoPGenerator No ML-DSA Convenience Path</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/52821" style="color:#3b82d4;">#52821</a></td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-31</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">MdocAlgorithm — No ML-DSA COSE Mapping for mdoc Credential Signing</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#374151; font-weight:600;">LOW</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-11</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Dynamic Client Registration — RS256 Special-Case Logic Excludes ML-DSA</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#374151; font-weight:600;">LOW</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-14</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JGroups ASYM_ENCRYPT — RSA Cluster Key Exchange in Example Config</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#374151; font-weight:600;">LOW</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-23</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">OIDC Discovery — Hardcoded RS256 CIBA Constant Not Dynamic</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
+</tbody>
+</table>
+
+<h4 style="font-size:13px; margin: 20px 0 6px; color:#374151; font-weight:600;">External Dependencies / Spec-Gated</h4>
+<p style="font-size:12px; margin:0 0 8px 0; line-height:1.5;">These gaps cannot be fixed in Keycloak until a third-party spec or library delivers the prerequisite. Each still needs a GitHub tracking issue.</p>
+
+<table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:24px;">
+<thead>
+<tr>
+  <th style="background:#374151; color:#fff; padding:8px 9px; border:1px solid #374151; width:60px; text-align:center;">Priority</th>
+  <th style="background:#374151; color:#fff; padding:8px 9px; border:1px solid #374151; width:80px;">Gap</th>
+  <th style="background:#374151; color:#fff; padding:8px 9px; border:1px solid #374151;">Title</th>
+  <th style="background:#374151; color:#fff; padding:8px 9px; border:1px solid #374151; width:160px;">Blocker</th>
+  <th style="background:#374151; color:#fff; padding:8px 9px; border:1px solid #374151; width:90px; text-align:center;">Issue</th>
+</tr>
+</thead>
+<tbody>
+<tr style="background:#f0fdf4;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#991b1b; font-weight:600;">HIGH</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-6</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">FIPS 140-2 Backend — BC-FIPS 2.1.3 Lacks ML-DSA/ML-KEM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">BC-FIPS library — awaiting FIPS 140-3 validated PQC release</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/49820" style="color:#3b82d4;">#49820</a></td>
+</tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-17</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">FAPI / CIBA Executor Factories — ML-DSA Blocked in Admin UI Algorithm Lists</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Depends on GAP-8 / FAPI 2.0 spec adopting ML-DSA</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#374151; font-weight:600;">LOW</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-25</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">OID4VP — ECDH-ES/secp256r1 Response Encryption Hardcoded</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">HAIP spec — awaiting ML-KEM mandate in High Assurance Interop Profile</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
 </tr>
 </tbody>
 </table>

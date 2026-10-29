@@ -160,7 +160,7 @@
     <div class="stat-label">Domains Analysed</div>
   </div>
   <div class="stat">
-    <div class="stat-number" style="color:#991b1b;">31</div>
+    <div class="stat-number" style="color:#991b1b;">17</div>
     <div class="stat-label">New Issues Needed</div>
   </div>
 </div>
@@ -255,35 +255,31 @@
 </div>
 
 <!-- ── New issues needed summary ── -->
-<h2>New Issues Needed — 31 Total</h2>
+<h2>New Issues Needed — 17 Total</h2>
+<p style="font-size:12px; color:#57606a; margin:-8px 0 16px;">14 gaps already filed (✅). 17 remaining: 14 code fixes + 3 external/spec-gated (1 external already tracked by <a href="https://github.com/keycloak/keycloak/issues/49820">#49820</a>).</p>
 <table>
   <thead>
     <tr>
       <th>Priority</th>
-      <th>Count</th>
-      <th>Examples</th>
+      <th>Unfiled</th>
+      <th>Gaps needing new issues</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td class="priority-high">HIGH</td>
-      <td>11</td>
-      <td>GAP-1 JWK Thumbprint · GAP-2 SAML signing · GAP-3 SAML ML-KEM · GAP-4 ML-KEM CekManagement · GAP-6 BC-FIPS · GAP-8 FAPI allowlist · GAP-9 SAML RS256 · GAP-15 ML-DSA keygen · GAP-24 OID4VP ES256 · GAP-26 JWKS endpoint · GAP-30 Client sig verifier</td>
+      <td>3</td>
+      <td>GAP-4 ML-KEM CekManagement · GAP-9 SAML RS256 hardcoded · GAP-24 OID4VP ES256 hardcoded</td>
     </tr>
     <tr>
       <td class="priority-medium">MEDIUM</td>
-      <td>15</td>
-      <td>GAP-5/16 Keystore import · GAP-7 OID4VC Ed25519 · GAP-10/12/13/17/18/19/20/21/22 · GAP-27 Admin API · GAP-28/29 Client SDK</td>
+      <td>10</td>
+      <td>GAP-7 OID4VC Ed25519 · GAP-12 DEFAULT_SIGNATURE_ALGORITHM · GAP-13 Admin CLI RS256 · GAP-18 c_nonce hardcoded · GAP-19 bcprov enforcer · GAP-20 JAR ML-KEM inbound · GAP-21 UserInfo signing · GAP-27 Admin API keypair · GAP-31 MdocAlgorithm · GAP-17 FAPI/CIBA UI (external)</td>
     </tr>
     <tr>
       <td class="priority-low">LOW</td>
-      <td>3</td>
-      <td>GAP-11 DCR RS256 · GAP-14 JGroups · GAP-23 OIDC Discovery</td>
-    </tr>
-    <tr>
-      <td class="priority-external">EXTERNAL DEPENDENCY</td>
-      <td>1</td>
-      <td>GAP-25 OID4VP ECDH-ES/secp256r1 (HAIP spec-gated)</td>
+      <td>4</td>
+      <td>GAP-11 DCR RS256 · GAP-14 JGroups · GAP-23 OIDC Discovery · GAP-25 OID4VP ECDH-ES (external)</td>
     </tr>
   </tbody>
 </table>

@@ -83,7 +83,14 @@ The document uses a **table-based hierarchy** format:
    - Update **Domains Analysed** by reading `pqc_overview.html`:
      - Search for the heading matching the pattern `Analysis Complete — All <N> Domains` — the number `<N>` is the current domain count
    - Update **🔴 New Issues Needed** by reading `pqc_overview.html`:
-     - Count the number of `<tr id="gap-N">` rows in the PQC Gap Reference table — each row is one identified gap that requires a new GitHub issue
+      - Do **not** count `<tr id="gap-N">` rows — that is the total gap catalogue and includes already-filed gaps.
+      - Instead, count rows in the **two "New GitHub Issues Needed" tables** in `pqc_overview.html`:
+        1. **Main table** (gaps that need a new GitHub issue): count rows whose Issue cell shows `—` (not yet filed) **plus** rows whose Issue cell shows a ✅ link (already filed — they are real gaps even if covered). Total of all rows in this table = gaps requiring code action.
+        2. **External Dependencies / Spec-Gated table**: count all rows in this second table regardless of filing status.
+      - **🔴 New Issues Needed** = (rows with `—` in main table) + (all rows in external table)
+        - Rows already marked ✅ in the main table are **filed** and do **not** count toward "needed".
+        - External/spec-gated rows always count as "needed" because they still require a tracking issue even if the fix is blocked externally.
+      - Example: if 14 main-table rows show `—` and 3 external rows exist (even if 1 is already ✅ filed) → **New Issues Needed = 17**
 
 9. **Output the updated file** using the Edit tool to update only the changed status/progress values and add any new issues
 
@@ -244,23 +251,27 @@ For each `<li>` bullet item in the CRITICAL, HIGH, and MEDIUM priority lists:
 - If the gap has no filed issue, leave the bullet entirely unchanged.
 - **Do not add, remove, or reorder bullet items.**
 
-### Section B — "New GitHub Issues Needed" table
+### Section B — "New GitHub Issues Needed" tables
 
-This table follows the `<h3>` heading "New GitHub Issues Needed" and has four columns:
-Priority | Gap/Domain | Title | Issue.
+There are now **two tables** following the `<h3>` heading "New GitHub Issues Needed":
 
-For each row:
+1. **Main table** — all gaps that require a code fix in Keycloak (GAP-1 through GAP-29, GAP-31, plus any domain-level entries). Four columns: Priority | Gap/Domain | Title | Issue.
+2. **External Dependencies / Spec-Gated table** — gaps blocked on third-party specs or libraries (currently GAP-6, GAP-17, GAP-25). Four columns: Priority | Gap/Domain | Title | Blocker.
+
+For each row in the **main table**:
 - If the gap now has a filed issue and the Issue cell currently shows `—`, replace `—` with:
   ```html
   ✅ <a href="https://github.com/keycloak/keycloak/issues/NNNNN" style="color:#3b82d4;">#NNNNN</a>
   ```
   and change the row's `style` attribute to `background:#f0fdf4;` (light green highlight).
-- If the Issue cell already shows a ✅ link with the correct issue number, leave the row
-  unchanged.
-- If the Issue cell shows a ✅ link but the issue number has changed, update it and keep
-  the `background:#f0fdf4;` style.
+- If the Issue cell already shows a ✅ link with the correct issue number, leave the row unchanged.
+- If the Issue cell shows a ✅ link but the issue number has changed, update it and keep the `background:#f0fdf4;` style.
 - If the gap has no filed issue, leave the cell as `—` and preserve the existing row style.
-- **Do not add or remove rows.**
+- **Do not add or remove rows** unless a new gap is discovered in the reference table — in that case add it in the correct priority order.
+
+For each row in the **external table**:
+- Update the Blocker cell only if the external dependency status changes (e.g. a spec is published).
+- **Do not add or remove rows** from this table unless a new external gap is identified.
 
 ## Notes
 
