@@ -45,7 +45,7 @@ Each distinct use-case was classified as an independent **domain**. 63 domains w
 
 To update `pqc_overview.html` with the latest Keycloak PQC information, please read [README_UPDATE.md](README_UPDATE.md).
 
-**Last updated:** 29 October 2026 — Review findings from `findings/pqc_overview_review_findings_2026-10-29.md` applied: Quarkus BOM label 3.40.1→3.40.1.1 (bcprov-jdk18on still 1.86); remaining bc-fips 2.1.2→2.1.3 references corrected; GAP-22 [TODO] line numbers 418→423–424; GAP-27 second call line 293→288; added non-crypto mdoc helper classes to Files Evaluated; noted JDK X25519MLKEM768 TLS group disabled in FIPS CI (Domain 43); verified all 63 domains and 31 GAPs against Keycloak main @ `f82c6402ba`.
+**Last updated:** 30 October 2026 — Review findings from `findings/pqc_overview_review_findings_2026-10-30.md` applied: added Kerberos/SPNEGO entry to Files Evaluated for GAP-32 traceability; GAP-32 Kerberos line reference corrected in gaps doc; no status changes; verified all 63 domains and 32 GAPs against Keycloak main @ `9de75aacac`.
 
 ## PQC Readiness Accuracy Reviews
 
@@ -53,6 +53,7 @@ The following accuracy reviews have been conducted against the live Keycloak sou
 
 | Date | PQC Changes |
 |------|-------------|
+| 2026-10-30 | [pqc_overview_review_findings_2026-10-30.md](findings/pqc_overview_review_findings_2026-10-30.md) |
 | 2026-10-29 | [pqc_overview_review_findings_2026-10-29.md](findings/pqc_overview_review_findings_2026-10-29.md) |
 | 2026-10-17 | [pqc_overview_review_findings_2026-10-17.md](findings/pqc_overview_review_findings_2026-10-17.md) |
 | 2026-09-24 | [pqc_overview_review_findings_2026-09-24.md](findings/pqc_overview_review_findings_2026-09-24.md) |

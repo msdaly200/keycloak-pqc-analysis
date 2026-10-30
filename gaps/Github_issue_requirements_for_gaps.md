@@ -4,7 +4,7 @@
 > table in [`pqc_overview.html`](../pqc_overview.html) links here for full
 > detail. Gap numbering matches the HTML's `GAP-N` tags exactly.
 
-**Total gaps:** 31 (GAP-1 through GAP-31)
+**Total gaps:** 32 (GAP-1 through GAP-32)
 **Keycloak HEAD at verification:** `63aeb4c98a`
 **Last reconciled:** 2026-09-24
 
@@ -42,9 +42,11 @@ An `AKP` key type entry appears in `JWK_THUMBPRINT_REQUIRED_MEMBERS` with the co
 
 `SignatureAlgorithm` enum contains only RSA and DSA variants (lines 29–33); no PQC XML Digital Signature URIs are registered. `XMLSignatureUtil` uses `javax.xml.crypto.dsig` with standard algorithms only. SAML assertion signing cannot use ML-DSA at the algorithm layer. Tracked under [#50292](https://github.com/keycloak/keycloak/issues/50292) / [#50294](https://github.com/keycloak/keycloak/issues/50294) (partial).
 
+**Upstream dependency:** Keycloak uses Apache Santuario (`org.apache.santuario:xmlsec`) for XML Digital Signature. Version 3.0.6 (currently pinned) does not support ML-DSA. ML-DSA signature support was added in Santuario via [SANTUARIO-633](https://issues.apache.org/jira/browse/SANTUARIO-633), merged August–September 2026. A Santuario upgrade to a post-September 2026 release is required before ML-DSA XML signature URIs can be used. The upgrade also requires Java 24+ (JEP 497) or Bouncy Castle ≥ 1.79.
+
 ### Resolution Criteria
 
-Any ML-DSA URI constant appears in `SignatureAlgorithm`.
+Any ML-DSA URI constant appears in `SignatureAlgorithm`, and Santuario is upgraded to a release that includes SANTUARIO-633.
 
 ---
 
@@ -61,9 +63,11 @@ Any ML-DSA URI constant appears in `SignatureAlgorithm`.
 
 `XMLEncryptionUtil` supports only RSA-OAEP and RSA1_5 for key transport (confirmed RSA-only at lines 77, 186, 193, 196, 431). No ML-KEM key-encapsulation path exists. SAML assertion encryption cannot use quantum-safe key wrapping. Tracked under [#50292](https://github.com/keycloak/keycloak/issues/50292) / [#50295](https://github.com/keycloak/keycloak/issues/50295) (partial).
 
+**Upstream dependency:** Keycloak uses Apache Santuario (`org.apache.santuario:xmlsec`) for XML Encryption. Version 3.0.6 (currently pinned) does not support ML-KEM. ML-KEM key transport support was added via [SANTUARIO-633](https://issues.apache.org/jira/browse/SANTUARIO-633), merged August–September 2026. A Santuario upgrade to a post-September 2026 release is required before ML-KEM key wrapping can be used in `XMLEncryptionUtil`. The upgrade also requires Java 24+ (JEP 496) or Bouncy Castle ≥ 1.79.
+
 ### Resolution Criteria
 
-Any ML-KEM path appears in `XMLEncryptionUtil`.
+Any ML-KEM path appears in `XMLEncryptionUtil`, and Santuario is upgraded to a release that includes SANTUARIO-633.
 
 ---
 
@@ -174,6 +178,8 @@ Any ML-DSA algorithm name appears in `FapiConstant.ALLOWED_ALGORITHMS` (requires
 ### Description & Impact
 
 Four hardcoded `Algorithm.RS256` key-selection call sites in SAML code: SP metadata signing key export (line 416), SP metadata document signing (line 507), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 1012). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. Requires a third sub-issue under [#50292](https://github.com/keycloak/keycloak/issues/50292).
+
+**Upstream dependency:** This fix is also gated on the Apache Santuario upgrade described in GAP-2 and GAP-3 (SANTUARIO-633). Removing the hardcoded RS256 lookups is a Keycloak-side change, but end-to-end ML-DSA SAML signing will not work until Santuario supports the corresponding XML Digital Signature URIs.
 
 ### Resolution Criteria
 
@@ -601,6 +607,25 @@ An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) a
 
 ---
 
+## GAP-32 — Kerberos / SPNEGO — Legacy Encryption Types Delegated to JDK/Platform {#gap-32}
+
+| Field | Value |
+|-------|-------|
+| **Severity** | LOW (EXTERNAL) |
+| **Domains Affected** | — (not covered by a numbered domain) |
+| **Affected File(s)** | `federation/kerberos/src/main/java/org/keycloak/federation/kerberos/impl/SPNEGOAuthenticator.java` (`establishContext()`, line 160); `federation/kerberos/src/main/java/org/keycloak/federation/kerberos/impl/KerberosUsernamePasswordAuthenticator.java`; `common/src/main/java/org/keycloak/common/util/KerberosJdkProvider.java` (`SunJDKProvider.createJaasConfigurationForServer()`, lines 124–139; `Krb5LoginModule` entries at 138 / 154, IBM variants 203 / 230); `common/src/main/java/org/keycloak/common/constants/KerberosConstants.java` |
+| **GitHub Issue** | *External — JDK/platform dependency; document only* |
+
+### Description & Impact
+
+Keycloak implements no Kerberos cryptography. SPNEGO/Kerberos is delegated entirely to the JDK (`GSSManager`, `acceptSecContext()`, and `com.sun.security.auth.module.Krb5LoginModule` / `com.ibm.security.auth.module.Krb5LoginModule` via `KerberosJdkProvider`). No encryption-type (enctype) setting, allow-list or policy exists in `federation/kerberos` or `SpnegoAuthenticator`. The enctypes in use are negotiated between the KDC, client and keytab and bounded by the JDK `krb5.conf` / `java.security` settings of the deployment. Legacy enctypes (RC4-HMAC, AES-128, SHA-1/MD5-based MACs) are therefore a deployment/JDK configuration risk that Keycloak neither controls nor reports. All Kerberos crypto in this path is symmetric (AES-256 is not quantum-vulnerable beyond Grover's halving); there is no PKINIT or public-key operation in Keycloak. No Keycloak code fix is appropriate; the item is tracked as a platform dependency.
+
+### Resolution Criteria
+
+Operator documentation recommends AES-256-only enctypes (and disabling RC4/DES via `krb5.conf` / JDK defaults); optionally, a startup/debug warning is logged when a weak enctype is negotiated.
+
+---
+
 ## Gap Summary by Severity
 
 ### HIGH Priority (11 gaps)
@@ -634,13 +659,14 @@ An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) a
 - **GAP-29** — Client SDK — DPoPGenerator No ML-DSA Convenience Path
 - **GAP-31** — MdocAlgorithm — No ML-DSA COSE Mapping
 
-### LOW Priority (4 gaps)
+### LOW Priority (5 gaps)
 - **GAP-11** — Dynamic Client Registration — RS256 Special-Case Logic
 - **GAP-14** — JGroups ASYM_ENCRYPT — RSA Cluster Key Exchange
 - **GAP-23** — OIDC Discovery — Hardcoded RS256 CIBA Constant
 - **GAP-25** — OID4VP — ECDH-ES/secp256r1 Response Encryption (HAIP spec-gated)
+- **GAP-32** — Kerberos / SPNEGO — Legacy Encryption Types Delegated to JDK/Platform
 
-**Verified counts:** HIGH=11, MEDIUM=16, LOW=4. Total = 31.
+**Verified counts:** HIGH=11, MEDIUM=16, LOW=5. Total = 32.
 
 ---
 
@@ -694,6 +720,7 @@ An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) a
 - **GAP-14** — Operator guidance only (document in #48823)
 - **GAP-17** — Resolves when GAP-8 is addressed (no separate issue needed)
 - **GAP-25** — HAIP spec dependency (track HAIP evolution)
+- **GAP-32** — JDK/platform dependency (Kerberos enctypes; document only)
 
 ---
 
@@ -745,7 +772,7 @@ An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) a
 
 ---
 
-**Total Gaps:** 31
+**Total Gaps:** 32
 **With Existing GitHub Issues:** 6
 **Need Verification:** 2
 **Need New Issues:** 17

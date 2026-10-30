@@ -1852,6 +1852,14 @@ domain table above.</p>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-31" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
+<tr id="gap-32" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-32</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>Kerberos / SPNEGO — Legacy Encryption Types Delegated to JDK/Platform (No Keycloak Enctype Policy)</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#374151; font-weight:600;">LOW</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">—</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-32" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
+</tr>
+
 </tbody>
 </table>
 
@@ -2222,10 +2230,10 @@ domain table above.</p>
 
 <h4 style="font-size:13px; margin: 16px 0 6px; color:#d97706; font-weight:600;">HIGH Priority</h4>
 <ul style="margin:0 0 16px 0; padding-left:24px; font-size:12px; line-height:1.6;">
-  <li><strong>GAP-2</strong> (Domains 18-20, 59-61): SAML XML Signature URIs for ML-DSA not registered</li>
+  <li><strong>GAP-2</strong> (Domains 18-20, 59-61): SAML XML Signature URIs for ML-DSA not registered — filed: <a href="https://github.com/keycloak/keycloak/issues/50294">#50294</a></li>
   <li><strong>GAP-6</strong> (Domains 11, 13, 43): BC-FIPS 2.1.3 lacks ML-DSA — external blocker for FIPS deployments</li>
   <li><strong>GAP-8</strong> (Domains 16, 41): FAPI allowlist actively blocks ML-DSA — spec-gated on FAPI 2.0 — filed: <a href="https://github.com/keycloak/keycloak/issues/52819">#52819</a></li>
-  <li><strong>GAP-15</strong> (Domains 28, 30-31, 46): No ML-DSA key generation — covered by <a href="https://github.com/keycloak/keycloak/issues/48824">#48824</a></li>
+  <li><strong>GAP-15</strong> (Domains 28, 30-31, 46): No ML-DSA key generation — filed: <a href="https://github.com/keycloak/keycloak/issues/44142">#44142</a></li>
   <li><strong>GAP-26</strong> (Domain 48): JWKS endpoint omits AKP keys (returns null) — filed: <a href="https://github.com/keycloak/keycloak/issues/52815">#52815</a></li>
   <li><strong>GAP-30</strong> (Domain 53): Client signature verifier RSA guard blocks ML-DSA assertions — filed: <a href="https://github.com/keycloak/keycloak/issues/52817">#52817</a></li>
 </ul>
@@ -2233,7 +2241,7 @@ domain table above.</p>
 <h4 style="font-size:13px; margin: 16px 0 6px; color:#57606a; font-weight:600;">MEDIUM Priority</h4>
 <ul style="margin:0 0 16px 0; padding-left:24px; font-size:12px; line-height:1.6;">
   <li><strong>ML-KEM keygen</strong> (Domains 29, 32): No ML-KEM key generation provider (separate from GAP-15 which covers ML-DSA only)</li>
-  <li><strong>GAP-5 + GAP-16</strong> (Domains 33-34): Keystore import lacks ML-DSA support</li>
+  <li><strong>GAP-5 + GAP-16</strong> (Domains 33-34): Keystore import lacks ML-DSA support — filed: <a href="https://github.com/keycloak/keycloak/issues/50679">#50679</a></li>
   <li><strong>GAP-19</strong> (Domain 42): No Maven enforcer for bcprov minimum version — silent regression risk</li>
   <li><strong>GAP-20</strong> (Domain 8): JAR encrypted request object decryption — no ML-KEM inbound path</li>
   <li><strong>GAP-21</strong> (Domain 4): UserInfo per-client signature attribute doesn't follow realm default</li>
@@ -2243,7 +2251,7 @@ domain table above.</p>
 </ul>
 
 <h3 style="font-size:15px; margin: 24px 0 8px;">New GitHub Issues Needed</h3>
-<p style="font-size:12px; margin:0 0 12px 0; line-height:1.5;">All 31 gaps identified across the 63-domain analysis. Issues marked ✅ have been filed; <code>—</code> still needs a new issue. <strong>17 still needed</strong> (14 code fixes + 3 external, 1 external already tracked). Gaps blocked on external specs or libraries are in the second table below.</p>
+<p style="font-size:12px; margin:0 0 12px 0; line-height:1.5;">All 32 gaps identified across the 63-domain analysis. Issues marked ✅ have been filed; <code>—</code> still needs a new issue. <strong>19 still needed</strong> (15 code fixes + 4 external, 1 external already tracked). Gaps blocked on external specs or libraries are in the second table below.</p>
 
 <table style="width:100%; border-collapse:collapse; font-size:12px; margin-bottom:8px;">
 <thead>
@@ -2461,6 +2469,13 @@ domain table above.</p>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">HAIP spec — awaiting ML-KEM mandate in High Assurance Interop Profile</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
 </tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#374151; font-weight:600;">LOW</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-32</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Kerberos / SPNEGO — Legacy Encryption Types (RC4, AES-128, SHA-1/MD5 MACs) Delegated to JDK/Platform; No Keycloak Enctype Policy</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">JDK JGSS/<code>Krb5LoginModule</code> and deployment <code>krb5.conf</code> / KDC / keytab — Keycloak has no enctype control</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
 </tbody>
 </table>
 
@@ -2478,7 +2493,7 @@ domain table above.</p>
 </p>
 
 <footer>
-  <p>Last updated: 29 October 2026 (review findings applied: Quarkus BOM label 3.40.1→3.40.1.1 (bcprov-jdk18on still 1.86); remaining bc-fips 2.1.2→2.1.3 references corrected; GAP-22 [TODO] line numbers 418→423–424; GAP-27 second call line 293→288; added non-crypto mdoc helper classes to Files Evaluated; noted JDK X25519MLKEM768 TLS group disabled in FIPS CI (Domain 43); verified all 63 domains and 31 GAPs against Keycloak main @ f82c6402ba)</p>
+  <p>Last updated: 30 October 2026 (review findings applied: added Kerberos/SPNEGO entry to Files Evaluated for GAP-32 traceability; GAP-32 Kerberos line reference corrected in gaps doc; no status changes; verified all 63 domains and 32 GAPs against Keycloak main @ 9de75aacac)</p>
 </footer>
 </div>
 </body>

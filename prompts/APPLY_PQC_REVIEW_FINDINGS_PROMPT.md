@@ -73,6 +73,18 @@ For each addition item:
 
 #### B — Adding a new GAP table entry (slim format)
 
+<!-- EXTERNAL GAP RULE: If the new GAP is classified as external/spec-gated or platform-gated
+     (e.g. JDK/platform dependency, spec constraint outside Keycloak's control), it belongs in
+     TWO places only:
+       1. The GAP Reference table (with "Domains: —" in the Domains column), AND
+       2. The "External Dependencies / Spec-Gated" table.
+     It must NEVER appear in the main "New GitHub Issues Needed" table.
+     After adding any external GAP, recount the intro sentence using the formula:
+       New Issues Needed = (main rows with —) + (all external rows)
+     and update the intro sentence: "N still needed (X code fixes + Y external, Z already tracked)".
+     GAP-32 (Kerberos, LOW/external) is an example: it is in the External table only. Never remove,
+     renumber, or move it to the main issues table. -->
+
 Find the last `<tr id="gap-N">` row in the GAP reference table (search for `id="gap-` to locate it). Insert the new entry after it, following this template (5 columns: Gap ID, Title, Severity, Domains, Detail):
 
 ```html
@@ -160,6 +172,10 @@ Do **not** modify anything for items listed under:
 - **Part 7C — Items Confirmed Not Changed**
 - Any finding whose severity is labelled `CONFIRMED — STABLE`, `CONFIRMED`, or `NOTE`
 - GAP-10 / prior review corrections that only affect a **previous** findings file (not the current HTML)
+- **Never remove or renumber GAP-32** (Kerberos/SPNEGO, LOW/external). It is intentionally a
+  domain-less, LOW/external gap with "Domains: —". Its absence from the main "New GitHub Issues
+  Needed" table is correct, not an omission. Preserve it in the Gap Reference table and the
+  External Dependencies / Spec-Gated table on every run.
 
 ---
 
@@ -171,6 +187,13 @@ After all edits, verify:
 2. All `<a class="gap-tag" href="#gap-N">GAP-N</a>` links referenced in domain rows have a corresponding `<tr id="gap-N">` in the GAP table.
 3. The status distribution total (PENDING + PARTIAL + BLOCKED + SAFE + EXTERNAL) equals the domain count.
 4. No `<tr id="gap-N">` is duplicated.
+5. Every `<tr id="gap-N">` in `pqc_overview.html` has a matching `## GAP-N` section in
+   `gaps/Github_issue_requirements_for_gaps.md`, and the "Total gaps" count and severity summary
+   in that file's header equal the number of `<tr id="gap-N">` rows. Any mismatch is an error.
+6. External/spec-gated gaps (currently GAP-6, GAP-17, GAP-25, GAP-32) appear in the External
+   Dependencies / Spec-Gated table and the GAP Reference table, and are absent from the main
+   "New GitHub Issues Needed" table. Verify GAP-32 is present and has not been accidentally
+   duplicated into the main table.
 
 Report any inconsistencies before finishing.
 

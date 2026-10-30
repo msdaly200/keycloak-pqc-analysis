@@ -295,6 +295,17 @@ grep -n "KeyType\.RSA\|KeyType\.EC\|KeyType\.OKP\|KeyType\.AKP\|Invalid KeyPair 
 # GAP-29: DPoPGenerator — no ML-DSA convenience method (documented: lines 49-50)
 grep -n "generateRsaSignedDPoPProof\|TODO\|ML.DSA\|AKP" core/src/main/java/org/keycloak/util/DPoPGenerator.java | head -10
 
+# GAP-32: Kerberos/SPNEGO — delegated to JDK; no Keycloak enctype policy
+# (documented: SPNEGOAuthenticator.establishContext() ~line 160; KerberosJdkProvider Krb5LoginModule ~line 120)
+grep -n "GSSManager\|acceptSecContext\|KRB5_OID\|SPNEGO_OID" federation/kerberos/src/main/java/org/keycloak/federation/kerberos/impl/SPNEGOAuthenticator.java
+grep -n "Krb5LoginModule" common/src/main/java/org/keycloak/common/util/KerberosJdkProvider.java
+# Claim to confirm: NO enctype handling anywhere in Keycloak's Kerberos code (expect zero matches).
+# If this grep ever returns matches, mark GAP-32 ❌ CODE CHANGED — Keycloak has started controlling
+# enctypes and the gap description and severity MUST be re-assessed.
+grep -rInE -i "enctype|rc4|aes128|aes256|des3|permitted_enctypes|default_tkt_enctypes" \
+  federation/kerberos services/src/main/java/org/keycloak/authentication/authenticators/browser/SpnegoAuthenticator.java \
+  common/src/main/java/org/keycloak/common/util/KerberosJdkProvider.java
+
 # Domain 61: SAML2Signature — RSA_SHA1 default (documented: lines 55/57)
 grep -n "RSA_SHA1\|DigestMethod\.SHA1\|signatureMethod\s*=" saml-core/src/main/java/org/keycloak/saml/processing/api/saml/v2/sig/SAML2Signature.java
 
@@ -383,6 +394,10 @@ grep -n "ALLOWED\|RS256\|ML.DSA" ssf/transmitter/src/main/java/org/keycloak/ssf/
 
 # Has OIDCWellKnownProvider static constant been made dynamic?
 grep -n "DEFAULT_CLIENT_AUTH_SIGNING\|RS256" services/src/main/java/org/keycloak/protocol/oidc/OIDCWellKnownProvider.java | head -5
+
+# GAP-32: Has Keycloak added Kerberos enctype configuration or PKINIT support?
+# (If matches appear, GAP-32 severity must be re-assessed — it is currently LOW/external.)
+grep -rInE -i "enctype|pkinit" federation/kerberos common/src/main/java/org/keycloak/common/util/KerberosJdkProvider.java
 ```
 
 ---
@@ -417,6 +432,10 @@ find . -name "*IdentityProvider.java" ! -path "*/test/*" 2>/dev/null \
 find . \( -path "*/sdjwt/*.java" -o -path "*/oid4vc/*.java" \) ! -path "*/test/*" 2>/dev/null \
   | xargs grep -l "SignatureProvider\|SignatureSignerContext\|algorithm\|RS256\|ES256" 2>/dev/null \
   | grep -v "^Binary" | sort
+
+# GAP-32 sweep: any new Kerberos files not yet covered in "Files Evaluated"?
+# Compare against the Kerberos entry in the "Files Evaluated — Not Added as New Rows" section.
+find . -path "*/kerberos/*.java" ! -path "*/test/*" 2>/dev/null | sort
 ```
 
 Compare results against the "Files Evaluated — Not Added as New Rows" section of
@@ -443,12 +462,20 @@ Your output file (`findings/pqc_overview_review_findings_YYYY-MM-DD.md`) must fo
 
 ## Part 2 — Domain-by-Domain Verification Table
 <table with columns: Row | Domain | Files exist? | Algorithm claims | PQC state | Notes>
-<all rows — DOMAIN_COUNT from Pre-Flight Step 0a (63 at the 2026-10-29 review)>
+<all rows — DOMAIN_COUNT from Pre-Flight Step 0a (63 at the 2026-10-30 update)>
 
 ## Part 3 — GAP Reference Verification
 <table with columns: GAP | Title | Files Correct? | Line Numbers | Notes>
-<all GAPs in GAP_LIST from Pre-Flight Step 0b (31 at the 2026-10-29 review: GAP-1 … GAP-31)>
+<all GAPs in GAP_LIST from Pre-Flight Step 0b (32 at the 2026-10-30 update: GAP-1 … GAP-32)>
 <Apply the ±3-line tolerance rule: a shift of ≤3 lines with unchanged crypto code is ✅ not an error>
+
+<!-- EXTERNAL GAP NOTE: Some GAPs are classified as External Dependencies / Spec-Gated.
+     These have no numbered domain row and "Domains: —" in the GAP reference table.
+     This is intentional — do NOT flag a missing domain cross-reference as an error for them.
+     Currently: GAP-6 (SSH/SFTP), GAP-17 (SAML/RFC spec-gated), GAP-25 (OID4VP ECDH-ES),
+     GAP-32 (Kerberos/SPNEGO JDK-delegated, LOW/external).
+     GAP-32 in particular: it is a documentation-only gap with no Keycloak code fix.
+     Severity LOW. Verify only the two line-number claims below (B2) and the enctype sweep (B2/B3). -->
 
 For each GAP, cross-reference the full description in
 `gaps/Github_issue_requirements_for_gaps.md#gap-N`. If the gaps doc
@@ -538,9 +565,10 @@ Before reporting back to the user, confirm:
 - [ ] Pre-flight checks completed (repo location confirmed, HEAD commit noted)
 - [ ] All Section A facts recorded as "confirmed stable" or flagged if changed
 - [ ] All Section B1 file-existence checks completed
-- [ ] All Section B2 line-number checks completed
-- [ ] All Section B3 algorithm/PQC-state checks completed
-- [ ] All Section B4 new-domain discovery checks completed
+- [ ] All Section B2 line-number checks completed (including GAP-32 Kerberos claims and enctype sweep)
+- [ ] All Section B3 algorithm/PQC-state checks completed (including GAP-32 enctype/PKINIT sweep)
+- [ ] All Section B4 new-domain discovery checks completed (including Kerberos file sweep)
+- [ ] External gaps (GAP-6, GAP-17, GAP-25, GAP-32) verified: "Domains: —" is intentional — not an error
 - [ ] Part 5 status distribution recount completed; five counts sum exactly to DOMAIN_COUNT
 - [ ] Output file `findings/pqc_overview_review_findings_YYYY-MM-DD.md` written
 - [ ] `README.md` updated with date and link to findings file

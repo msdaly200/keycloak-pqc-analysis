@@ -38,8 +38,21 @@ Use `gh_issues/Github_PQC_issues_overview.md` as the source of truth for:
 - closed issue count
 - new issues needed count
 - hierarchy status counts
-- “New Issues Needed” priority breakdown
+- "New Issues Needed" priority breakdown
 - links to issue hierarchy markdown
+
+<!-- EXTERNAL GAP AWARENESS: The "New Issues Needed" priority breakdown must include
+     external/spec-gated gaps under their own priority bucket. Do NOT omit or merge them
+     into the code-fix counts. Derive the per-priority gap lists dynamically from the
+     pqc_overview.html tables (Gap Reference table + External Dependencies / Spec-Gated table),
+     never from memory. Current external gaps and their priorities:
+       • GAP-17 (SAML spec-gated) — MEDIUM
+       • GAP-25 (OID4VP ECDH-ES, spec-gated) — LOW
+       • GAP-32 (Kerberos/SPNEGO, JDK/platform dependency, documentation-only) — LOW
+     GAP-32 must appear in the LOW row of the priority table. If the formula
+       New Issues Needed = (main rows with "—") + (all external rows)
+     produces a count that differs from the dashboard's current "New Issues Needed" stat,
+     report the discrepancy and update the stat to the formula result. -->
 
 Use `pqc_overview.html` as the source of truth only for:
 - total domains analysed
@@ -128,8 +141,12 @@ Make sure:
 - donut legend counts add up to the displayed totals
 - SVG donut segments match the displayed counts
 - issue status totals equal tracked issues
-- priority bucket totals equal “New Issues Needed”
+- priority bucket totals equal "New Issues Needed"
 - domain readiness status counts (BLOCKED + PENDING PROVIDERS + PARTIAL + SAFE + EXTERNAL) sum exactly to the "Domains Analysed" figure, and that figure matches the `Analysis Complete — All <N> Domains` heading in `pqc_overview.html`
+- **HIGH + MEDIUM + LOW unfiled counts equal the "New Issues Needed" total.** External/spec-gated
+  gaps (GAP-17, GAP-25, GAP-32) are included in these per-priority counts at their own severity level.
+  If the priority breakdown in `gh_issues/Github_PQC_issues_overview.md` omits any external gap,
+  recompute from `pqc_overview.html` tables and report the discrepancy before updating.
 
 ## Constraints
 
