@@ -36,20 +36,21 @@ Key-binding proof validation uses the same `SignatureProvider` SPI pattern as al
 
 ## Current PQC State
 
-**PENDING PROVIDERS**
+**PARTIAL**
 
-Proof JWT signature verification is entirely SPI-driven and will support ML-DSA automatically once ML-DSA `SignatureProvider` exists. No independent code gap.
+Proof JWT signature verification (`kid`/`jwk` header path) is entirely SPI-driven and will support ML-DSA automatically once ML-DSA `SignatureProvider` exists. However, the `x5c` proof / key-attestation path has an independent code gap (GAP-32).
 
-**Note:** The overview mentions "x5c/attestation proof path not fully analysed" — this refers to an alternative proof mechanism using X.509 certificates (`AttestationValidatorUtil.java`). This path likely delegates to certificate validation (similar to Domains 11/13) and should be quantum-safe once PQC certificates are supported.
+**x5c / attestation proof path (GAP-32):** `X5cKeyUtils` and `AttestationProofValidator` delegate to `X509CertificateChainValidator`, whose `toJwk()` converts the leaf certificate public key to a JWK for RSA and EC keys only. An ML-DSA (AKP) or OKP leaf key is rejected, so this path is **not** algorithm-agnostic and will not work with ML-DSA certificates until `toJwk()` gains AKP/OKP handling.
 
 ## Required Changes
 
-**None.** Automatically resolved when ML-DSA providers exist.
+**GAP-32:** Add AKP/OKP handling to `X509CertificateChainValidator.toJwk()` (and an x5c-carrying AKP JWK variant). The `kid`/`jwk` proof path is automatically resolved when ML-DSA providers exist.
 
 ## Dependencies
 
-1. **ML-DSA `SignatureProvider`** (tracked under [#48821](https://github.com/keycloak/keycloak/issues/48821) / [#48824](https://github.com/keycloak/keycloak/issues/48824))
-2. **Wallet support** — mobile wallets and credential holders must be able to sign key-binding proofs with ML-DSA
+1. **GAP-32** — x5c leaf-key conversion (`X509CertificateChainValidator.toJwk()`)
+2. **ML-DSA `SignatureProvider`** (tracked under [#48821](https://github.com/keycloak/keycloak/issues/48821) / [#48824](https://github.com/keycloak/keycloak/issues/48824))
+3. **Wallet support** — mobile wallets and credential holders must be able to sign key-binding proofs with ML-DSA
 
 ## GitHub Issue Status
 

@@ -51,6 +51,7 @@ The document uses a **table-based hierarchy** format:
 
 4. **Update the following fields IN THE TABLE**:
    - **Status** badges (🔵 OPEN, 🟢 OPEN, 🟣 CLOSED) with colored spans for each issue
+   - **Title** — set each issue's Title to the current GitHub title (verbatim, only dropping invisible characters such as U+200E), in both the main hierarchy table and the Additional Issues tables
    - **Progress** counts (e.g., "4 of 12", "0 of 7") in the Progress column where applicable
    - **Last Updated** date at the top of the document (use current date in format YYYY-MM-DD)
    - **#43690 Progress** - Update based on completed direct sub-issues count (e.g., "2 of 11" if 2 closed out of 11 total)
@@ -59,8 +60,8 @@ The document uses a **table-based hierarchy** format:
 5. **Preserve the table structure**:
    - Keep the exact table format with proper indentation (`&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳` for level 2, `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;↳` for level 3)
    - Keep all sub-issue counts in the Sub-Issues column (**bold** for parents, (parentheses) for nested)
-   - Keep all issue titles, links, and hierarchy unchanged
-   - Only update status badges, progress counts, sub-issue counts, and the Last Updated date
+   - Keep links and the overall table format unchanged; the hierarchy changes only to match GitHub (moved, added or removed sub-issues)
+   - Only update titles, status badges, progress counts, sub-issue counts, and the Last Updated date
    - When adding new issues, match the formatting and indentation of existing entries
 
 6. **Status badge format**:
@@ -73,7 +74,7 @@ The document uses a **table-based hierarchy** format:
    - Update the **Status** column value (e.g. `OPEN` → `CLOSED`) for any issue whose state has changed
    - Use plain text `OPEN` / `CLOSED` in that table (no coloured spans — the Additional Issues table uses plain text status, not badge format)
    - **Remove any row from the Additional Issues tables whose issue number already appears anywhere in the main hierarchy table** (direct sub-issues or nested sub-issues). An issue must not appear in both sections. If a row has *(now in main hierarchy)* or similar text, or if its issue number is present in the main table, delete that row entirely.
-   - Apart from the removals above, do not add or remove other rows — only update the Status column values
+   - Apart from the removals above, do not add or remove other rows — only update the Title and Status column values
 
 8. **Recalculate the Status Dashboard summary table**:
    - Count all issues across the main hierarchy table and Additional Issues tables
@@ -271,7 +272,7 @@ For each row:
 - If GitHub rate limits are hit, pause and retry
 - If progress counts cannot be retrieved via API, note in the output which ones need manual verification
 - Maintain exact formatting and structure of all original documents
-- Only update status-related fields and the date in the **LOCAL FILES**
+- Only update titles, status-related fields and the date in the **LOCAL FILES**
 
 ## Completion Criteria
 

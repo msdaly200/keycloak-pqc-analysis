@@ -20,6 +20,7 @@ Keycloak acting as an OID4VP *verifier*: it signs the request object sent to the
 - `services/src/main/java/org/keycloak/broker/oid4vp/ParsedResponse.java`
 - `services/src/main/java/org/keycloak/broker/oid4vp/RequestContext.java`
 - `services/src/main/java/org/keycloak/broker/oid4vp/ResponseMode.java`
+- `server-spi-private/src/main/java/org/keycloak/broker/provider/TrustMaterialSdJwtIssuerResolver.java`
 
 ## Gaps
 
@@ -52,6 +53,14 @@ Both are spec-gated: the HAIP (High Assurance Interoperability Profile) currentl
 
 **Fix:** Track HAIP spec evolution; update once the spec gates lift. No new GitHub issue required at this time — existing HAIP tracker is the dependency.
 
+### GAP-32 — x5c Leaf-Key Conversion Is RSA/EC Only (MEDIUM)
+
+**File:** `server-spi-private/.../broker/provider/TrustMaterialSdJwtIssuerResolver.java` (line 65) → `core/.../crypto/X509CertificateChainValidator.java` (`toJwk`, lines 116–126)
+
+Inbound trusted-issuer SD-JWT credentials that carry an `x5c` header are validated through `TrustMaterialIdentityProvider.validateX509Chain()`, which converts the leaf key to a JWK for RSA and EC keys only. An ML-DSA leaf certificate is rejected even once ML-DSA providers exist. The `kid`/JWKS path is unaffected.
+
+**Fix:** Add AKP/OKP handling to `X509CertificateChainValidator.toJwk()` (see GAP-32 in [`Github_issue_requirements_for_gaps.md`](../gaps/Github_issue_requirements_for_gaps.md#gap-32)).
+
 ## Current PQC State
 
 **BLOCKED**
@@ -60,6 +69,7 @@ Signing is blocked on both GAP-24 (hardcoded algorithm enforcement) and the upst
 
 ## Required Changes
 
+0. (GAP-32) Add AKP/OKP leaf-key support to `X509CertificateChainValidator.toJwk()` for the `x5c` trusted-issuer path.
 1. Replace `ACCEPTED_ALGORITHMS = List.of(Algorithm.ES256)` with a configurable/SPI-driven set.
 2. Update `signingKey()` to select the key based on the configured algorithm rather than hardcoding `Algorithm.ES256`.
 3. Track HAIP spec evolution for ECDH-ES/ML-KEM once the spec gates lift.

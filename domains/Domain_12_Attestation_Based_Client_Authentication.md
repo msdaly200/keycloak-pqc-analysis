@@ -17,9 +17,9 @@ Keycloak's implementation aligns with the [OpenID4VC High Assurance Interoperabi
 
 **Two gaps prevent end-to-end ML-DSA support:**
 
-### Gap 1: Algorithm enforcement TODO (line 418)
+### Gap 1: Algorithm enforcement TODO (line 434)
 
-**File:** `AttestationBasedClientAuthenticator.java` (line 418)
+**File:** `AttestationBasedClientAuthenticator.java` (line 434)
 
 ```java
 // [TODO] The alg JOSE Header Parameter for both JWTs indicates a registered asymmetric digital signature algorithm
@@ -30,10 +30,10 @@ The draft spec requires that the `alg` header parameter in both JWTs must be a *
 1. The algorithm is asymmetric (not symmetric like HS256)
 2. The algorithm is from a recognized signature algorithm family
 
-**Impact:** If an ML-DSA `SignatureProvider` exists, the verification path at line 407-414 (Client Attestation JWT) and line 484-491 (Client Attestation PoP JWT) will work. However, without explicit algorithm-type enforcement, there's a risk of accepting inappropriate algorithms.
+**Impact:** If an ML-DSA `SignatureProvider` exists, the verification path at line 428-435 (Client Attestation JWT) and line 505-512 (Client Attestation PoP JWT) will work. However, without explicit algorithm-type enforcement, there's a risk of accepting inappropriate algorithms.
 
 **What needs to change:**
-- Add validation after line 406 and line 483 to check that `algorithm` is asymmetric (e.g., by checking if the provider is instance of `AsymmetricSignatureProvider`, or maintaining an allowlist similar to `JWTClientAuthenticator`)
+- Add validation after line 420 and line 483 to check that `algorithm` is asymmetric (e.g., by checking if the provider is instance of `AsymmetricSignatureProvider`, or maintaining an allowlist similar to `JWTClientAuthenticator`)
 - Reject symmetric algorithms (HS256, HS384, HS512) explicitly
 
 ### Gap 2: JWK thumbprint for AKP keys (GAP-1)
@@ -70,16 +70,17 @@ While the current code does not explicitly call `computeThumbprint()` on the `cn
 
 Both verification paths are **SPI-driven** and will support ML-DSA automatically once ML-DSA `SignatureProvider` exists:
 
-1. **Client Attestation JWT verification** (line 407): Uses `SignatureProvider` looked up by algorithm name from the JWS header → SPI-driven
-2. **Client Attestation PoP JWT verification** (line 484): Uses `SignatureProvider` looked up by algorithm name from the JWS header → SPI-driven
+1. **Client Attestation JWT verification** (line 428): Uses `SignatureProvider` looked up by algorithm name from the JWS header → SPI-driven
+2. **Client Attestation PoP JWT verification** (line 505): Uses `SignatureProvider` looked up by algorithm name from the JWS header → SPI-driven
 
 **What already works:**
-- Line 396: `findAttesterKey()` loads the attester's public key from a configured trust material provider (e.g., a Trust Broker IdP) — this already handles AKP keys via `JWKSUtils.getKeyWrappersForUse()`
-- Line 332-339: `toPublicKeyWrapper()` converts the `cnf.jwk` into a `KeyWrapper` — this is algorithm-agnostic and will work with ML-DSA JWKs once `JWKParser` supports them
+- Line 412: `findAttesterKey()` loads the attester's public key from a configured trust material provider (e.g., a Trust Broker IdP) — the `kid`/JWKS path already handles AKP keys via `JWKSUtils.getKeyWrappersForUse()`. **Caveat (GAP-32):** the `x5c` branch (lines 329–333, `TrustMaterialResolver.validateX509Chain()` → `X509CertificateChainValidator.toJwk()`) converts the leaf key to a JWK for RSA and EC only, so an ML-DSA leaf certificate in `x5c` is rejected.
+- Line 348-356: `toPublicKeyWrapper()` converts the `cnf.jwk` into a `KeyWrapper` — this is algorithm-agnostic and will work with ML-DSA JWKs once `JWKParser` supports them
 
 **What's missing:**
-- Algorithm-type enforcement (TODO at line 418)
+- Algorithm-type enforcement (TODO at line 434)
 - JWK thumbprint support for AKP keys (GAP-1)
+- `x5c` attester chain: leaf-key conversion in `X509CertificateChainValidator.toJwk()` accepts only RSA/EC (GAP-32)
 
 ## Required Changes
 
@@ -87,9 +88,9 @@ Both verification paths are **SPI-driven** and will support ML-DSA automatically
 
 **File:** `AttestationBasedClientAuthenticator.java`
 
-**Location:** After line 406 (Client Attestation JWT) and after line 483 (Client Attestation PoP JWT)
+**Location:** After line 420 (Client Attestation JWT) and after line 497 (Client Attestation PoP JWT)
 
-**Current code (line 406-414):**
+**Current code (line 420-428):**
 ```java
 Algorithm algorithm = jws.getHeader().getAlgorithm();
 SignatureProvider signatureProvider = session.getProvider(SignatureProvider.class, algorithm.name());
@@ -128,7 +129,7 @@ private boolean isAsymmetricSignatureAlgorithm(Algorithm algorithm) {
 }
 ```
 
-Apply the same pattern after line 483 for the Client Attestation PoP JWT verification.
+Apply the same pattern after line 497 for the Client Attestation PoP JWT verification.
 
 ### Change 2: Add AKP to JWK thumbprint support
 
@@ -163,9 +164,9 @@ This requires defining `AKPPublicJWK` constants (similar to `OKPPublicJWK`) — 
 
 | Component | Why it's already PQC-ready |
 |-----------|---------------------------|
-| Attester key lookup (line 396) | `findAttesterKey()` → `TrustMaterialResolver.resolveKey()` → `JWKSUtils.getKeyWrappersForUse()` already supports AKP |
-| `cnf.jwk` → `KeyWrapper` conversion (line 332) | `toPublicKeyWrapper()` is algorithm-agnostic; sets `kw.setType(jwk.getKeyType())` without hardcoding |
-| Signature verification SPI path (lines 407, 484) | Fully SPI-driven via `SignatureProvider` — will support ML-DSA automatically once providers exist |
+| Attester key lookup via `kid`/JWKS (line 412) | `findAttesterKey()` → `TrustMaterialResolver.resolveKey()` → `JWKSUtils.getKeyWrappersForUse()` already supports AKP (the `x5c` path does not — see GAP-32) |
+| `cnf.jwk` → `KeyWrapper` conversion (line 348) | `toPublicKeyWrapper()` is algorithm-agnostic; sets `kw.setType(jwk.getKeyType())` without hardcoding |
+| Signature verification SPI path (lines 428, 505) | Fully SPI-driven via `SignatureProvider` — will support ML-DSA automatically once providers exist |
 | Token claims validation (lines 375-392, 443-468) | Pure business logic checks — no cryptographic operations |
 
 ## Dependencies
@@ -179,11 +180,11 @@ This requires defining `AKPPublicJWK` constants (similar to `OKPPublicJWK`) — 
 **Partially tracked:**
 - The SPI-driven verification path is covered by the core ML-DSA provider work under **#48824**
 - **GAP-1** (JWK thumbprint for AKP) is identified but not yet tracked by a GitHub issue — needs a new sub-issue under #43690
-- **GAP-22** (algorithm enforcement TODO at line 418) is identified in the overview table but not yet tracked — should be created as a sub-issue under #43690 or #48824
+- **GAP-22** (algorithm enforcement TODO at line 434) is identified in the overview table but not yet tracked — should be created as a sub-issue under #43690 or #48824
 
 **Recommended new issue:**
 - Title: "Attestation-Based Client Auth: enforce asymmetric algorithm requirement and add AKP JWK thumbprint support"
-- Description: "Complete PQC readiness for Domain 12 (Attestation-Based Client Authentication) by implementing the algorithm-type enforcement TODO at line 418 and adding AKP key support to JWKSUtils.computeThumbprint(). Both changes are required before ML-DSA client instance keys can be used in the `cnf.jwk` claim."
+- Description: "Complete PQC readiness for Domain 12 (Attestation-Based Client Authentication) by implementing the algorithm-type enforcement TODO at line 434 and adding AKP key support to JWKSUtils.computeThumbprint(). Both changes are required before ML-DSA client instance keys can be used in the `cnf.jwk` claim."
 - Should reference both **GAP-1** and **GAP-22**
 
 ## Related Domains

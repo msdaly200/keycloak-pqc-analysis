@@ -8,7 +8,7 @@ Generic trust material broker — resolves public keys from JWKS URL or inline J
 
 ## Gap
 
-**None** — inherits SPI-driven verification path.
+**GAP-32 (x5c path only)** — the JWKS/`kid` path inherits the SPI-driven verification path.
 
 **Files:**
 - `services/src/main/java/org/keycloak/broker/trust/DefaultTrustIdentityProvider.java`
@@ -17,21 +17,23 @@ Generic trust material broker — resolves public keys from JWKS URL or inline J
 
 ## Current PQC State
 
-**PENDING PROVIDERS**
+**PARTIAL**
 
-Uses `JWKSUtils.getKeyWrappersForUse()` which already handles AKP key types. Will work automatically once ML-DSA providers exist.
+The JWKS/`kid` resolution path uses `JWKSUtils.getKeyWrappersForUse()`, which already handles AKP key types and will work automatically once ML-DSA providers exist. However, the `x5c` path (`TrustMaterialIdentityProvider.validateX509Chain()` → `TrustMaterialResolver` → `X509CertificateChainValidator.toJwk()`) converts the leaf key for RSA and EC only, so ML-DSA leaf certificates are rejected (GAP-32).
 
 ## Required Changes
 
-**None.**
+**GAP-32:** Add AKP/OKP handling to `X509CertificateChainValidator.toJwk()` so `validateX509Chain()` accepts ML-DSA leaf certificates.
 
 ## Dependencies
 
 **GAP-15** — ML-DSA SignatureProvider ([#48824](https://github.com/keycloak/keycloak/issues/48824))
 
+**GAP-32** — x5c leaf-key conversion (`X509CertificateChainValidator.toJwk()`)
+
 ## GitHub Issue Status
 
-No dedicated issue needed. Covered by GAP-15.
+JWKS path: covered by GAP-15. x5c path: tracked as GAP-32 (new issue needed).
 
 ---
 

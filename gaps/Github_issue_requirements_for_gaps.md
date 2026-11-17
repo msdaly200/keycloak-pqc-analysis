@@ -4,9 +4,9 @@
 > table in [`pqc_overview.html`](../pqc_overview.html) links here for full
 > detail. Gap numbering matches the HTML's `GAP-N` tags exactly.
 
-**Total gaps:** 31 (GAP-1 through GAP-31)
-**Keycloak HEAD at verification:** `63aeb4c98a`
-**Last reconciled:** 2026-09-24
+**Total gaps:** 32 (GAP-1 through GAP-32)
+**Keycloak HEAD at verification:** `eafe81dd79`
+**Last reconciled:** 2026-11-17
 
 ---
 
@@ -168,12 +168,12 @@ Any ML-DSA algorithm name appears in `FapiConstant.ALLOWED_ALGORITHMS` (requires
 |-------|-------|
 | **Severity** | HIGH |
 | **Domains Affected** | 18, 20, 59, 60, 61 |
-| **Affected File(s)** | `services/src/main/java/org/keycloak/broker/saml/SAMLIdentityProvider.java` (lines 416, 507); `services/src/main/java/org/keycloak/protocol/saml/SamlProtocol.java` (line 544); `services/src/main/java/org/keycloak/protocol/saml/SamlService.java` (line 1012) |
+| **Affected File(s)** | `services/src/main/java/org/keycloak/broker/saml/SAMLIdentityProvider.java` (lines 416, 507); `services/src/main/java/org/keycloak/protocol/saml/SamlProtocol.java` (line 544); `services/src/main/java/org/keycloak/protocol/saml/SamlService.java` (line 1059) |
 | **GitHub Issue** | [#50292](https://github.com/keycloak/keycloak/issues/50292) (create sub-issue) |
 
 ### Description & Impact
 
-Four hardcoded `Algorithm.RS256` key-selection call sites in SAML code: SP metadata signing key export (line 416), SP metadata document signing (line 507), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 1012). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. Requires a third sub-issue under [#50292](https://github.com/keycloak/keycloak/issues/50292).
+Four hardcoded `Algorithm.RS256` key-selection call sites in SAML code: SP metadata signing key export (line 416), SP metadata document signing (line 507), artifact resolve response signing (line 544), and IDP metadata descriptor redirect-binding export (line 1059). Even if GAP-2 is fixed at the algorithm layer, ML-DSA support can never be reached because these call sites will never select an AKP key. Both layers (GAP-2 and GAP-9) must be fixed. Requires a third sub-issue under [#50292](https://github.com/keycloak/keycloak/issues/50292).
 
 ### Resolution Criteria
 
@@ -365,7 +365,7 @@ The hardcoded lookups are replaced with a configurable or SPI-driven selection.
 
 ### Description & Impact
 
-`bcprov-jdk18on` is inherited via the Quarkus BOM (current version in use is 1.86 via Quarkus BOM 3.40.1) with no explicit version or Maven Enforcer minimum-version rule in Keycloak's own `pom.xml`. ML-DSA classes (`org.bouncycastle.pqc.crypto.mldsa.*`) first appeared in version 1.78. A downstream build with an older BOM version could silently drop ML-DSA support without a build-time failure.
+`bcprov-jdk18on` is inherited via the Quarkus BOM (current version in use is 1.86 via Quarkus BOM 3.40.1.2) with no explicit version or Maven Enforcer minimum-version rule in Keycloak's own `pom.xml`. ML-DSA classes (`org.bouncycastle.pqc.crypto.mldsa.*`) first appeared in version 1.78. A downstream build with an older BOM version could silently drop ML-DSA support without a build-time failure.
 
 ### Resolution Criteria
 
@@ -417,16 +417,16 @@ The per-client attribute inherits from the realm default; ML-KEM encryption path
 |-------|-------|
 | **Severity** | MEDIUM |
 | **Domains Affected** | 12 |
-| **Affected File(s)** | `services/src/main/java/org/keycloak/authentication/authenticators/client/AttestationBasedClientAuthenticator.java` (lines 418–419) |
+| **Affected File(s)** | `services/src/main/java/org/keycloak/authentication/authenticators/client/AttestationBasedClientAuthenticator.java` (lines 434–435) |
 | **GitHub Issue** | [#43684](https://github.com/keycloak/keycloak/issues/43684) or combine with GAP-30 |
 
 ### Description & Impact
 
-Two `[TODO]` comments at lines 418–419 note that algorithm-type enforcement (must be a registered asymmetric algorithm) is not yet implemented — a security hardening gap independent of PQC. Additionally, if the `cnf.jwk` claim contains an ML-DSA (AKP) key, `JWKSUtils.computeThumbprint()` will throw `UnsupportedOperationException` (dependent on GAP-1).
+Two `[TODO]` comments at lines 434–435 note that algorithm-type enforcement (must be a registered asymmetric algorithm) is not yet implemented — a security hardening gap independent of PQC. Additionally, if the `cnf.jwk` claim contains an ML-DSA (AKP) key, `JWKSUtils.computeThumbprint()` will throw `UnsupportedOperationException` (dependent on GAP-1).
 
 ### Resolution Criteria
 
-The `[TODO]` at line 418 is removed and algorithm enforcement is implemented.
+The `[TODO]` at line 434 is removed and algorithm enforcement is implemented.
 
 ---
 
@@ -512,12 +512,12 @@ An `AKP` branch appears in `toJwk()` calling `JWKBuilder.akp()`.
 |-------|-------|
 | **Severity** | MEDIUM |
 | **Domains Affected** | 49 |
-| **Affected File(s)** | `services/src/main/java/org/keycloak/services/resources/admin/ClientAttributeCertificateResource.java` (lines 126, 293) |
+| **Affected File(s)** | `services/src/main/java/org/keycloak/services/resources/admin/ClientAttributeCertificateResource.java` (lines 126, 288) |
 | **GitHub Issue** | [#48821](https://github.com/keycloak/keycloak/issues/48821) (create sub-issue) |
 
 ### Description & Impact
 
-Both `generate()` (line 126) and `generateAndGetKeystore()` (line 293) call `KeycloakModelUtils.generateKeyPairCertificate()`, which hardcodes RSA key generation (`KeyUtils.generateRsaKeyPair(keysize)`). No algorithm selection is exposed in the API or UI. Admin-generated client keypairs will always be RSA regardless of realm PQC configuration.
+Both `generate()` (line 126) and `generateAndGetKeystore()` (line 288) call `KeycloakModelUtils.generateKeyPairCertificate()`, which hardcodes RSA key generation (`KeyUtils.generateRsaKeyPair(keysize)`). No algorithm selection is exposed in the API or UI. Admin-generated client keypairs will always be RSA regardless of realm PQC configuration.
 
 ### Resolution Criteria
 
@@ -601,6 +601,25 @@ An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) a
 
 ---
 
+## GAP-32 — x5c Certificate-Chain Leaf Key Conversion — RSA/EC Only {#gap-32}
+
+| Field | Value |
+|-------|-------|
+| **Severity** | MEDIUM |
+| **Domains Affected** | 12, 26, 55, 62 |
+| **Affected File(s)** | `core/src/main/java/org/keycloak/crypto/X509CertificateChainValidator.java` (`toJwk`, lines 116–126); `services/src/main/java/org/keycloak/protocol/oid4vc/issuance/keybinding/X5cKeyUtils.java`; `server-spi-private/src/main/java/org/keycloak/broker/provider/TrustMaterialIdentityProvider.java` (lines 51–82); `services/src/main/java/org/keycloak/broker/provider/TrustMaterialResolver.java` (lines 80–110); `server-spi-private/src/main/java/org/keycloak/broker/provider/TrustMaterialSdJwtIssuerResolver.java` (line 65) |
+| **GitHub Issue** | Under [#48821](https://github.com/keycloak/keycloak/issues/48821) (create sub-issue) or combine with GAP-22 under [#43684](https://github.com/keycloak/keycloak/issues/43684) |
+
+### Description & Impact
+
+`X509CertificateChainValidator.toJwk()` converts the leaf public key of an `x5c` chain into a JWK and handles only `RSAPublicKey` and `ECPublicKey`; any other key type (including ML-DSA, which Keycloak models as `KeyType.AKP`, and `OKP`) is rejected. The method is shared by four flows: (1) OID4VCI proof and key-attestation `x5c` validation (`X5cKeyUtils`, `AttestationProofValidator`); (2) `AttestationBasedClientAuthenticator` attester `x5c` validation (row 12); (3) `TrustMaterialIdentityProvider.validateX509Chain()` / `TrustMaterialResolver` for the default trust IdP (row 55); and (4) OID4VP trusted-issuer SD-JWT `x5c` validation via `TrustMaterialSdJwtIssuerResolver` (row 62). The `kid`/JWKS-based paths already handle AKP keys, so the gap only affects deployments that identify keys through X.509 certificate chains. Even once ML-DSA signature providers and ML-DSA certificates exist, an ML-DSA leaf certificate presented in an `x5c` header cannot be converted and the credential, proof or attestation will be rejected.
+
+### Resolution Criteria
+
+`X509CertificateChainValidator.toJwk()` handles `KeyType.AKP` (and OKP) leaf keys, using an AKP variant of the JWK builder that carries an `x5c` chain, and a test with an ML-DSA leaf certificate passes through at least one of the four flows.
+
+---
+
 ## Gap Summary by Severity
 
 ### HIGH Priority (11 gaps)
@@ -616,7 +635,7 @@ An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) a
 - **GAP-26** — JWKS Endpoint — AKP Branch in JWKSServerUtils.toJwk()
 - **GAP-30** — Client Signature Verifier — RSA Guard Blocks AKP Keys
 
-### MEDIUM Priority (16 gaps)
+### MEDIUM Priority (17 gaps)
 - **GAP-5** — JavaKeystoreKeyProvider — ML-DSA Key Import
 - **GAP-7** — OID4VC Linked Data Proof Suite — Hardcoded Ed25519
 - **GAP-10** — IdP Broker — Hardcoded RS256 / HS256 Fallback
@@ -633,6 +652,7 @@ An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) a
 - **GAP-28** — Client SDK — JWTClientCredentialsProvider Missing AKP
 - **GAP-29** — Client SDK — DPoPGenerator No ML-DSA Convenience Path
 - **GAP-31** — MdocAlgorithm — No ML-DSA COSE Mapping
+- **GAP-32** — x5c Certificate-Chain Leaf Key Conversion — RSA/EC Only
 
 ### LOW Priority (4 gaps)
 - **GAP-11** — Dynamic Client Registration — RS256 Special-Case Logic
@@ -640,7 +660,7 @@ An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) a
 - **GAP-23** — OIDC Discovery — Hardcoded RS256 CIBA Constant
 - **GAP-25** — OID4VP — ECDH-ES/secp256r1 Response Encryption (HAIP spec-gated)
 
-**Verified counts:** HIGH=11, MEDIUM=16, LOW=4. Total = 31.
+**Verified counts:** HIGH=11, MEDIUM=17, LOW=4. Total = 32.
 
 ---
 
@@ -668,6 +688,7 @@ An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) a
 - **GAP-28** — Client SDK JWT Credentials (MEDIUM) *could combine with GAP-29*
 - **GAP-29** — Client SDK DPoP (MEDIUM) *could combine with GAP-28*
 - **GAP-31** — MdocAlgorithm ML-DSA COSE Mapping (MEDIUM)
+- **GAP-32** — x5c Leaf-Key Conversion RSA/EC Only (MEDIUM) *could combine with GAP-22 under #43684*
 
 ### Need New Issues — Under [#50292](https://github.com/keycloak/keycloak/issues/50292) SAML
 - **GAP-9** — SAML Hardcoded RS256 Key Selection (HIGH)
@@ -706,7 +727,7 @@ An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) a
 | 4 | GAP-4, GAP-21 | ML-KEM CEK; UserInfo per-client signing |
 | 8 | GAP-4, GAP-20 | ML-KEM CEK; JAR encrypted request decryption |
 | 11 | GAP-6 | BC-FIPS external |
-| 12 | GAP-1, GAP-22 | JWK thumbprint; attestation algorithm enforcement |
+| 12 | GAP-1, GAP-22, GAP-32 | JWK thumbprint; attestation algorithm enforcement; x5c leaf-key conversion |
 | 13 | GAP-6 | BC-FIPS external |
 | 15 | GAP-1 | JWK thumbprint (DPoP dpop_jkt) |
 | 16 | GAP-8, GAP-17 | FAPI allowlist; executor factory UI |
@@ -716,6 +737,7 @@ An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) a
 | 21 | GAP-10 | IdP broker fallback |
 | 24 | GAP-31 | mdoc credential signing algorithm mapping |
 | 25 | GAP-7 | LD-Proof suite |
+| 26 | GAP-32 | x5c leaf-key conversion (key binding) |
 | 27 | GAP-18 | c_nonce signing hardcoded |
 | 28 | GAP-15 | ML-DSA key generation |
 | 29 | GAP-15 | ML-DSA key generation |
@@ -737,16 +759,17 @@ An ML-DSA entry (e.g. mapping `Algorithm.ML_DSA_44/65/87` to COSE identifiers) a
 | 50 | GAP-28 | Client SDK JWT credentials provider |
 | 51 | GAP-29 | Client SDK DPoP generator |
 | 53 | GAP-30 | Client signature verifier RSA guard |
+| 55 | GAP-32 | x5c leaf-key conversion (default trust IdP) |
 | 59 | GAP-2, GAP-9 | SAML signing URIs; SAML hardcoded RS256 |
 | 60 | GAP-2, GAP-9 | SAML signing URIs; SAML hardcoded RS256 |
 | 61 | GAP-2, GAP-9 | SAML signing URIs; SAML hardcoded RS256 |
-| 62 | GAP-24, GAP-25 | OID4VP ES256 hardcoded; OID4VP HAIP encryption |
+| 62 | GAP-24, GAP-25, GAP-32 | OID4VP ES256 hardcoded; OID4VP HAIP encryption; x5c leaf-key conversion |
 | 63 | GAP-4 | ML-KEM CEK provider |
 
 ---
 
-**Total Gaps:** 31
+**Total Gaps:** 32
 **With Existing GitHub Issues:** 6
 **Need Verification:** 2
-**Need New Issues:** 17
+**Need New Issues:** 18
 **External/Documentation:** 7

@@ -74,52 +74,48 @@ remainder if needed).
 
 ### How to compute dashoffsets
 
-The segments are drawn in **smallest-arc-first order** in the HTML (so the largest sits on
-top and is most visible). Visually they read left-to-right in the legend order. The
-**first legend item** (e.g. green "Open") always starts at the same fixed start angle,
-which is preserved across updates by keeping `green_dashoffset = 62.83` constant.
-
-Given legend order **green → amber → purple**:
+Segments are laid out clockwise from 12 o'clock in **legend order**. Because the dash
+pattern is `"ARC C"` (period = ARC + C), it never wraps, so every segment's offset must be
+**zero or negative** — a positive offset trims the start of the arc and leaves a gap in the ring.
 
 ```
-green_dashoffset  = 62.83          # fixed — do not change
-amber_dashoffset  = green_dashoffset - green_arc
-purple_dashoffset = amber_dashoffset - amber_arc
+offset_1 = 0                                  # first legend item starts at 12 o'clock
+offset_n = -(sum of arcs of legend items 1 .. n-1)
 ```
 
-The draw order in the HTML is the **reverse** of the legend: purple first, amber second,
-green last (so green is on top).
+The draw order in the HTML is the **reverse** of the legend (last legend item first, first
+legend item last). With the cumulative offsets above the segments do not overlap, so the
+ring closes exactly: the last segment's `arc + |offset|` must equal 251.33.
 
-### Example — GitHub Issue Status donut (current values)
+### Example — GitHub Issue Status donut (68 issues)
 
 | Segment | count | arc    | dashoffset |
 |---------|-------|--------|------------|
-| green (Open) | 44 of 62 | 178.36 | 62.83 |
-| amber (In Progress) | 3 of 62 | 12.16 | −115.53 |
-| purple (Closed) | 15 of 62 | 60.81 | −127.69 |
+| green (Open) | 47 of 68 | 173.71 | 0 |
+| amber (In Progress) | 4 of 68 | 14.78 | −173.71 |
+| purple (Closed) | 17 of 68 | 62.84 | −188.49 |
 
-The centre `<text>` shows the **total** (62). The legend counts show each segment's count.
+The centre `<text>` shows the **total** (68). The legend counts show each segment's count.
 
 ### Quick Python snippet
 
 ```python
 import math
 C = round(2 * math.pi * 40, 2)  # 251.33
-total, green, amber, purple = 62, 44, 3, 15
-g = round(green  / total * C, 2)
-a = round(amber  / total * C, 2)
-p = round(C - g - a, 2)          # use subtraction for last segment to avoid rounding drift
-g_off = 62.83                     # fixed
-a_off = round(g_off - g, 2)
-p_off = round(a_off - a, 2)
-print(f"green: arc={g}, offset={g_off}")
-print(f"amber: arc={a}, offset={a_off}")
-print(f"purple: arc={p}, offset={p_off}")
+counts = [47, 4, 17]             # legend order; replace with current values
+total = sum(counts)
+arcs = [round(c / total * C, 2) for c in counts[:-1]]
+arcs.append(round(C - sum(arcs), 2))   # last arc by subtraction to avoid rounding drift
+offset = 0.0
+for c, a in zip(counts, arcs):
+    print(f"count={c} arc={a} offset={-round(offset, 2) if offset else 0}")
+    offset += a
 ```
 
-The **Domain PQC Readiness** donut follows the same maths with its own segment counts
-(BLOCKED, PENDING, PARTIAL, SAFE, EXTERNAL) and its own fixed start offset for the first
-segment. Preserve the existing first segment's dashoffset value when updating that donut.
+The **Domain PQC Readiness** donut uses the same maths with legend order BLOCKED, PENDING,
+PARTIAL, SAFE, EXTERNAL (first segment offset 0). The segment counts must sum to the
+domain total.
+
 
 ## Consistency requirements
 

@@ -130,9 +130,8 @@ redesigned. Run the indicated grep for each; if the output matches, record as
 | `SignatureAlgorithm.java` (SAML) contains only RSA variants. No PQC URIs. | `grep -n "RSA_SHA\|ML_DSA\|MLDSA" saml-core/src/main/java/org/keycloak/saml/SignatureAlgorithm.java` |
 | `XMLEncryptionUtil` supports only RSA-OAEP (RSA_OAEP_11 as default), RSA_OAEP, and RSA_v1dot5 key transport. | `grep -n "RSA_OAEP\|RSA_v1dot5\|ML.KEM" saml-core/src/main/java/org/keycloak/saml/processing/core/util/XMLEncryptionUtil.java` |
 | `SAMLEncryptionAlgorithms` enum: `RSA_OAEP` and `RSA1_5` variants only. | `grep -n "RSA_OAEP\|RSA1_5\|ML.KEM" services/src/main/java/org/keycloak/protocol/saml/SAMLEncryptionAlgorithms.java` |
-| `DefaultSamlArtifactResolver.java` handles artifact storage/routing only — the SOAP fetch path is in `SAMLEndpoint.java`. | `grep -n "SOAP\|fetch\|resolve" services/src/main/java/org/keycloak/protocol/saml/DefaultSamlArtifactResolver.java \| head -10` |
-| `DIDUtils.java` is P-256 only by design. | `grep -n "P-256\|ES256\|secp256\|ML_DSA" core/src/main/java/org/keycloak/util/DIDUtils.java` |
-| Maven Enforcer plugin is present in `pom.xml` but there is **no minimum-version rule** for `bcprov-jdk18on`. | `grep -n "bcprov-jdk18on\|enforcer" pom.xml \| head -10` |
+| `DefaultSamlArtifactResolver.java` handles artifact storage/routing only — the SOAP fetch is in `SAMLIdentityProvider.resolveArtifact()` (~lines 554-585); `SAMLEndpoint.java` only calls it (~line 452). | `grep -n "SOAP\|resolveArtifact" services/src/main/java/org/keycloak/broker/saml/SAMLIdentityProvider.java services/src/main/java/org/keycloak/broker/saml/SAMLEndpoint.java \| head -10` |
+| There is **no minimum-version rule** for `bcprov-jdk18on`. The root `pom.xml` only defines the properties `version.enforcer.plugin` and `extra.enforcer.rules.version` (~lines 200-201); the Enforcer plugin itself is not declared there. | `grep -n "bcprov-jdk18on\|enforcer" pom.xml \| head -10` |
 
 ---
 
@@ -169,6 +168,12 @@ cd "$KEYCLOAK_DIR"
 # Then compare the returned paths against FILE_LIST.
 # Any filename in FILE_LIST with NO matching path is MISSING.
 ```
+
+> **Expected "missing" results.** FILE_LIST contains glob tokens (e.g.
+> `EcdhEsA*KwCekManagementProviderFactory.java`, `*SignatureProviderFactory.java`) and
+> one documented rename (`AttestationX509CertificateValidator.java`, now
+> `AttestationProofValidator`/`X509CertificateChainValidator`). These will not match a
+> literal `find -name` and are not errors. Do not report them as MISSING.
 
 **Step (b) — report results:**
 
@@ -218,11 +223,11 @@ grep -n "Algorithm\.RS256" services/src/main/java/org/keycloak/broker/saml/SAMLI
 # GAP-9: SamlProtocol.java — RS256 hardcoding (documented: line 544)
 grep -n "Algorithm\.RS256" services/src/main/java/org/keycloak/protocol/saml/SamlProtocol.java
 
-# GAP-9: SamlService.java — RS256 hardcoding (documented: line 965)
+# GAP-9: SamlService.java — RS256 hardcoding (documented: line 1059)
 grep -n "Algorithm\.RS256" services/src/main/java/org/keycloak/protocol/saml/SamlService.java
 
-# GAP-10: AbstractOAuth2IdentityProvider.java — RS256 fallback (documented: line 745)
-grep -n "Algorithm\.RS256" services/src/main/java/org/keycloak/broker/oidc/AbstractOAuth2IdentityProvider.java
+# GAP-10: AbstractOAuth2IdentityProvider.java — HS256 / RS256 fallback (documented: lines 969 / 977)
+grep -n "Algorithm\.HS256\|Algorithm\.RS256" services/src/main/java/org/keycloak/broker/oidc/AbstractOAuth2IdentityProvider.java
 
 # GAP-11: DescriptionConverter.java — RS256 special-case (documented: line 416)
 grep -n "Algorithm\.RS256\|RS256.*equals\|equals.*RS256" services/src/main/java/org/keycloak/services/clientregistration/oidc/DescriptionConverter.java
@@ -230,14 +235,28 @@ grep -n "Algorithm\.RS256\|RS256.*equals\|equals.*RS256" services/src/main/java/
 # GAP-12: DefaultTokenManager.java — DEFAULT_SIGNATURE_ALGORITHM fallback (documented: ~line 233)
 grep -n "DEFAULT_SIGNATURE_ALGORITHM\|Constants\.DEFAULT" services/src/main/java/org/keycloak/jose/jws/DefaultTokenManager.java
 
+# GAP-20: DefaultTokenManager.decodeClientJWT — no ML-KEM inbound path (documented: decodeClientJWT ~122, ENC key lookup ~144/150)
+grep -n "decodeClientJWT\|headerAlg" services/src/main/java/org/keycloak/jose/jws/DefaultTokenManager.java
+
+# GAP-21: UserInfoEndpoint — per-client signing/encryption (documented: lines 348, 386-387)
+grep -n "signatureAlgorithm(TokenCategory.USERINFO)\|cekManagementAlgorithm\|encryptAlgorithm" services/src/main/java/org/keycloak/protocol/oidc/endpoints/UserInfoEndpoint.java
+
 # GAP-13: AuthUtil.java — rsa256 hardcoding (documented: line 213)
 grep -n "\.rsa256\(" integration/client-cli/admin-cli/src/main/java/org/keycloak/client/cli/util/AuthUtil.java
 
 # GAP-18: JwtCNonceHandler.java — ES256 then RS256 fallback (documented: lines 281/287)
 grep -n "Algorithm\.ES256\|Algorithm\.RS256\|getActiveKey" services/src/main/java/org/keycloak/protocol/oid4vc/issuance/keybinding/JwtCNonceHandler.java
 
-# GAP-22: AttestationBasedClientAuthenticator.java — [TODO] algorithm enforcement (documented: lines 418-419)
+# GAP-22: AttestationBasedClientAuthenticator.java — [TODO] algorithm enforcement (documented: lines 434-435)
 grep -n "\[TODO\].*alg\|alg.*\[TODO\]" services/src/main/java/org/keycloak/authentication/authenticators/client/AttestationBasedClientAuthenticator.java
+# GAP-22 / GAP-32: x5c branch in the attester-key lookup (documented: findAttesterKey ~313, x5c branch ~329-333)
+grep -n "x5c" services/src/main/java/org/keycloak/authentication/authenticators/client/AttestationBasedClientAuthenticator.java
+
+# GAP-32: X509CertificateChainValidator.toJwk — RSA/EC-only leaf-key conversion (documented: toJwk lines 116-126)
+grep -n "instanceof RSAPublicKey\|instanceof ECPublicKey\|AKP\|OKP" core/src/main/java/org/keycloak/crypto/X509CertificateChainValidator.java
+
+# GAP-32: all callers of the shared x5c validator (expect OID4VCI x5c, ABCA, TrustMaterialIdentityProvider, TrustMaterialSdJwtIssuerResolver)
+grep -rn "validateX509Chain" services server-spi-private core --include=*.java | grep -v "/test/"
 
 # GAP-23: OIDCWellKnownProvider.java — hardcoded RS256 constant (documented: line 85)
 grep -n "DEFAULT_CLIENT_AUTH_SIGNING_ALG_VALUES_SUPPORTED" services/src/main/java/org/keycloak/protocol/oidc/OIDCWellKnownProvider.java
@@ -254,7 +273,7 @@ grep -n "ACCEPTED_ALGORITHMS\|Algorithm\.ES256\|getActiveKey.*ES256\|ES256.*getA
 # GAP-25: OID4VP — ECDH-ES/secp256r1 response encryption (documented: EphemeralKey line 41, ResponseEncryption line 38)
 grep -n "secp256r1\|CURVE_SEC\|ECDH_ES\|KEY_MANAGEMENT_ALG" services/src/main/java/org/keycloak/broker/oid4vp/EphemeralKey.java services/src/main/java/org/keycloak/broker/oid4vp/ResponseEncryption.java
 
-# GAP-27: ClientAttributeCertificateResource — generateKeyPairCertificate RSA hardcoding (documented: lines 119, 258)
+# GAP-27: ClientAttributeCertificateResource — generateKeyPairCertificate RSA hardcoding (documented: lines 126, 288)
 grep -n "generateRsaKeyPair\|KeyUtils\.generateRsa\|generateKeyPairCertificate\|ML.DSA\|AKP" services/src/main/java/org/keycloak/services/resources/admin/ClientAttributeCertificateResource.java
 
 # GAP-28: JWTClientCredentialsProvider — switch missing AKP case (documented: lines 77-96)
@@ -325,6 +344,14 @@ grep -n "ML.DSA\|AKP\|mldsa" core/src/main/java/org/keycloak/crypto/JavaAlgorith
 
 # Has bcprov version changed (re-check Quarkus BOM version in pom.xml)?
 grep -n "quarkus.version\|quarkus.platform" pom.xml | head -5
+# The grep above only finds the Quarkus pin, not the resulting bcprov version.
+# Read bcprov from the resolved BOM (replace <version> with the pinned quarkus version):
+grep -n "bcprov-jdk18on" -A2 ~/.m2/repository/io/quarkus/platform/quarkus-bom/<version>/quarkus-bom-<version>.pom | head -6
+
+# Has X509CertificateChainValidator.toJwk() gained AKP/OKP handling (GAP-32)?
+grep -n "instanceof RSAPublicKey\|instanceof ECPublicKey\|AKP\|OKP" core/src/main/java/org/keycloak/crypto/X509CertificateChainValidator.java
+# Which flows share it?
+grep -rn "validateX509Chain" services server-spi-private core
 
 # Has bc-fips version changed?
 grep -n "bouncycastle.bcfips.version" pom.xml
@@ -411,11 +438,11 @@ Your output file (`findings/pqc_overview_review_findings_YYYY-MM-DD.md`) must fo
 
 ## Part 2 — Domain-by-Domain Verification Table
 <table with columns: Row | Domain | Files exist? | Algorithm claims | PQC state | Notes>
-<all 62+ rows>
+<all DOMAIN_COUNT rows>
 
 ## Part 3 — GAP Reference Verification
 <table with columns: GAP | Title | Files Correct? | Line Numbers | Notes>
-<all 30 GAPs>
+<all GAPs in GAP_LIST>
 <Apply the ±3-line tolerance rule: a shift of ≤3 lines with unchanged crypto code is ✅ not an error>
 
 For each GAP, cross-reference the full description in

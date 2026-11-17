@@ -438,17 +438,20 @@
   <td class="num">12</td>
   <td><strong>Attestation-Based Client Authentication</strong><br /><em>(draft-ietf-oauth-attestation-based-client-auth)</em></td>
   <td class="files">
-    <code>authentication/authenticators/client/AttestationBasedClientAuthenticator.java</code>
+    <code>authentication/authenticators/client/AttestationBasedClientAuthenticator.java</code><br />
+    <code>broker/provider/TrustMaterialResolver.java</code><br />
+    <code>broker/provider/TrustMaterialIdentityProvider.java</code><br />
+    <code>crypto/X509CertificateChainValidator.java</code>
   </td>
   <td>Two asymmetric verifications per request:<br />① Client Attestation JWT — attester's public key (RS*, PS*, ES*, EdDSA)<br />② Client Attestation PoP JWT — client instance key from <code>cnf.jwk</code></td>
   <td><span class="cat sign">SIGN</span></td>
   <td>RSA/ECDSA signature verification of both the Client Attestation JWT and the Client Attestation PoP JWT</td>
   <td>
     <span class="pqc pqc-partial">PARTIAL</span><br />
-    Both verification paths are SPI-driven and will support ML-DSA once providers exist. However: (1) algorithm enforcement <code>[TODO]</code> at line 418 is not yet implemented; (2) if the <code>cnf.jwk</code> key is an ML-DSA (AKP) key, <code>JWKSUtils.computeThumbprint()</code> will throw <code>UnsupportedOperationException</code> (GAP-1). <a class="gap-tag" href="#gap-22">GAP-22</a> <a class="gap-tag" href="#gap-1">GAP-1</a>
+    Both verification paths are SPI-driven and will support ML-DSA once providers exist. However: (1) algorithm enforcement <code>[TODO]</code> at line 434 is not yet implemented; (2) if the <code>cnf.jwk</code> key is an ML-DSA (AKP) key, <code>JWKSUtils.computeThumbprint()</code> will throw <code>UnsupportedOperationException</code> (GAP-1); (3) the attester key can now also be resolved from an <code>x5c</code> JOSE header (<code>findAttesterKey()</code> &rarr; <code>TrustMaterialResolver.validateX509Chain()</code>), but <code>X509CertificateChainValidator.toJwk()</code> converts only RSA and EC leaf keys &mdash; an ML-DSA (or EdDSA) leaf certificate is rejected with &ldquo;Unsupported public key type in certificate&rdquo;. The <code>kid</code>/JWKS lookup path is unaffected. <a class="gap-tag" href="#gap-22">GAP-22</a> <a class="gap-tag" href="#gap-1">GAP-1</a> <a class="gap-tag" href="#gap-32">GAP-32</a>
   </td>
   <td>
-    Implement algorithm-type enforcement at line 418. Verify/fix <code>cnf.jwk</code>-to-<code>KeyWrapper</code> conversion path for AKP keys. Contingent on JWK thumbprint fix (GAP-1). Track under <a href="https://github.com/keycloak/keycloak/issues/48824">48824</a> or dedicated sub-issue.<br />
+    Implement algorithm-type enforcement at line 434. Verify/fix <code>cnf.jwk</code>-to-<code>KeyWrapper</code> conversion path for AKP keys. Add AKP handling to the <code>x5c</code> leaf-key conversion (GAP-32). Contingent on JWK thumbprint fix (GAP-1). Track under <a href="https://github.com/keycloak/keycloak/issues/48824">48824</a> or dedicated sub-issue.<br />
     <a href="domains/Domain_12_Attestation_Based_Client_Authentication.md" class="detail-link">→ View implementation plan</a>
   </td>
 </tr>
@@ -691,17 +694,20 @@
   <td class="files">
     <code>broker/trust/DefaultTrustIdentityProvider.java</code><br />
     <code>broker/trust/DefaultTrustIdentityProviderConfig.java</code><br />
-    <code>broker/trust/DefaultTrustIdentityProviderFactory.java</code>
+    <code>broker/trust/DefaultTrustIdentityProviderFactory.java</code><br />
+    <code>broker/provider/TrustMaterialIdentityProvider.java</code><br />
+    <code>broker/provider/TrustMaterialResolver.java</code><br />
+    <code>crypto/X509CertificateChainValidator.java</code>
   </td>
   <td>Generic trust material broker — resolves public keys from a configured JWKS URL or inline JWKS for verifying federated JWT assertions; uses <code>JWKSUtils.getKeyWrappersForUse()</code></td>
   <td><span class="cat sign">SIGN</span></td>
   <td>RSA/ECDSA/EdDSA public keys loaded from trust material JWKS; algorithm-agnostic at the broker layer</td>
   <td>
-    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
-    Key loading via <code>JWKSUtils.getKeyWrappersForUse()</code> already handles AKP (ML-DSA) key types. Signature verification is SPI-driven. Will support ML-DSA once providers exist. No independent hardcoding found.
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    Key loading via <code>JWKSUtils.getKeyWrappersForUse()</code> (JWKS path) already handles AKP (ML-DSA) key types. Signature verification is SPI-driven. However, the default method <code>TrustMaterialIdentityProvider.validateX509Chain()</code> (used when trust anchors are configured and an <code>x5c</code> chain is presented) ends in <code>X509CertificateChainValidator.toJwk()</code>, which converts only RSA and EC leaf keys. <a class="gap-tag" href="#gap-32">GAP-32</a>
   </td>
   <td>
-    No code change required beyond core ML-DSA provider work.
+    Core ML-DSA provider work plus the <code>x5c</code> leaf-key fix tracked in GAP-32.
   <br />
     <a href="domains/Domain_55_Default_Trust_IdP.md" class="detail-link">→ View implementation plan</a>
   </td>
@@ -787,17 +793,18 @@
     <code>broker/oid4vp/DecryptedResponse.java</code><br />
     <code>broker/oid4vp/ParsedResponse.java</code><br />
     <code>broker/oid4vp/RequestContext.java</code><br />
-    <code>broker/oid4vp/ResponseMode.java</code>
+    <code>broker/oid4vp/ResponseMode.java</code><br />
+    <code>broker/provider/TrustMaterialSdJwtIssuerResolver.java</code>
   </td>
   <td>Keycloak acting as an OID4VP <em>verifier</em>: (1) signs the request object sent to the wallet; (2) enforces accepted VP token signature algorithms; (3) uses ECDH-ES / secp256r1 to encrypt the <code>direct_post.jwt</code> response</td>
   <td><span class="cat both">SIGN+ENC</span></td>
   <td>Hardcoded ES256 for request object signing and VP token algorithm enforcement; ECDH-ES secp256r1 hardcoded for response encryption (HAIP spec-gated)</td>
   <td>
     <span class="pqc pqc-blocked">BLOCKED</span><br />
-    Signing: <code>OID4VPIdentityProvider.signingKey()</code> hardcodes <code>Algorithm.ES256</code> at lines 210–211 for both active-key lookup and kid-based lookup. <code>ACCEPTED_ALGORITHMS = List.of(Algorithm.ES256)</code> (line 85) is used by <code>OID4VPIdentityProviderEndpoint.requireAcceptedAlgorithm()</code> to actively reject all non-ES256 algorithms, including ML-DSA. Even after ML-DSA providers exist, VP tokens signed with ML-DSA will be rejected at runtime. Encryption: <code>EphemeralKey.generate()</code> hardcodes <code>secp256r1</code> (line: <code>CURVE_SEC = "secp256r1"</code>); <code>ResponseEncryption.KEY_MANAGEMENT_ALG = ECDH_ES</code> — spec-gated by HAIP which currently mandates ECDH-ES/P-256 for <code>direct_post.jwt</code>. Developer-acknowledged TODO at line 81. <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a>
+    Signing: <code>OID4VPIdentityProvider.signingKey()</code> hardcodes <code>Algorithm.ES256</code> at lines 210–211 for both active-key lookup and kid-based lookup. <code>ACCEPTED_ALGORITHMS = List.of(Algorithm.ES256)</code> (line 85) is used by <code>OID4VPIdentityProviderEndpoint.requireAcceptedAlgorithm()</code> to actively reject all non-ES256 algorithms, including ML-DSA. Even after ML-DSA providers exist, VP tokens signed with ML-DSA will be rejected at runtime. Encryption: <code>EphemeralKey.generate()</code> hardcodes <code>secp256r1</code> (line: <code>CURVE_SEC = "secp256r1"</code>); <code>ResponseEncryption.KEY_MANAGEMENT_ALG = ECDH_ES</code> — spec-gated by HAIP which currently mandates ECDH-ES/P-256 for <code>direct_post.jwt</code>. Developer-acknowledged TODO at line 81. Inbound: trusted SD-JWT issuer keys presented with an <code>x5c</code> header are resolved by <code>TrustMaterialSdJwtIssuerResolver</code> via the same RSA/EC-only <code>X509CertificateChainValidator.toJwk()</code> (GAP-32). <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a>
   </td>
   <td>
-    (1) Replace <code>ACCEPTED_ALGORITHMS</code> hardcoded list with a configurable/SPI-driven set; update <code>signingKey()</code> to select from configured algorithm. (2) Track HAIP spec evolution for ECDH-ES/ML-KEM response encryption once the spec gates lift. No GitHub issue yet — requires a new issue under the PQC tracking parent. <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a>
+    (1) Replace <code>ACCEPTED_ALGORITHMS</code> hardcoded list with a configurable/SPI-driven set; update <code>signingKey()</code> to select from configured algorithm. (2) Track HAIP spec evolution for ECDH-ES/ML-KEM response encryption once the spec gates lift. No GitHub issue yet — requires a new issue under the PQC tracking parent. <a class="gap-tag" href="#gap-24">GAP-24</a> <a class="gap-tag" href="#gap-25">GAP-25</a> <a class="gap-tag" href="#gap-32">GAP-32</a>
   <br />
     <a href="domains/Domain_62_OID4VP_IdP.md" class="detail-link">→ View implementation plan</a>
   </td>
@@ -956,16 +963,21 @@
   <td class="files">
     <code>oid4vc/issuance/keybinding/JwtProofValidator.java</code><br />
     <code>oid4vc/issuance/keybinding/AbstractProofValidator.java</code><br />
-    <code>oid4vc/issuance/keybinding/AttestationValidatorUtil.java</code>
+    <code>oid4vc/issuance/keybinding/AttestationValidatorUtil.java</code><br />
+    <code>oid4vc/issuance/keybinding/X5cKeyUtils.java</code><br />
+    <code>crypto/X509CertificateChainValidator.java</code>
   </td>
   <td>Signature verification of wallet key-binding proof JWT: RS*, PS*, ES*, EdDSA via SignatureProvider SPI; also supports x5c-embedded certificate</td>
   <td><span class="cat sign">SIGN</span></td>
   <td></td>
   <td>
-    <span class="pqc pqc-pending">PENDING PROVIDERS</span><br />
-    <code>JwtProofValidator</code> uses <code>getSupportedAsymmetricSignatureAlgorithms()</code> — SPI-driven. Will support ML-DSA once providers exist. x5c/attestation proof path not fully analysed.
+    <span class="pqc pqc-partial">PARTIAL</span><br />
+    <code>JwtProofValidator</code> uses <code>getSupportedAsymmetricSignatureAlgorithms()</code> — SPI-driven. Will support ML-DSA once providers exist. However, the <code>x5c</code>-embedded certificate path (<code>JwtProofValidator</code> &rarr; <code>AttestationValidatorUtil.resolveJwkFromProofX5c()</code> / key-attestation <code>x5c</code> &rarr; <code>X5cKeyUtils.toJwk()</code> &rarr; <code>X509CertificateChainValidator.toJwk()</code>) converts only RSA and EC leaf keys; any other leaf key type (ML-DSA/AKP, Ed25519) throws &ldquo;Unsupported public key type in certificate&rdquo;. The <code>jwk</code>/<code>kid</code> proof paths are unaffected. <a class="gap-tag" href="#gap-32">GAP-32</a>
   </td>
-  <td><a href="domains/Domain_26_OID4VC_Key_Binding.md" class="detail-link">→ View implementation plan</a></td>
+  <td>
+    Add AKP (and OKP) handling to <code>X509CertificateChainValidator.toJwk()</code> and an <code>x5c</code>-carrying <code>JWKBuilder.akp()</code> variant (GAP-32).<br />
+    <a href="domains/Domain_26_OID4VC_Key_Binding.md" class="detail-link">→ View implementation plan</a>
+  </td>
 </tr>
 
 <tr>
@@ -1852,6 +1864,14 @@ domain table above.</p>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-31" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
 </tr>
 
+<tr id="gap-32" style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; font-weight:700;"><span class="gap-tag">GAP-32</span></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><strong>x5c Certificate-Chain Leaf Key Conversion — RSA/EC Only (No AKP/OKP)</strong></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; color:#d97706; font-weight:600;">MEDIUM</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">12, 26, 55, 62</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><a href="gaps/Github_issue_requirements_for_gaps.md#gap-32" style="color:#3b82d4; text-decoration:none; font-size:11px;">Full detail →</a></td>
+</tr>
+
 </tbody>
 </table>
 
@@ -2116,7 +2136,7 @@ domain table above.</p>
 </tr>
 <tr style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/keybinding/AttestationProofValidator.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">X.509 certificate chain validation for OID4VC attestation proofs. Validates the <code>x5c</code> header in attestation JWTs against configured trust material, then converts the leaf certificate to a JWK via <code>X5cKeyUtils</code>. Algorithm parameter is passed in from <code>JwtProofValidator</code> — no hardcoded algorithm. No independent PQC gap; covered under row 26 (OID4VC Key Binding). <em>(Previously cited as <code>AttestationX509CertificateValidator.java</code>; renamed/refactored upstream in commit <code>0ac222fec9</code>.)</em></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">X.509 certificate chain validation for OID4VC attestation proofs. Validates the <code>x5c</code> header in attestation JWTs against configured trust material, then converts the leaf certificate to a JWK via <code>X5cKeyUtils</code>. Algorithm parameter is passed in from <code>JwtProofValidator</code> — no hardcoded algorithm, but the leaf-key conversion is RSA/EC-only (<code>X509CertificateChainValidator.toJwk()</code>). Covered under row 26 (OID4VC Key Binding) and GAP-32. <em>(Previously cited as <code>AttestationX509CertificateValidator.java</code>; renamed/refactored upstream in commit <code>0ac222fec9</code>.)</em></td>
 </tr>
 <tr>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/keybinding/StaticAttestationKeyResolver.java</code></td>
@@ -2124,7 +2144,7 @@ domain table above.</p>
 </tr>
 <tr style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/keybinding/X5cKeyUtils.java</code></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Converts an X.509 certificate chain (<code>x5c</code> array) into a JWK for use in key binding proof validation. Algorithm-agnostic — delegates certificate parsing to the JVM. No independent PQC gap; covered under row 26 (OID4VC Key Binding).</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Thin wrapper that decodes an X.509 certificate chain (<code>x5c</code> array) and converts the leaf into a JWK for key binding proof validation by delegating to <code>X509CertificateChainValidator.toJwk()</code>, which supports only RSA and EC leaf keys (ML-DSA/AKP and Ed25519 leaves throw &ldquo;Unsupported public key type in certificate&rdquo;). Covered under row 26 (OID4VC Key Binding) and GAP-32.</td>
 </tr>
 <tr>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>oid4vc/issuance/credentialbuilder/JwtCredentialBody.java</code></td>
@@ -2162,6 +2182,14 @@ domain table above.</p>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>core/src/main/java/org/keycloak/sdjwt/ClaimVerifier.java</code></td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">SD-JWT claim verification (row 56). Only enforces <code>alg != none</code> on the header (line ~432); no algorithm allow-list, so no PQC impact.</td>
 </tr>
+<tr style="background:#f7f8fa;">
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/src/main/java/org/keycloak/broker/oid4vp/DcqlQuery.java</code><br /><code>services/src/main/java/org/keycloak/broker/oid4vp/mappers/DcqlQueryContributor.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">OID4VP DCQL query building and claim-query contribution (row 62 area). No algorithm, key-type or <code>SignatureProvider</code> references, so no PQC relevance.</td>
+</tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><code>services/src/main/java/org/keycloak/protocol/oid4vc/model/CredentialBuildConfig.java</code><br /><code>services/src/main/java/org/keycloak/protocol/oid4vc/model/SupportedCredentialConfiguration.java</code></td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">OID4VC credential configuration models that only consume <code>CredentialSigningAlgorithmResolver</code> / <code>MdocAlgorithm.fromJoseAlgorithm()</code>. No independent gap; covered by GAP-31 and row 24.</td>
+</tr>
 </tbody>
 </table>
 
@@ -2185,12 +2213,12 @@ domain table above.</p>
 <tbody>
 <tr>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><span class="pqc pqc-pending">PENDING PROVIDERS</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">16</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">14</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Will work automatically once ML-DSA/ML-KEM providers exist. No independent code gap.</td>
 </tr>
 <tr style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;"><span class="pqc pqc-partial">PARTIAL</span></td>
-  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">12</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; font-weight:600;">14</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Mostly ready; specific gaps to fix (e.g., missing AKP cases, hardcoded fallbacks).</td>
 </tr>
 <tr>
@@ -2239,6 +2267,7 @@ domain table above.</p>
   <li><strong>GAP-21</strong> (Domain 4): UserInfo per-client signature attribute doesn't follow realm default</li>
   <li><strong>GAP-22</strong> (Domain 12): Attestation algorithm enforcement TODO not implemented — filed: <a href="https://github.com/keycloak/keycloak/issues/52816">#52816</a></li>
   <li><strong>GAP-23</strong> (Domain 36): OIDC discovery hardcoded constant for CIBA signing algorithms</li>
+  <li><strong>GAP-32</strong> (Domains 12, 26, 55, 62): x5c certificate-chain leaf-key conversion (<code>X509CertificateChainValidator.toJwk()</code>) accepts only RSA/EC — blocks ML-DSA certificates in attestation, key-binding, trust-material and OID4VP flows</li>
   <li><strong>GAP-27, GAP-28, GAP-29</strong> (Domains 49-51): Admin API and Client SDK missing AKP support — filed: <a href="https://github.com/keycloak/keycloak/issues/52821">#52821</a> (GAP-28/29)</li>
 </ul>
 
@@ -2315,6 +2344,12 @@ domain table above.</p>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">Attestation-Based Client Auth: Enforce Asymmetric Algorithm Requirement</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">✅ <a href="https://github.com/keycloak/keycloak/issues/52816" style="color:#3b82d4;">#52816</a></td>
 </tr>
+<tr>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-32</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">x5c Leaf-Key Conversion: Add AKP/OKP Support to X509CertificateChainValidator.toJwk()</td>
+  <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center;">—</td>
+</tr>
 <tr style="background:#f7f8fa;">
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top; text-align:center; color:#57606a; font-weight:600;">MED</td>
   <td style="padding:6px 9px; border:1px solid #e5e7eb; vertical-align:top;">GAP-27</td>
@@ -2332,7 +2367,7 @@ domain table above.</p>
 
 <h3 style="font-size:15px; margin: 24px 0 8px;">Key Architectural Insights</h3>
 <ol style="margin:0 0 16px 0; padding-left:24px; font-size:12px; line-height:1.6;">
-  <li><strong>SPI-Driven Success:</strong> 16 domains are PENDING PROVIDERS because they inherit from well-designed SPIs (SignatureProvider, ClientSignatureVerifierProvider, CekManagementProvider). This is the right architectural pattern.</li>
+  <li><strong>SPI-Driven Success:</strong> 14 domains are PENDING PROVIDERS because they inherit from well-designed SPIs (SignatureProvider, ClientSignatureVerifierProvider, CekManagementProvider). This is the right architectural pattern.</li>
   <li><strong>Hardcoded Algorithm Selections:</strong> Major blocker pattern across SAML (GAP-9), FAPI (GAP-8), OID4VC (GAP-18), IdP broker (GAP-10), Admin CLI (GAP-13). These are the primary implementation gaps.</li>
   <li><strong>Two-Level SAML Gap:</strong> Both algorithm URIs (GAP-2) AND key selection logic (GAP-9) must be fixed. Fixing only one layer won't enable SAML PQC.</li>
   <li><strong>Encryption Gaps Separate:</strong> ML-KEM key generation and CekManagement are distinct from ML-DSA signature work. Encryption readiness requires parallel implementation tracks.</li>
@@ -2344,7 +2379,7 @@ domain table above.</p>
 </p>
 
 <footer>
-  <p>Last updated: 17 October 2026 (review findings applied: bc-fips 2.1.2→2.1.3 and bcprov-jdk18on 1.85.2→1.86 (Quarkus 3.40.1); corrected row 60 SOAP back-channel class to SAMLIdentityProvider.resolveArtifact(); updated GAP-10 line numbers in Domain 21; extended GAP-31 to cover MdocDeviceKey; added mdoc, RSAWrapperAlgorithmProvider, OID4VP mapper and ClaimVerifier entries to Files Evaluated; verified all 63 domains and 31 GAPs against Keycloak main @ eb3ac9a4ba)</p>
+  <p>Last updated: 17 November 2026 (review findings applied: new GAP-32 — x5c certificate-chain leaf-key conversion (<code>X509CertificateChainValidator.toJwk()</code>) accepts only RSA/EC keys, corrected the "algorithm-agnostic" claims for <code>X5cKeyUtils</code> / <code>AttestationProofValidator</code>, rows 26 and 55 moved PENDING PROVIDERS → PARTIAL (status distribution now 27 / 14 / 14 / 5 / 3), added trust-material key files to rows 12, 26, 55, 62; GAP-22 [TODO] line 418 → 434; added DCQL and credential-config entries to Files Evaluated; verified all 63 domains and 32 GAPs against Keycloak main @ eafe81dd79)</p>
 </footer>
 </div>
 </body>

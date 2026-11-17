@@ -45,7 +45,7 @@ Each distinct use-case was classified as an independent **domain**. 63 domains w
 
 To update `pqc_overview.html` with the latest Keycloak PQC information, please read [README_UPDATE.md](README_UPDATE.md).
 
-**Last updated:** 17 October 2026 — Review findings from `findings/pqc_overview_review_findings_2026-10-17.md` applied: bc-fips 2.1.2→2.1.3 and bcprov-jdk18on 1.85.2→1.86 (Quarkus 3.40.1); corrected row 60 SOAP back-channel class to SAMLIdentityProvider.resolveArtifact(); updated GAP-10 line numbers in Domain 21; extended GAP-31 to cover MdocDeviceKey; added mdoc, RSAWrapperAlgorithmProvider, OID4VP mapper and ClaimVerifier entries to Files Evaluated; verified all 63 domains and 31 GAPs against Keycloak main @ `eb3ac9a4ba`.
+**Last updated:** 17 November 2026 — Review findings from `findings/pqc_overview_review_findings_2026-11-17.md` applied: new GAP-32 (x5c certificate-chain leaf-key conversion in `X509CertificateChainValidator.toJwk()` accepts only RSA/EC; affects rows 12, 26, 55, 62); rows 26 and 55 moved PENDING PROVIDERS → PARTIAL (now 27 BLOCKED / 14 PENDING / 14 PARTIAL / 5 SAFE / 3 EXTERNAL); corrected `X5cKeyUtils`/`AttestationProofValidator` entries (not algorithm-agnostic); line-number refreshes for GAP-22 (434–435), GAP-9 `SamlService` (1059) and GAP-27 (288); Quarkus BOM 3.40.1 → 3.40.1.2 (bcprov stays 1.86). Keycloak HEAD `eafe81dd79`.
 
 ## PQC Readiness Accuracy Reviews
 
@@ -53,6 +53,7 @@ The following accuracy reviews have been conducted against the live Keycloak sou
 
 | Date | PQC Changes |
 |------|-------------|
+| 2026-11-17 | [pqc_overview_review_findings_2026-11-17.md](findings/pqc_overview_review_findings_2026-11-17.md) |
 | 2026-10-17 | [pqc_overview_review_findings_2026-10-17.md](findings/pqc_overview_review_findings_2026-10-17.md) |
 | 2026-09-24 | [pqc_overview_review_findings_2026-09-24.md](findings/pqc_overview_review_findings_2026-09-24.md) |
 | 2026-09-15 | [pqc_overview_review_findings_2026-09-15.md](findings/pqc_overview_review_findings_2026-09-15.md) |
